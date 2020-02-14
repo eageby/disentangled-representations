@@ -20,7 +20,7 @@ def show(image):
     fig,ax = plt.subplots(1)
     fig.subplots_adjust(left=0,right=1,bottom=0,top=1)
 
-    ax.imshow(image)
+    ax.imshow(image, cmap='gray')
     ax.axis('off')
     ax.axis('tight')
     plt.show()
