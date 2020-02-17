@@ -10,7 +10,6 @@ def stack(dataset, rows, cols):
         dataset = dataset.take(rows*cols)
         map_ = lambda x: x['image']
         dataset = np.asarray(list(dataset.map(map_).as_numpy_iterator()))
-
     image_rows = [np.concatenate(dataset[cols*i:cols*(i+1)], axis=1) for i in range(rows)]
 
     return np.concatenate(image_rows, axis=0)
