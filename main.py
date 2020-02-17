@@ -1,6 +1,5 @@
 import disentangled.dataset.shapes3d as shapes3d
 import disentangled.dataset.mnist as mnist
-from disentangled.model.mlp import *
 from disentangled.model.vae import *
 import tensorflow as tf
 
