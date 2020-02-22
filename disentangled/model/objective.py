@@ -1,15 +1,20 @@
 import tensorflow as tf
 
+class Objective(tf.keras.layers.Layer):
+    def __init__(self, **kwargs):
+        super(Objective, self).__init__(**kwargs)
+        self.flatten = tf.keras.layers.Flatten()
 
-class BetaVAE:
-    def __init__(self, gaussian):
+    def call(self, input_):
+        return self.objective(*[self.flatten(i) for i in input_])
+
+class BetaVAE(Objective):
+    def __init__(self, gaussian, **kwargs):
+        super(BetaVAE, self).__init__(**kwargs)
         self.gaussian = gaussian
 
         if not gaussian:
             self.bce = tf.keras.losses.BinaryCrossentropy()
-
-    def __call__(self, *args):
-        return self.objective(*args)
 
     def kld(self, z_mean, z_log_var):
         return 0.5 * tf.reduce_mean(

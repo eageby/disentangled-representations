@@ -67,6 +67,6 @@ class VAE(tf.keras.Model):
         z_mean, z_log_var = self.encoder(x)
         z = self.representation((z_mean, z_log_var), training)
         x_mean, x_log_var = self.decoder(x)
-        self.add_loss(self.objective(x, x_mean, x_log_var, z_mean, z_log_var))
+        self.add_loss(self.objective((inputs, x_mean, x_log_var, z_mean, z_log_var)))
 
         return self.reshape(x_mean), z, inputs
