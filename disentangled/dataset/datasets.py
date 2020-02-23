@@ -56,6 +56,12 @@ class MNIST(Dataset):
 
     _builder = tfds.builder("{}:{}".format(_name, __version__))
 
+    @classmethod
+    def pipeline(cls, batch_size=128):
+        return (
+            cls.load().map(dataset.utils.get_image).map(dataset.utils.binary).batch(128)
+        )
+
 
 class Shapes3d(Dataset):
     """Shapes3d Dataset"""
@@ -64,3 +70,9 @@ class Shapes3d(Dataset):
     __version__ = "2.0.0"
 
     _builder = tfds.builder("{}:{}".format(_name, __version__))
+
+    @classmethod
+    def pipeline(cls, batch_size=128):
+        return (
+            cls.load().batch(batch_size).map(utils.get_image).map(utils.normalize_uint8)
+        )
