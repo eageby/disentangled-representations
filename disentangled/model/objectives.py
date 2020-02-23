@@ -1,14 +1,14 @@
 import tensorflow as tf
 
-class Objective(tf.keras.layers.Layer):
+class _Objective(tf.keras.layers.Layer):
     def __init__(self, **kwargs):
-        super(Objective, self).__init__(**kwargs)
+        super(_Objective, self).__init__(**kwargs)
         self.flatten = tf.keras.layers.Flatten()
 
     def call(self, input_):
         return self.objective(*[self.flatten(i) for i in input_])
 
-class BetaVAE(Objective):
+class BetaVAE(_Objective):
     def __init__(self, gaussian, **kwargs):
         super(BetaVAE, self).__init__(**kwargs)
         self.gaussian = gaussian
