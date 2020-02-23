@@ -1,5 +1,13 @@
+import sys
+
 import tensorflow as tf
 import tensorflow_datasets as tfds
+
+from . import utils
+
+
+def get_dataset(name):
+    return getattr(sys.modules[__name__], name)
 
 
 class Dataset:
