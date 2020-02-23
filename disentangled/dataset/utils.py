@@ -16,6 +16,7 @@ def binary(element):
     Returns:
         Binary quantized element
     """
+
     return tf.quantization.fake_quant_with_min_max_args(
         tf.cast(element, tf.float32), min=0, max=1
     )
@@ -23,6 +24,7 @@ def binary(element):
 
 def get_image(element):
     """Gets the image feature of the element in a dataset."""
+
     return tf.cast(element["image"], tf.float32)
 
 
@@ -36,6 +38,13 @@ def numpy(dataset):
         dataset (tf.data.Dataset): An instance of a dataset.
 
     Returns:
-        (np.array)
+        np.array
     """
-    return np.asarray(list(data.as_numpy_iterator()))
+
+    return np.asarray(list(dataset.as_numpy_iterator()))
+
+
+def normalize_uint8(x):
+    """Normalizes data in uint8 range [0,255] to [0,1]"""
+
+    return x / 255
