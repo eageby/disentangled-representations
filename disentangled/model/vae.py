@@ -1,4 +1,5 @@
 import tensorflow as tf
+from pathlib import Path
 
 
 class Representation(tf.keras.layers.Layer):
@@ -49,24 +50,4 @@ class Decoder(tf.keras.layers.Layer):
         return x_mean, x_log_var
 
 
-class VAE(tf.keras.Model):
-    def __init__(self, encoder, representation, decoder, objective, **kwargs):
-        super(VAE, self).__init__(**kwargs)
-        self.encoder = encoder
-        self.representation = representation
-        self.decoder = decoder
-        self.latents = encoder.latents
-        self.objective = objective
 
-    def build(self, input_dim):
-        self.flatten = tf.keras.layers.Flatten()
-        self.reshape = tf.keras.layers.Reshape(input_dim[1:])
-
-    def call(self, inputs, training=False):
-        x = self.flatten(inputs)
-        z_mean, z_log_var = self.encoder(x)
-        z = self.representation((z_mean, z_log_var), training)
-        x_mean, x_log_var = self.decoder(x)
-        self.add_loss(self.objective((inputs, x_mean, x_log_var, z_mean, z_log_var)))
-
-        return self.reshape(x_mean), z, inputs
