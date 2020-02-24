@@ -3,7 +3,7 @@ import tensorflow as tf
 import disentangled.model.conv as conv
 import disentangled.model.objectives as objectives
 
-from .vae import Representation
+from .vae import *
 
 
 class VAE(tf.keras.Model):
@@ -18,38 +18,42 @@ class VAE(tf.keras.Model):
         self.latents = latents
 
     def build(self, input_dim):
-        self.flatten = tf.keras.layers.Flatten()
         self.output_reshape = tf.keras.layers.Reshape(input_dim[1:])
-
-        encoder_output_dim = self.encoder.compute_output_shape(input_dim)
-
-        self.dense_mean = tf.keras.layers.Dense(self.latents, activation="relu")
-        self.dense_log_var = tf.keras.layers.Dense(self.latents, activation="relu")
-
-        self.representation_dense_out = tf.keras.layers.Dense(
-            self.flatten.compute_output_shape(encoder_output_dim)[1], activation="relu"
-        )
-        self.reshape = tf.keras.layers.Reshape(encoder_output_dim[1:])
 
     def call(self, inputs, training=False):
         x = inputs
         x = self.encoder(x)
-        x = self.flatten(x)
-        z_mean = self.dense_mean(x)
-        z_log_var = self.dense_log_var(x)
-        z = self.representation((z_mean, z_log_var), training)
-        x = self.reshape(self.representation_dense_out(z))
-        x_mean, x_log_var = self.decoder(x)
-        self.add_loss(self.objective((inputs, x_mean, x_log_var, z_mean, z_log_var)))
+        z, z_mean, z_log_var = self.representation(x)
+        x_mean, x_log_var = self.decoder(z)
+        self.add_loss(self.objective(inputs, x_mean, x_log_var, z_mean, z_log_var))
 
-        return x_mean, z, inputs
+        return self.output_reshape(x_mean), z, inputs
 
 
 class AEVB(VAE):
     def __init__(self, latents, **kwargs):
         super(AEVB, self).__init__(
             conv.Encoder(),
+            Representation(latents),
+            conv.Decoder(),
+            objectives.BetaVAE(gaussian=True),
+        )
+
+class Mobile(VAE):
+    def __init__(self, latents, **kwargs):
+        super(Mobile, self).__init__(
+            conv.MobilenetV2(),
             Representation(),
             conv.Decoder(),
             objectives.BetaVAE(gaussian=True),
         )
+
+class MLP(VAE):
+    def __init__(self, latents, **kwargs):
+        super(MLP, self).__init__(
+            Encoder(),
+            Representation(latents),
+            Decoder(),
+            objectives.BetaVAE(gaussian=True),
+        )
+
