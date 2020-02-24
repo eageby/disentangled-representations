@@ -7,11 +7,11 @@ import disentangled.visualize as vi
 
 
 def shapes3d():
-    data = dataset.shapes3d.pipeline(batch_size=256).take(500)
-    model = models.AEVB(latents=32)  
+    data = dataset.mnist.pipeline(batch_size=64).take(500)
+    model = models.MLP(latents=32)  
 
-    model.compile(tf.keras.optimizers.Adam(learning_rate=1e-4))
-    model.fit(data, epochs=1)
+    model.compile(tf.keras.optimizers.Adam(learning_rate=1e-2))
+    model.fit(data, epochs=5)
 
     estimate, representation, target = model.predict(data, steps=1)
     vi.results(target, estimate, 5, 10)
@@ -28,4 +28,3 @@ def continue_training():
     vi.results(target, estimate, 5, 10)
 
 shapes3d()
-
