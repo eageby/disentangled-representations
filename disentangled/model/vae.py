@@ -1,11 +1,28 @@
 import tensorflow as tf
-from pathlib import Path
 
+import disentangled.model.activations as activations
 
 class Representation(tf.keras.layers.Layer):
-    def call(self, inputs, training=False):
-        mean, log_var = inputs
+    def __init__(self, latent_dim, **kwargs):
+        super(Representation, self).__init__(**kwargs)
+        self.latent_dim = latent_dim
 
+    def build(self, input_dim):
+        self.flatten = tf.keras.layers.Flatten()
+        self.reshape = tf.keras.layers.Reshape(input_dim[1:])
+        self.dense_mean = tf.keras.layers.Dense(self.latent_dim, activation="relu")
+        self.dense_log_var = tf.keras.layers.Dense(self.latent_dim, activation="relu")
+        self.dense_out = tf.keras.layers.Dense(tf.reduce_prod(input_dim[1:]), activation="relu")
+
+    def call(self, input_, training=False):
+        x = self.flatten(input_)
+        mean = self.dense_mean(x)
+        log_var = self.dense_log_var(x)
+        z = self.sample(mean, log_var, training)
+        x = self.dense_out(z)
+        return self.reshape(x), mean, log_var
+    
+    def sample(self, mean, log_var, training):
         if not training:
             return mean
 
@@ -15,39 +32,22 @@ class Representation(tf.keras.layers.Layer):
 
 
 class Encoder(tf.keras.layers.Layer):
-    def __init__(self, latents, **kwargs):
+    def __init__(self, **kwargs):
         super(Encoder, self).__init__(**kwargs)
-        self.dense = tf.keras.layers.Dense(400, activation="sigmoid")
-        self.dense_mean = tf.keras.layers.Dense(latents, activation=None)
-        self.dense_log_var = tf.keras.layers.Dense(latents, activation=None)
-        self.latents = latents
+        self.flatten = tf.keras.layers.Flatten()
+        self.dense = tf.keras.layers.Dense(400, activation="relu")
 
     def call(self, inputs):
-        x = self.dense(inputs)
-
-        z_mean = self.dense_mean(x)
-        z_log_var = self.dense_log_var(x)
-
-        return z_mean, z_log_var
-
+        return self.dense(self.flatten(inputs))
 
 class Decoder(tf.keras.layers.Layer):
-    def __init__(self, activation, **kwargs):
-        super(Decoder, self).__init__(**kwargs)
-        self.activation = activation
-
     def build(self, input_dim):
-        self.dense = tf.keras.layers.Dense(400, activation="sigmoid")
-        self.dense1 = tf.keras.layers.Dense(
-            2 * tf.reduce_prod(input_dim[1:]), activation=self.activation
-        )
-
+        self.flatten = tf.keras.layers.Flatten()
+        self.dense = tf.keras.layers.Dense(400, activation="relu")
+        self.dense_mean = tf.keras.layers.Dense(28*28, activation=activations.relu1)
+        self.dense_log_var = tf.keras.layers.Dense(28*28, activation="relu")
+        
     def call(self, inputs):
-        x = self.dense(inputs)
-        x = self.dense1(x)
-        x_mean, x_log_var = tf.split(x, 2, axis=1)
-
-        return x_mean, x_log_var
-
-
-
+        x = self.flatten(inputs)
+        x = self.dense(x)
+        return self.dense_mean(x), self.dense_log_var(x)
