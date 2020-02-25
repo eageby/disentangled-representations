@@ -16,10 +16,11 @@ class BetaVAE(_Objective):
         if not gaussian:
             self.bce = tf.keras.losses.BinaryCrossentropy()
 
+    @tf.function
     def kld(self, z_mean, z_log_var):
-        return 0.5 * tf.reduce_mean(
+        return -0.5 * tf.reduce_mean(
             tf.reduce_sum(
-                1 + z_log_var - tf.square(z_mean) - tf.exp(z_log_var), axis=-1
+                1 + 0 - tf.square(z_mean) - 1, axis=-1
             ),
             axis=0,
         )
@@ -34,8 +35,9 @@ class BetaVAE(_Objective):
 
     def objective(self, target, x_mean, x_log_var, z_mean, z_log_var):
         if self.gaussian:
-            return -self.log_likelihood(target, x_mean, x_log_var) - self.kld(
-                z_mean, z_log_var
+            return -self.log_likelihood(target, x_mean, x_log_var) + self.kld(
+                 z_mean, z_log_var
             )
         else:
-            return self.bce(target, x_mean) - self.kld(z_mean, z_log_var)
+            return self.bce(target, x_mean) + 0.5*self.kld(z_mean, z_log_var)
+

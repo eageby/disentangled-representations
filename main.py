@@ -7,15 +7,18 @@ import disentangled.visualize as vi
 
 
 def shapes3d():
-    data = dataset.mnist.pipeline(batch_size=64).take(500)
+    data = dataset.mnist.pipeline(batch_size=256).take(500)
     model = models.MLP(latents=32)  
 
-    model.compile(tf.keras.optimizers.Adam(learning_rate=1e-2))
+    model.compile(tf.keras.optimizers.Adam(learning_rate=1e-3))
     model.fit(data, epochs=5)
 
     estimate, representation, target = model.predict(data, steps=1)
     vi.results(target, estimate, 5, 10)
     modelutils.save(model, 'shapes3d')
+
+    import pdb
+    pdb.set_trace()
 
 
 def continue_training():

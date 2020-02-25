@@ -60,7 +60,7 @@ class MNIST(Dataset):
     @classmethod
     def pipeline(cls, batch_size=128):
         return (
-            cls.load().map(utils.get_image).map(utils.binary).batch(batch_size)
+            cls.load().map(utils.get_image).map(utils.normalize_uint8).batch(batch_size)
         )
 
 

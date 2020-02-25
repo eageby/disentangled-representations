@@ -25,7 +25,7 @@ class VAE(tf.keras.Model):
         x = self.encoder(x)
         z, z_mean, z_log_var = self.representation(x)
         x_mean, x_log_var = self.decoder(z)
-        self.add_loss(self.objective(inputs, x_mean, x_log_var, z_mean, z_log_var))
+        self.add_loss(self.objective((inputs, x_mean, x_log_var, z_mean, z_log_var)))
 
         return self.output_reshape(x_mean), z, inputs
 
@@ -54,6 +54,6 @@ class MLP(VAE):
             Encoder(),
             Representation(latents),
             Decoder(),
-            objectives.BetaVAE(gaussian=True),
+            objectives.BetaVAE(gaussian=False),
         )
 

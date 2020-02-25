@@ -10,14 +10,14 @@ class Representation(tf.keras.layers.Layer):
     def build(self, input_dim):
         self.flatten = tf.keras.layers.Flatten()
         self.reshape = tf.keras.layers.Reshape(input_dim[1:])
-        self.dense_mean = tf.keras.layers.Dense(self.latent_dim, activation="relu")
-        self.dense_log_var = tf.keras.layers.Dense(self.latent_dim, activation="relu")
+        self.dense_mean = tf.keras.layers.Dense(2*self.latent_dim, activation=None)
+        # self.dense_log_var = tf.keras.layers.Dense(self.latent_dim, activation='tanh')
         self.dense_out = tf.keras.layers.Dense(tf.reduce_prod(input_dim[1:]), activation="relu")
 
     def call(self, input_, training=False):
         x = self.flatten(input_)
-        mean = self.dense_mean(x)
-        log_var = self.dense_log_var(x)
+        mean, log_var = tf.split(self.dense_mean(x), 2, axis=1)
+        # log_var = tf.math.log(self.dense_log_var(x) + 1)
         z = self.sample(mean, log_var, training)
         x = self.dense_out(z)
         return self.reshape(x), mean, log_var
@@ -28,7 +28,7 @@ class Representation(tf.keras.layers.Layer):
 
         noise = tf.random.normal(tf.shape(mean), mean=0.0, stddev=1.0, seed=10)
 
-        return mean + tf.exp(0.5 * log_var) * noise
+        return mean + tf.exp(0.5 * 1) * noise
 
 
 class Encoder(tf.keras.layers.Layer):
@@ -44,8 +44,8 @@ class Decoder(tf.keras.layers.Layer):
     def build(self, input_dim):
         self.flatten = tf.keras.layers.Flatten()
         self.dense = tf.keras.layers.Dense(400, activation="relu")
-        self.dense_mean = tf.keras.layers.Dense(28*28, activation=activations.relu1)
-        self.dense_log_var = tf.keras.layers.Dense(28*28, activation="relu")
+        self.dense_mean = tf.keras.layers.Dense(28*28, activation='sigmoid')
+        self.dense_log_var = tf.keras.layers.Dense(28*28, activation=None)
         
     def call(self, inputs):
         x = self.flatten(inputs)
