@@ -7,11 +7,14 @@ import disentangled.visualize as vi
 
 
 def shapes3d():
-    data = dataset.mnist.pipeline(batch_size=256).take(500)
+    tf.random.set_seed(10)
+    data = dataset.mnist.pipeline(batch_size=256).take(300)
     model = models.MLP(latents=32)  
 
     model.compile(tf.keras.optimizers.Adam(learning_rate=1e-3))
-    model.fit(data, epochs=5)
+    tensorboard = tf.keras.callbacks.TensorBoard(log_dir='logs')
+
+    model.fit(data, epochs=5, callbacks=[tensorboard])
 
     estimate, representation, target = model.predict(data, steps=1)
     vi.results(target, estimate, 5, 10)

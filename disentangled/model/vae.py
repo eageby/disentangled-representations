@@ -28,7 +28,7 @@ class Representation(tf.keras.layers.Layer):
 
         noise = tf.random.normal(tf.shape(mean), mean=0.0, stddev=1.0, seed=10)
 
-        return mean + tf.exp(0.5 * 1) * noise
+        return mean + tf.exp(0.5 * log_var) * noise
 
 
 class Encoder(tf.keras.layers.Layer):
@@ -44,7 +44,7 @@ class Decoder(tf.keras.layers.Layer):
     def build(self, input_dim):
         self.flatten = tf.keras.layers.Flatten()
         self.dense = tf.keras.layers.Dense(400, activation="relu")
-        self.dense_mean = tf.keras.layers.Dense(28*28, activation='sigmoid')
+        self.dense_mean = tf.keras.layers.Dense(28*28, activation=None)
         self.dense_log_var = tf.keras.layers.Dense(28*28, activation=None)
         
     def call(self, inputs):

@@ -1,5 +1,4 @@
 import tensorflow as tf
-
 import disentangled.model.conv as conv
 import disentangled.model.objectives as objectives
 
@@ -54,6 +53,6 @@ class MLP(VAE):
             Encoder(),
             Representation(latents),
             Decoder(),
-            objectives.BetaVAE(gaussian=False),
+            objectives.BetaVAE(gaussian=True),
         )
 
