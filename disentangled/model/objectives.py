@@ -17,7 +17,7 @@ class BetaVAE:
 
         return tf.reduce_mean(
             -0.5 * tf.reduce_sum(
-                1 + z_log_var - tf.square(z_mean) - tf.exp(z_log_var), axis=1
+                1 + z_log_var - tf.square(z_mean) - tf.exp(z_log_var) , axis=1
             ),
             axis=0,
         )
@@ -26,10 +26,9 @@ class BetaVAE:
     def log_likelihood(self, target, x_mean, x_log_var):
         if not self.gaussian:
             return -self.bce(target, x_mean)
-
         return -0.5 * tf.reduce_mean(
             tf.reduce_sum(
-                 x_log_var + tf.square(target - x_mean) / tf.exp(x_log_var)
+                 x_log_var + tf.square(target - x_mean) / tf.exp(x_log_var)+ tf.math.log(2*math.pi)
                  , axis=1)
             , axis=0)
 
