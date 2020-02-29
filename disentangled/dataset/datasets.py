@@ -1,5 +1,13 @@
+import sys
+
 import tensorflow as tf
 import tensorflow_datasets as tfds
+
+from . import utils
+
+
+def get_dataset(name):
+    return getattr(sys.modules[__name__], name)
 
 
 class Dataset:
@@ -47,6 +55,13 @@ class MNIST(Dataset):
     __version__ = "3.0.0"
 
     _builder = tfds.builder("{}:{}".format(_name, __version__))
+    _builder.download_and_prepare()
+
+    @classmethod
+    def pipeline(cls, batch_size=128):
+        return (
+            cls.load().map(utils.get_image).map(utils.normalize_uint8).batch(batch_size)
+        )
 
 
 class Shapes3d(Dataset):
@@ -56,3 +71,10 @@ class Shapes3d(Dataset):
     __version__ = "2.0.0"
 
     _builder = tfds.builder("{}:{}".format(_name, __version__))
+    _builder.download_and_prepare()
+
+    @classmethod
+    def pipeline(cls, batch_size=128):
+        return (
+            cls.load().batch(batch_size).prefetch(10).map(utils.get_image).map(utils.normalize_uint8)
+        )
