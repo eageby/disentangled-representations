@@ -6,7 +6,7 @@ import tensorflow_datasets as tfds
 from . import utils
 
 
-def get_dataset(name):
+def get(name):
     return getattr(sys.modules[__name__], name)
 
 

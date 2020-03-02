@@ -98,7 +98,7 @@ class Conv_64_3(BetaVAE):
         self.f_theta = networks.conv_4_transpose
 
         self.f_theta_mean = tf.keras.layers.Conv2DTranspose(
-                3, kernel_size=(3, 3), strides=(1, 1), activation=None
+                3, kernel_size=(3, 3), strides=(1, 1), activation='sigmoid'
             )
         self.f_theta_log_var = tf.keras.layers.Conv2DTranspose(
                 3, kernel_size=(3, 3), strides=(1, 1), activation=None

@@ -1,45 +1,29 @@
-import tensorflow as tf
+import click
+from pathlib import Path
 
-import disentangled.dataset as dataset
-import disentangled.model.models as models
-import disentangled.model.utils as modelutils
-import disentangled.visualize as vi
+import disentangled
 
+@click.command()
+@click.argument('model_name', type=click.Choice(['betavae_mnist', 'betavae_shapes3d'], case_sensitive=True))
+@click.argument('dataset', type=click.Choice(['MNIST', 'Shapes3d'], case_sensitive=True))
+@click.option('--optimizer','-o', type=str)
+@click.option('--learning_rate','-l', type=float)
+@click.option('--batch_size','-b', type=int)
+@click.option('--iterations','-i', type=int)
+@click.option('--save/--no-save','-s', default=True)
+@click.option('--directory', '-d', type=click.Path(writable=True), default=Path('./models'), show_default=True)
+@click.option('--show_default', '-D', is_flag=True)
 
-import disentangled.model.betavae as bv 
+def train(model_name, dataset, save, directory, show_default, **kwargs):
+    if show_default:
+        disentangled.training.print_default(model_name)
+        return
 
-def shapes3d():
-    tf.random.set_seed(10)
-    data = dataset.shapes3d.pipeline(batch_size=64).take(1000)
-    model = bv.Conv_64_3(32)
+    model = disentangled.train(
+        model_name, dataset, hyperparameters=kwargs
+    )  
 
-    model.compile(tf.keras.optimizers.Adam(learning_rate=1e-4))
+    if save:
+        disentangled.model.save(model, model_name, dir_=directory)
 
-    model.fit(data, epochs=5)
-    modelutils.save(model, 'shapes3d')
-
-    estimate, representation, target = model.predict(data, steps=1)
-    vi.results(target, estimate, 5, 10)
-
-def mnist():
-    tf.random.set_seed(10)
-    data = dataset.mnist.pipeline(batch_size=128)
-    model = bv.Conv_32_1(32)
-
-    model.compile(tf.keras.optimizers.Adam(learning_rate=1e-4))
-
-    model.fit(data, epochs=5)
-
-    estimate, representation, target = model.predict(data, steps=1)
-    vi.results(target, estimate, 5, 10)
-
-def continue_training():
-    model = modelutils.load('shapes3d')
-    data = dataset.shapes3d.pipeline(batch_size=256).take(500)
-    model.fit(data, epochs=1)
-    modelutils.save(model, 'shapes3d')
-
-    estimate, representation, target = model.predict(data, steps=1)
-    vi.results(target, estimate, 5, 10)
-
-shapes3d()
+train()
