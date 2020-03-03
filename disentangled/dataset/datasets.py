@@ -58,9 +58,12 @@ class MNIST(Dataset):
     _builder.download_and_prepare()
 
     @classmethod
-    def pipeline(cls, batch_size=128):
+    def pipeline(cls, split="train", batch_size=128):
         return (
-            cls.load().map(utils.get_image).map(utils.normalize_uint8).batch(batch_size)
+            cls.load(split)
+            .map(utils.get_image)
+            .map(utils.normalize_uint8)
+            .batch(batch_size)
         )
 
 
@@ -74,7 +77,11 @@ class Shapes3d(Dataset):
     _builder.download_and_prepare()
 
     @classmethod
-    def pipeline(cls, batch_size=128):
+    def pipeline(cls, split="train", batch_size=64, prefetch_batches=5):
         return (
-            cls.load().batch(batch_size).prefetch(10).map(utils.get_image).map(utils.normalize_uint8)
+            cls.load()
+            .batch(batch_size)
+            .prefetch(prefetch_batches)
+            .map(utils.get_image)
+            .map(utils.normalize_uint8)
         )
