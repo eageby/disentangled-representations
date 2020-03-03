@@ -9,7 +9,7 @@ import disentangled
 @click.option('--optimizer','-o', type=str)
 @click.option('--learning_rate','-l', type=float)
 @click.option('--batch_size','-b', type=int)
-@click.option('--iterations','-i', type=int)
+@click.option('--iterations','-i', type=float)
 @click.option('--save/--no-save','-s', default=True)
 @click.option('--directory', '-d', type=click.Path(writable=True), default=Path('./models'), show_default=True)
 @click.option('--show_default', '-D', is_flag=True)

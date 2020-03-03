@@ -11,7 +11,7 @@ __all__ = ["train"]
 def train(model_name: str, dataset_name: str, hyperparameters: dict) -> None:
     tf.random.set_seed(10)
 
-    data = disentangled.dataset.get(dataset_name)
+    data = disentangled.dataset.get(dataset_name).pipeline()
     model = disentangled.model.get(model_name)
 
     hyperparameters = complete_hyperparameters(model_name, hyperparameters)
@@ -19,8 +19,8 @@ def train(model_name: str, dataset_name: str, hyperparameters: dict) -> None:
 
     optimizer = tf.keras.optimizers.get(optimizer_identifier(hyperparameters))
     model.compile(optimizer)
-    model.fit(data.pipeline().repeat(), steps_per_epoch=hyperparameters['iterations'])
-
+    model.fit(data.repeat(), steps_per_epoch=hyperparameters['iterations'])
+    
     return model
 
 
