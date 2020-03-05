@@ -7,7 +7,7 @@ def save(model, filename, dir_="models", **kwargs):
     path = Path(".") / dir_
     path.mkdir(exist_ok=True)
     path = path / filename
-    model.save(str(path))
+    model.save(str(path), overwrite=False)
 
 
 def load(filename, dir_="models"):
