@@ -3,11 +3,11 @@ from pathlib import Path
 import tensorflow as tf
 
 
-def save(model, filename, dir_="models", **kwargs):
+def save(model, filename, dir_="models", overwrite=False, **kwargs):
     path = Path(".") / dir_
     path.mkdir(exist_ok=True)
     path = path / filename
-    model.save(str(path))
+    model.save(str(path), overwrite=overwrite)
 
 
 def load(filename, dir_="models"):

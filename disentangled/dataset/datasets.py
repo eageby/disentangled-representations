@@ -1,9 +1,16 @@
+import resource
 import sys
+from pathlib import Path
 
 import tensorflow as tf
 import tensorflow_datasets as tfds
 
 from . import utils
+
+# Handles Too many open files error
+# https://github.com/tensorflow/datasets/issues/1441
+_, _high = resource.getrlimit(resource.RLIMIT_NOFILE)
+resource.setrlimit(resource.RLIMIT_NOFILE, (_high, _high))
 
 
 def get(name):
@@ -25,15 +32,9 @@ class Dataset:
             tf.data.Dataset
         """
 
+        cls._builder.download_and_prepare()
+
         return cls._builder.as_dataset(split=split)
-
-    @classmethod
-    def show(cls, **kwargs):
-        """Shows examples of the dataset"""
-
-        return tfds.show_examples(
-            cls.info, cls._builder.as_dataset(split="train"), **kwargs
-        )
 
     @classmethod
     def version(cls):
@@ -55,12 +56,14 @@ class MNIST(Dataset):
     __version__ = "3.0.0"
 
     _builder = tfds.builder("{}:{}".format(_name, __version__))
-    _builder.download_and_prepare()
 
     @classmethod
-    def pipeline(cls, batch_size=128):
+    def pipeline(cls, split="train", batch_size=128):
         return (
-            cls.load().map(utils.get_image).map(utils.normalize_uint8).batch(batch_size)
+            cls.load(split)
+            .map(utils.get_image)
+            .map(utils.normalize_uint8)
+            .batch(batch_size)
         )
 
 
@@ -71,10 +74,13 @@ class Shapes3d(Dataset):
     __version__ = "2.0.0"
 
     _builder = tfds.builder("{}:{}".format(_name, __version__))
-    _builder.download_and_prepare()
 
     @classmethod
-    def pipeline(cls, batch_size=128):
+    def pipeline(cls, split="train", batch_size=64, prefetch_batches=5):
         return (
-            cls.load().batch(batch_size).prefetch(10).map(utils.get_image).map(utils.normalize_uint8)
+            cls.load()
+            .batch(batch_size)
+            .prefetch(prefetch_batches)
+            .map(utils.get_image)
+            .map(utils.normalize_uint8)
         )
