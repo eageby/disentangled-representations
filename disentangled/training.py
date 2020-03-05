@@ -1,14 +1,14 @@
 import sys
-
 import tensorflow as tf
 
 import disentangled.dataset
 import disentangled.model
+import disentangled.visualize
 
 __all__ = ["train"]
 
 
-def train(model_name: str, dataset_name: str, hyperparameters: dict) -> None:
+def train(model_name: str, dataset_name: str, hyperparameters: dict, show_results: bool = True) -> None:
     tf.random.set_seed(10)
 
     data = disentangled.dataset.get(dataset_name).pipeline()
@@ -21,6 +21,10 @@ def train(model_name: str, dataset_name: str, hyperparameters: dict) -> None:
     model.compile(optimizer)
     model.fit(data.repeat(), steps_per_epoch=hyperparameters['iterations'])
     
+    if show_results:
+        reconstructed, representation, target = model.predict(data, steps=5)
+        disentangled.visualize.results(target, reconstructed, 10, 20)
+
     return model
 
 
@@ -43,14 +47,17 @@ def get_default(model_name: str) -> dict:
 
 
 def print_default(model_name: str) -> None:
+    message = """{}
+Default Hyperparameters""".format("\u2500" * 40)
+    print(message)
     print_parameters(model_name, get_default(model_name))
 
 
 def print_parameters(model_name: str, parameters: dict, dataset: str = None):
-    line = "\u2500" * 30
+    line = "\u2500" * 40
 
     message = """{line}
-{name}
+Model:          {name}
 {line}
 Iterations:     {iterations:.0e}
 Batch Size:     {batch_size}
@@ -88,7 +95,7 @@ betavae_mnist = {
     "iterations": 2e4,
     "batch_size": 128,
     "optimizer": "adam",
-    "learning_rate": 1e-3,
+    "learning_rate": 1e-4,
 }
 
 betavae_shapes3d = {

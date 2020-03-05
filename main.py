@@ -13,14 +13,15 @@ import disentangled.training
 @click.option('--save/--no-save','-s', default=True)
 @click.option('--directory', '-d', type=click.Path(writable=True), default=Path('./models'), show_default=True)
 @click.option('--show_default', '-D', is_flag=True)
+@click.option('visual', '--show/--no-show','-v', default=True)
 
-def train(model_name, dataset, save, directory, show_default, **kwargs):
+def train(model_name, dataset, save, directory, visual, show_default, **kwargs):
     if show_default:
         disentangled.training.print_default(model_name)
         return
 
     model = disentangled.training.train(
-        model_name, dataset, hyperparameters=kwargs
+        model_name, dataset, hyperparameters=kwargs, show_results=visual
     )  
 
     if save:
