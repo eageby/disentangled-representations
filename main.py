@@ -1,7 +1,7 @@
 import click
 from pathlib import Path
 
-import disentangled
+import disentangled.training
 
 @click.command()
 @click.argument('model_name', type=click.Choice(['betavae_mnist', 'betavae_shapes3d'], case_sensitive=True))
@@ -19,7 +19,7 @@ def train(model_name, dataset, save, directory, show_default, **kwargs):
         disentangled.training.print_default(model_name)
         return
 
-    model = disentangled.train(
+    model = disentangled.training.train(
         model_name, dataset, hyperparameters=kwargs
     )  
 
