@@ -70,7 +70,7 @@ def train(ctx, save, overwrite, show_default, **kwargs):
 
     if save:
         disentangled.model.save(
-            model, ctx.obj["model_name"], dir_=directory, overwrite=overwrite
+            model, ctx.obj["model_name"], path=ctx.obj['directory'], overwrite=overwrite
         )
 
     ctx.obj["model"] = model
