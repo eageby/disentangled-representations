@@ -75,6 +75,23 @@ class Shapes3d(Dataset):
 
     _builder = tfds.builder("{}:{}".format(_name, __version__))
 
+    factors = [
+        "label_floor_hue",
+        "label_wall_hue",
+        "label_object_hue",
+        "label_scale",
+        "label_shape",
+        "label_orientation",
+    ]
+    num_values_per_factor = {
+        "label_floor_hue": 10,
+        "label_wall_hue": 10,
+        "label_object_hue": 10,
+        "label_scale": 8,
+        "label_shape": 4,
+        "label_orientation": 15,
+    }
+
     @classmethod
     def pipeline(cls, split="train", batch_size=64, prefetch_batches=5):
         return (
@@ -84,3 +101,13 @@ class Shapes3d(Dataset):
             .map(utils.get_image)
             .map(utils.normalize_uint8)
         )
+
+    @classmethod 
+    def as_image_label(cls):
+        return cls.load().map(cls.label_map)
+
+    @classmethod
+    def label_map(cls, element):
+        labels = tf.convert_to_tensor([element[f] for f in cls.factors], dtype=tf.uint8)
+
+        return {"image": element["image"] / 255, "label": labels}
