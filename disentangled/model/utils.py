@@ -10,7 +10,7 @@ def save(model, filename, dir_="models", overwrite=False, **kwargs):
     model.save(str(path), overwrite=overwrite)
 
 
-def load(filename, dir_="models"):
-    path = Path(".")/ dir_ / filename
+def load(filename, dir_=Path("./models")):
+    path = dir_ / filename
 
     return tf.keras.models.load_model(str(path), compile=False)
