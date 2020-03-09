@@ -35,13 +35,17 @@ def cli(ctx, model, no_gpu, directory):
     ctx.obj['directory'] = directory
 
     ctx.obj["model_name"] = model
-    ctx.obj["model"] = disentangled.model.utils.load(model, directory)
+
+    if ctx.invoked_subcommand == 'train':
+        ctx.obj["model"] = disentangled.model.get(model)
+    else:
+        ctx.obj["model"] = disentangled.model.utils.load(model, directory)
+
     ctx.obj["dataset_name"] = dataset
     ctx.obj["dataset"] = disentangled.dataset.get(dataset)
 
 
 @cli.command()
-@click.option("--optimizer", "-o", type=str)
 @click.option("--learning_rate", "-l", type=float)
 @click.option("--batch_size", "-b", type=int)
 @click.option("--iterations", "-i", type=float)
@@ -65,7 +69,7 @@ def train(ctx, save, overwrite, show_default, **kwargs):
     )
 
     model = disentangled.training.train(
-        ctx.obj["model"], ctx.obj["dataset"], hyperparameters=hyperparameters
+        disentangled.model.get(ctx.obj["model_name"]), ctx.obj["dataset"], **hyperparameters
     )
 
     if save:
