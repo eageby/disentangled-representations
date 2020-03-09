@@ -7,13 +7,13 @@ import disentangled.visualize
 __all__ = ["train"]
 
 
-def train(model: tf.keras.Model, dataset: tf.data.Dataset, hyperparameters: dict) -> tf.keras.Model:
+def train(model: tf.keras.Model, dataset: tf.data.Dataset, batch_size=128, learning_rate=1e-3, iterations=100) -> tf.keras.Model:
     tf.random.set_seed(10)
     
-    data = dataset.pipeline(batch_size=hyperparameters['batch_size'])
+    data = dataset.pipeline(batch_size=batch_size)
 
-    optimizer = tf.keras.optimizers.get(hyperparameters['optimizer'])
+    optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
     model.compile(optimizer)
-    model.fit(data.repeat(), steps_per_epoch=hyperparameters['iterations'])
+    model.fit(data.repeat(), steps_per_epoch=iterations)
     
     return model
