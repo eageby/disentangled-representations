@@ -8,13 +8,14 @@ class _Objective(tf.keras.layers.Layer):
         super(_Objective, self).__init__(**kwargs)
         self.flatten = tf.keras.layers.Flatten()
 
-    def call(self, input_):
-        return self.objective(*[self.flatten(i) for i in input_])
+    def call(self, input_, training=False, **hyperparameters):
+        return self.objective(*[self.flatten(i) for i in input_], **hyperparameters)
 
 
 class BetaVAE(_Objective):
-    def __init__(self, gaussian=True, **kwargs):
+    def __init__(self, beta=1, gaussian=False, **kwargs):
         super(BetaVAE, self).__init__(**kwargs)
+        self.beta = beta
         self.gaussian = gaussian
 
     @tf.function
@@ -64,10 +65,10 @@ class BetaVAE(_Objective):
         )
 
     @tf.function
-    def objective(self, target, x_mean, x_log_var, z_mean, z_log_var):
+    def objective(self, target, x_mean, x_log_var, z_mean, z_log_var, beta=1):
         log_likelihood = self.log_likelihood(target, x_mean, x_log_var)
         kld = self.kld(z_mean, z_log_var)
         self.add_metric(-log_likelihood, aggregation="mean", name="-loglikelihood")
         self.add_metric(kld, aggregation="mean", name="kld")
 
-        return -log_likelihood + kld
+        return -log_likelihood + beta*kld
