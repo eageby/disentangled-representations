@@ -8,8 +8,8 @@ class _Objective(tf.keras.layers.Layer):
         super(_Objective, self).__init__(**kwargs)
         self.flatten = tf.keras.layers.Flatten()
 
-    def call(self, input_, training=False, **hyperparameters):
-        return self.objective(*[self.flatten(i) for i in input_], **hyperparameters)
+    def call(self, input_):
+        return self.objective(*[self.flatten(i) for i in input_])
 
 
 class BetaVAE(_Objective):
