@@ -61,7 +61,7 @@ def cli(ctx, model, no_gpu, directory):
 def train(ctx, save, overwrite, show_default, **kwargs):
     """train model"""
 
-    ctx.obj["model"] = disentangled.model.get(model)
+    ctx.obj["model"] = disentangled.model.get(ctx.obj["model_name"])
 
     if show_default:
         disentangled.hyperparameters.print_default(ctx.obj["model_name"])
