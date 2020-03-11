@@ -54,10 +54,14 @@ betavae_mnist = {
     "iterations": 2e4,
     "batch_size": 128,
     "learning_rate": 1e-4,
+    "beta": 4,
+    "latents": 32,
 }
 
 betavae_shapes3d = {
     "iterations": 5e5,
     "batch_size": 64,
     "learning_rate": 1e-4,
+    "beta": 4,
+    "latents": 32,
 }
