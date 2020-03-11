@@ -12,7 +12,12 @@ _MODELS = ["betavae_mnist", "betavae_shapes3d"]
 _DATASETS = {("betavae_mnist"): "MNIST", ("betavae_shapes3d"): "Shapes3d"}
 
 
-@click.group(chain=True, context_settings={"help_option_names": ["-h", "--help"]})
+@click.group(
+    chain=True,
+    context_settings=dict(
+        help_option_names=["-h", "--help"],
+    ),
+)
 @click.argument(
     "model", type=click.Choice(_MODELS, case_sensitive=True),
 )
@@ -32,20 +37,20 @@ def cli(ctx, model, no_gpu, directory):
     dataset = next(val for key, val in _DATASETS.items() if model in key)
 
     ctx.ensure_object(dict)
-    ctx.obj['directory'] = directory
+    ctx.obj["directory"] = directory
 
     ctx.obj["model_name"] = model
 
-    if ctx.invoked_subcommand == 'train':
-        ctx.obj["model"] = disentangled.model.get(model)
-    else:
+    try:
         ctx.obj["model"] = disentangled.model.utils.load(model, directory)
+    except:
+        pass
 
     ctx.obj["dataset_name"] = dataset
     ctx.obj["dataset"] = disentangled.dataset.get(dataset)
 
 
-@cli.command()
+@cli.command(context_settings=dict(ignore_unknown_options=True, allow_interspersed_args=False))
 @click.option("--learning_rate", "-l", type=float)
 @click.option("--batch_size", "-b", type=int)
 @click.option("--iterations", "-i", type=float)
@@ -56,9 +61,10 @@ def cli(ctx, model, no_gpu, directory):
 def train(ctx, save, overwrite, show_default, **kwargs):
     """train model"""
 
+    ctx.obj["model"] = disentangled.model.get(model)
+
     if show_default:
         disentangled.hyperparameters.print_default(ctx.obj["model_name"])
-
         return
 
     hyperparameters = disentangled.hyperparameters.complete(
@@ -69,12 +75,14 @@ def train(ctx, save, overwrite, show_default, **kwargs):
     )
 
     model = disentangled.training.train(
-        disentangled.model.get(ctx.obj["model_name"]), ctx.obj["dataset"], **hyperparameters
+        disentangled.model.get(ctx.obj["model_name"]),
+        ctx.obj["dataset"],
+        **hyperparameters
     )
 
     if save:
         disentangled.model.save(
-            model, ctx.obj["model_name"], path=ctx.obj['directory'], overwrite=overwrite
+            model, ctx.obj["model_name"], path=ctx.obj["directory"], overwrite=overwrite
         )
 
     ctx.obj["model"] = model
