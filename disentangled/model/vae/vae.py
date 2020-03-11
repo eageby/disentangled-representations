@@ -4,41 +4,34 @@ class VAE(tf.keras.Model):
     def __init__(
         self,
         f_phi,
+        f_phi_mean,
+        f_phi_log_var,
         f_theta,
         f_theta_mean,
         f_theta_log_var,
         objective,
-        latents=32,
-        activations=(None, None, "relu"),
-        hyperparameters={},
         **kwargs
     ):
         super(VAE, self).__init__(**kwargs)
-        self.latents = latents
         self.flatten = tf.keras.layers.Flatten()
 
+        # Encoder
         self.f_phi = f_phi
-        self.activations = activations
+        self.f_phi_mean = f_phi_mean
+        self.f_phi_log_var = f_phi_log_var
 
-        self.f_phi_mean = tf.keras.layers.Dense(
-            latents, activation=self.activations[0]
-        )
-        self.f_phi_log_var = tf.keras.layers.Dense(
-            latents, activation=self.activations[1]
-        )
-
+        # Decoder
         self.f_theta = f_theta
         self.f_theta_mean = f_theta_mean
         self.f_theta_log_var = f_theta_log_var
 
         self.objective = objective
-        self.hyperparameters = hyperparameters
 
     def build(self, input_shape):
         intermediate_shape = self.f_phi.compute_output_shape(input_shape)[1:]
         self.f_theta_dense = tf.keras.layers.Dense(
             tf.reduce_prod(intermediate_shape),
-            activation=self.activations[2],
+            activation='relu',
         )
         self.reshape_theta = tf.keras.layers.Reshape(
             intermediate_shape, name="ReshapeTheta"
@@ -82,6 +75,6 @@ class VAE(tf.keras.Model):
         z = self.sample(z_mean, z_log_var, training)
         x_mean, x_log_var = self.decode(z)
 
-        self.add_loss(self.objective((target, x_mean, x_log_var, z_mean, z_log_var), **self.hyperparameters))
+        self.add_loss(self.objective((target, x_mean, x_log_var, z_mean, z_log_var)))
 
-       return x_mean, z, target
+        return x_mean, z, target
