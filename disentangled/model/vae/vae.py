@@ -10,6 +10,7 @@ class VAE(tf.keras.Model):
         f_theta_mean,
         f_theta_log_var,
         objective,
+        latents,
         **kwargs
     ):
         super(VAE, self).__init__(**kwargs)
@@ -26,6 +27,8 @@ class VAE(tf.keras.Model):
         self.f_theta_log_var = f_theta_log_var
 
         self.objective = objective
+
+        self.latents = latents
 
     def build(self, input_shape):
         intermediate_shape = self.f_phi.compute_output_shape(input_shape)[1:]
@@ -75,6 +78,6 @@ class VAE(tf.keras.Model):
         z = self.sample(z_mean, z_log_var, training)
         x_mean, x_log_var = self.decode(z)
 
-        self.add_loss(self.objective((target, x_mean, x_log_var, z_mean, z_log_var)))
+        self.add_loss(self.objective(target, x_mean, x_log_var, z_mean, z_log_var))
 
         return x_mean, z, target

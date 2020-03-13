@@ -20,6 +20,7 @@ class betavae_mnist(VAE):
                 1, kernel_size=(3, 3), strides=(1, 1), activation=None
             ),
             objective=objectives.BetaVAE(gaussian=False, beta=beta),
+            latents=latents
         )
 
 class betavae_shapes3d(VAE):
@@ -38,4 +39,5 @@ class betavae_shapes3d(VAE):
                 3, kernel_size=(3, 3), strides=(1, 1), activation=None
             ),
             objective=objectives.BetaVAE(gaussian=False, beta=beta),
+            latents=latents
         )
