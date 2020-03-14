@@ -1,3 +1,4 @@
+import tqdm
 import numpy as np
 import tensorflow as tf
 import disentangled.dataset as dataset 
@@ -14,32 +15,53 @@ def majority_voting_classifier(data, n_latent, n_generative):
         V[d,k] += 1
    
         return V
+
+
+def encode_labeled_dataset(model, data, batch_size=128):
+    image_set = data.map(disentangled.dataset.utils.get_image).batch(batch_size)
+    
+    def interleaving(element):
+        representation = model.encode(element)[0]
+
+        return tf.data.Dataset.from_tensors({'representation': representation})
+
+    representation_set = image_set.interleave(interleaving)
+    data = tf.data.Dataset.zip((data, representation_set))
+
+    def combine_sets(element1, element2):
+        element1.update(element2)
+        return element1
+          
+    return data.map(combine_sets)
+
+def representation_variance(data, batches, shuffle_buffer_size=100):
+    data = data.shuffle(shuffle_buffer_size).take(batches)
+    var = []
+    for batch in tqdm.tqdm(data, total=batches):
+        var.append(tf.math.reduce_variance(batch['representation'], axis=0))
+
+    return tf.reduce_mean(tf.stack(var), axis=0)
+
 if __name__ == "__main__":
     model = disentangled.model.utils.load("betavae_shapes3d")
-    full_data = dataset.shapes3d.pipeline()
-
-    std_dev = []
-    for batch in full_data.take(10):
-        std_dev.append(tf.math.reduce_std(model.encode(batch)[0], axis=0))
-    empirical_std_dev = tf.reduce_mean(tf.stack(std_dev, axis=0), keepdims=True, axis=0)
+    data = disentangled.dataset.shapes3d.as_image_label()
     
-    # PRUNE COLLAPSED LATENTS
+    data = encode_labeled_dataset(model, data)         
 
-    labeled_data = dataset.shapes3d.as_image_label() 
-
+    empirical_var = representation_variance(data, batches=100)
+    
     samples = []
-    for i in range(1300):
+    for i in tqdm.tqdm(range(10)):
         factor = np.random.randint(0, len(dataset.shapes3d.factors))
         factor_value = np.random.randint(0, dataset.shapes3d.num_values_per_factor[dataset.shapes3d.factors[factor]])
 
-        labeled_data.filter(fix_factor(factor, factor_value)).map(dataset.utils.get_image).batch(64).take(1)
+        for batch in data.filter(fix_factor(factor, factor_value)):
 
-        representations = model.encode(batch)[0] 
-        representations /= empirical_std_dev
-        representations_variance = tf.math.reduce_variance(representations, axis=0)
-        dimension = tf.argmin(representations_variance)
-    
-        samples.append(tf.stack((dimension, factor)))
+            representations /= tf.math.sqrt(empirical_var)
+            representations_variance = tf.math.reduce_variance(representations, axis=0)
+            dimension = tf.argmin(representations_variance)
+        
+            samples.append(tf.stack((dimension, factor)))
 
     samples = tf.stack(samples)
 
