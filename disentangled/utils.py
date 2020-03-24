@@ -1,17 +1,17 @@
 import tqdm
 import os 
+import click
 
 def disable_gpu():
     os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 
-def disable_info_output():
-    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'
-
+def disable_info_output(level=1):
+    os.environ['TF_CPP_MIN_LOG_LEVEL'] = str(level)
 
 class TrainingProgress(tqdm.tqdm):
-    def __init__(self, iterable):
+    def __init__(self, iterable, **kwargs):
             
-        left_bar = '{n_fmt}/{total_fmt} ['
+        left_bar = '    {n_fmt}/{total_fmt} ['
         right_bar = '] - ETA: {remaining} -{rate_inv_fmt}{postfix}'
         bar_format = left_bar +  '{bar}' + right_bar 
 
@@ -21,6 +21,8 @@ class TrainingProgress(tqdm.tqdm):
             ascii='.>>=',
             unit='it',
             dynamic_ncols=True,
+            position=0,
+            **kwargs
         )
 
     def update(self, model):
