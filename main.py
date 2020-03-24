@@ -8,18 +8,23 @@ import disentangled.training
 import disentangled.utils
 import disentangled.visualize.latentspace
 
-_MODELS = ["betavae_mnist", "betavae_shapes3d"]
-_DATASETS = {("betavae_mnist"): "MNIST", ("betavae_shapes3d"): "Shapes3d"}
+_MODELS = ["factorvae", "betavae"]
+_DATASETS = ["MNIST", "Shapes3d"]
 
 
 @click.group(
     chain=True,
     context_settings=dict(
         help_option_names=["-h", "--help"],
+        ignore_unknown_options=True,
+        allow_extra_args=True
     ),
 )
 @click.argument(
-    "model", type=click.Choice(_MODELS, case_sensitive=True),
+    "model", type=click.Choice(_MODELS, case_sensitive=False),
+)
+@click.argument(
+    "dataset", type=click.Choice(_DATASETS, case_sensitive=False),
 )
 @click.option("--no-gpu", is_flag=True, default=False)
 @click.option(
