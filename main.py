@@ -32,6 +32,7 @@ def load(ctx):
     "dataset", type=click.Choice(_DATASETS, case_sensitive=False),
 )
 @click.option("--no-gpu", is_flag=True, default=False)
+@click.option("--no-info", is_flag=True, default=False)
 @click.option(
     "--directory",
     "-d",
@@ -40,37 +41,34 @@ def load(ctx):
     show_default=True,
 )
 @click.pass_context
-def cli(ctx, model, no_gpu, directory):
+def cli(ctx, model, dataset, no_gpu, no_info, directory):
     if no_gpu:
         disentangled.utils.disable_gpu()
-
-    dataset = next(val for key, val in _DATASETS.items() if model in key)
+    if no_info:
+        disentangled.utils.disable_info_output(2)
 
     ctx.ensure_object(dict)
     ctx.obj["directory"] = directory
 
-    ctx.obj["model_name"] = model
+    ctx.obj["model_name"] = "_".join([model, dataset]).lower()
 
-    try:
-        ctx.obj["model"] = disentangled.model.utils.load(model, directory)
-    except:
-        pass
+    ctx.obj["model"] = None
 
     ctx.obj["dataset_name"] = dataset
     ctx.obj["dataset"] = disentangled.dataset.get(dataset)
 
 
-@cli.command(context_settings=dict(ignore_unknown_options=True, allow_interspersed_args=False))
+# TODO: Fix flags
+@cli.command(cls=disentangled.utils.AcceptAllCommand)
 @click.option("--learning_rate", "-l", type=float)
 @click.option("--batch_size", "-b", type=int)
 @click.option("--iterations", "-i", type=float)
 @click.option("--save/--no-save", "-s", default=True)
 @click.option("--overwrite", is_flag=True, default=False)
-@click.option("--show_default", "-D", is_flag=True)
+@click.option("--show_default", "-D", is_flag=True, default=False)
 @click.pass_context
 def train(ctx, save, overwrite, show_default, **kwargs):
     """train model"""
-
     ctx.obj["model"] = disentangled.model.get(ctx.obj["model_name"])
 
     if show_default:
