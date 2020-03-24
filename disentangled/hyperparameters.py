@@ -32,18 +32,18 @@ Default Hyperparameters""".format(
 def print_(model_name: str, parameters: dict, dataset: str = None):
     line = "\u2500" * 40
 
+    parameter_str = "\n".join(["{:16.16}   {}".format(k,v) for k,v in parameters.items()])
+
     message = """{line}
-Model:          {name}
+Model              {name}
 {line}
-Iterations:     {iterations:.0e}
-Batch Size:     {batch_size}
-Learning Rate:  {learning_rate:.1e}
+{parameters}
 {line}
 """.format(
-        line=line, name=model_name, **parameters
+        line=line, name=model_name, parameters=parameter_str
     )
     if dataset:
-        message += """Dataset:        {dataset}
+        message += """Dataset            {dataset}
 {line}""".format(
             line=line, dataset=dataset
         )
