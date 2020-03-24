@@ -38,11 +38,13 @@ class FactorVAE(VAE):
     
     def build(self, input_shape):
         super().build(input_shape)
-        self.discriminator_net.build((None, self.latents))
 
-    def call(self, x):
-        z = self.encode(x)[0]
-        return self.decode(z)
+    def call(self, target, training=False):
+        z_mean, z_log_var = self.encode(target)
+        z = self.sample(z_mean, z_log_var, training)
+        x_mean, x_log_var = self.decode(z)
+
+        return x_mean, z, target
 
     def discriminator(self, z):
         probabilities = self.discriminator_net(z)
