@@ -117,7 +117,7 @@ class factorvae_shapes3d(FactorVAE):
             latents=latents,
             gamma=gamma,
             discriminator=tf.keras.Sequential([
-                tf.keras.layers.Dense(1000, activation='relu'),
+                tf.keras.layers.Dense(1000, activation='relu', input_shape=(latents,)),
                 tf.keras.layers.Dense(1000, activation='relu'),
                 tf.keras.layers.Dense(1000, activation='relu'),
                 tf.keras.layers.Dense(1000, activation='relu'),
