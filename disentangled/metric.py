@@ -6,10 +6,6 @@ import tensorflow as tf
 import tqdm
 
 
-def fix_factor(factor, factor_value):
-    return lambda x: x["label"][factor] == factor_value
-
-
 def majority_voting_classifier(data, n_latent, n_generative):
     V = np.zeros((n_latent, n_generative))
 
@@ -21,7 +17,7 @@ def majority_voting_classifier(data, n_latent, n_generative):
 
 def encode_labeled_dataset(model, data, batch_size=128):
     image_set = data.map(
-        disentangled.dataset.utils.get_image)
+        disentangled.dataset.utils.get_image).batch(batch_size)
 
     def interleaving(element):
         representation = model.encode(element)[0]
@@ -29,19 +25,23 @@ def encode_labeled_dataset(model, data, batch_size=128):
         return tf.data.Dataset.from_tensors({"representation": representation})
 
     representation_set = image_set.interleave(interleaving)
-    data = tf.data.Dataset.zip((image_set, representation_set))
+    data = tf.data.Dataset.zip((data.batch(batch_size), representation_set))
 
     def combine_sets(element1, element2):
         element1.update(element2)
 
         return element1
 
-    return data.map(combine_sets)#.batch(batch_size)
+    return data.map(combine_sets).unbatch()
 
 def fixed_factor_batches(data, batches, batch_size):
     for i in range(batches):
-        batch = 
+        factor = np.random.randint(0, len(dataset.shapes3d.factors))
+        factor_value = np.random.randint(
+            0, dataset.shapes3d.num_values_per_factor[dataset.shapes3d.factors[factor]]
+        )
     
+
 def representation_variance(data, batches, shuffle_buffer_size=100):
     data = data.shuffle(shuffle_buffer_size).take(batches)
     var = []
@@ -56,8 +56,8 @@ if __name__ == "__main__":
     model = disentangled.model.utils.load("betavae_shapes3d")
     data = disentangled.dataset.shapes3d.as_image_label()
 
-    import pdb;pdb.set_trace()
     data = encode_labeled_dataset(model, data)
+    import pdb;pdb.set_trace()
 
     empirical_var = representation_variance(data, batches=10)
 
