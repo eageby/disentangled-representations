@@ -74,13 +74,14 @@ class Shapes3d(Dataset):
     __version__ = "2.0.0"
 
     _builder = tfds.builder("{}:{}".format(_name, __version__))
-
+    
     @classmethod
-    def pipeline(cls, split="train", batch_size=64, prefetch_batches=5):
+    def pipeline(cls, split="train", batch_size=64, prefetch_batches=10):
         return (
             cls.load()
+            .map(utils.get_image, num_parallel_calls=tf.data.experimental.AUTOTUNE)
             .batch(batch_size)
+            .map(utils.normalize_uint8, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+            .cache()
             .prefetch(prefetch_batches)
-            .map(utils.get_image)
-            .map(utils.normalize_uint8)
         )
