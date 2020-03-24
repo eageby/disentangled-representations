@@ -1,15 +1,16 @@
 import sys
 
-
 def complete(model_name: str, hyperparameters: dict) -> dict:
     hyperparameters = {
-        key: hyperparameters[key]
-
-        for key in hyperparameters
-
-        if hyperparameters[key] is not None
+        key: value for key, value in hyperparameters.items() if value is not None
     }
+     
     hyperparameters_default = get_default(model_name)
+
+    for key in hyperparameters:
+        if key not in hyperparameters_default:
+            raise ValueError("{} is not a valid hyperparameter. See default hyperparameters for {}.".format(key, model_name))
+
     hyperparameters_default.update(hyperparameters)
 
     return hyperparameters_default
