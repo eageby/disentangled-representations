@@ -84,24 +84,26 @@ class FactorVAE(VAE):
 
             # Updating Discriminator
             with tf.GradientTape() as tape:
-                batch_psi = data.next()
                 z_mean, z_log_var = self.encode(batch_psi)
                 z = self.sample(z_mean, z_log_var, training=True)
                 
                 z_permuted = self.permute_dims(z)
 
                 p_permuted = self.discriminator(z_permuted)
-                    
+                
+                tolerance = 1e-10
                 loss_psi = -tf.reduce_mean( 
-                    tf.math.log(p_z) + tf.math.log(p_permuted)
+                    tf.math.log(p_z + tolerance) + tf.math.log(p_permuted + tolerance)
                 )
 
             grad_psi = tape.gradient(loss_psi, self.discriminator_net.variables)
             optimizer_psi.apply_gradients(zip(grad_psi, self.discriminator_net.variables))
 
-            progress.update(self) 
+            progress.update(self)
+            progress.log(interval=5e4)
 
 class factorvae_shapes3d(FactorVAE):
+    """ """
     def __init__(self, latents, gamma):
         super().__init__(
             f_phi = networks.conv_4,
