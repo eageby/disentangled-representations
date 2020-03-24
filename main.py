@@ -12,6 +12,11 @@ _MODELS = ["factorvae", "betavae"]
 _DATASETS = ["MNIST", "Shapes3d"]
 
 
+def load(ctx): 
+    if ctx.obj['model'] is None: 
+        ctx.obj['model'] = disentangled.model.utils.load(ctx.obj['model_name'], ctx.obj['directory'])
+    return ctx
+
 @click.group(
     chain=True,
     context_settings=dict(
@@ -99,6 +104,7 @@ def train(ctx, save, overwrite, show_default, **kwargs):
 @click.pass_context
 def results(ctx, **kwargs):
     """Compare reconstruction with target"""
+    ctx = load(ctx)
     disentangled.visualize.results(ctx.obj["model"], ctx.obj["dataset"], **kwargs)
 
 
@@ -111,6 +117,7 @@ def results(ctx, **kwargs):
 @click.pass_context
 def latent1d(ctx, **kwargs):
     """Latent space traversal in 1D"""
+    ctx = load(ctx)
     disentangled.visualize.latentspace.traversal_1d(
         ctx.obj["model"], ctx.obj["dataset"], **kwargs
     )
@@ -124,9 +131,10 @@ def latent1d(ctx, **kwargs):
 @click.pass_context
 def latent2d(ctx, **kwargs):
     """Latent space traversal in 2D"""
+    ctx = load(ctx)
     disentangled.visualize.latentspace.traversal_2d(
         ctx.obj["model"], ctx.obj["dataset"], **kwargs
     )
 
 
-cli()
+cli() 
