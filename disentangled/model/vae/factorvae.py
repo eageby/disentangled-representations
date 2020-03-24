@@ -59,16 +59,15 @@ class FactorVAE(VAE):
     
         return representation         
 
-    def train(self, data, optimizer, iterations=100):
-        optimizer_theta = tf.keras.optimizers.Adam(learning_rate=1e-4)
-        optimizer_psi = tf.keras.optimizers.Adam(learning_rate=1e-5)
+    def train(self, data, learning_rate, learning_rate_discriminator, iterations=100, **kwargs):
+        optimizer_theta = tf.keras.optimizers.Adam(learning_rate=learning_rate)
+        optimizer_psi = tf.keras.optimizers.Adam(learning_rate=learning_rate_discriminator)
+        
+        data = data.window(2)
 
-        data = data.as_numpy_iterator()
-
-        progress = disentangled.utils.TrainingProgress(range(iterations))
-        for _ in progress:        
+        progress = disentangled.utils.TrainingProgress(data, total=int(iterations))
+        for batch_theta, batch_psi in progress:        
             with tf.GradientTape() as tape:
-                batch_theta = data.next()
                 z_mean, z_log_var = self.encode(batch_theta)
                 z = self.sample(z_mean, z_log_var, training=True)
 
