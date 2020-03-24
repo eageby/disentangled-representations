@@ -4,7 +4,12 @@ from .vae import VAE
 import disentangled.model.networks as networks
 import disentangled.model.objectives as objectives
 
-class betavae_mnist(VAE):
+class BetaVAE(VAE):
+    def train(self, data, learning_rate, iterations=100, **kwargs):
+        self.compile(tf.keras.optimizers.Adam(learning_rate))
+        self.fit(data, steps_per_epoch=iterations)
+
+class betavae_mnist(BetaVAE):
     def __init__(self, latents, beta):
         super().__init__(
             # Encoder
@@ -23,7 +28,7 @@ class betavae_mnist(VAE):
             latents=latents
         )
 
-class betavae_shapes3d(VAE):
+class betavae_shapes3d(BetaVAE):
     def __init__(self, latents, beta):
         super().__init__(
             # Encoder
