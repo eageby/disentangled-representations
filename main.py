@@ -135,4 +135,5 @@ def latent2d(ctx, **kwargs):
     )
 
 
+disentangled.utils.config()
 cli() 

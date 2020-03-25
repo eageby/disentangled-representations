@@ -1,12 +1,16 @@
 import tqdm
 import os 
 import click
+import tensorflow as tf
 
 def disable_gpu():
     os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 
 def disable_info_output(level=1):
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = str(level)
+
+def config():
+    tf.random.set_seed(10)
 
 class TrainingProgress(tqdm.tqdm):
     def __init__(self, iterable, **kwargs):
