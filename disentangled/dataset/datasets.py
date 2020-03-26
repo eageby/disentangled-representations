@@ -1,5 +1,6 @@
 import resource
 import sys
+import itertools
 from pathlib import Path
 import numpy as np
 import h5py
@@ -114,8 +115,6 @@ class Shapes3d_ordered(Shapes3d):
     path = tf.keras.utils.get_file(
         '3dshapes.h5', 'https://storage.googleapis.com/3d-shapes/3dshapes.h5')
 
-    images = h5py.File(path, 'r')['images']
-
     def load(self):
         images = tfio.IODataset.from_hdf5(self.path, '/images')
         labels = tfio.IODataset.from_hdf5(self.path, '/labels')
@@ -129,12 +128,13 @@ class Shapes3d_ordered(Shapes3d):
 
         return tf.data.Dataset.zip((images, labels)).map(make_dict, num_parallel_calls=tf.data.experimental.AUTOTUNE)
 
-    def get_index(self, factors):
+    @classmethod
+    def get_index(cls, factors):
         """ Converts factors to indices in range(num_data)
         Args:
         factors: np array shape [6,batch_size].
                  factors[i]=factors[i,:] takes integer values in
-                 range(_NUM_VALUES_PER_FACTOR[self.factors[i]]).
+                 range(_NUM_VALUES_PER_FACTOR[cls.factors[i]]).
 
         Returns:
         indices: np array shape [batch_size].
@@ -142,32 +142,39 @@ class Shapes3d_ordered(Shapes3d):
         indices = 0
         base = 1
 
-        for factor, _ in reversed(list(enumerate(self.factors))):
+        for factor, _ in reversed(list(enumerate(cls.factors))):
             indices += factors[factor] * base
-            base *= self.num_values_per_factor[factor]
+            base *= cls.num_values_per_factor[factor]
 
         return indices
 
-    def batch_indices(self, batch_size):
-        def inner(fixed_factor, fixed_factor_value):
-            factors = [np.random.choice(self.num_values_per_factor[f], batch_size) for f, _ in enumerate(self.factors)]
-            factors[fixed_factor] = fixed_factor_value
+    @classmethod
+    def batch_indices(cls, batch_size):
+        factors = [np.random.choice(cls.num_values_per_factor[f], batch_size) for f, _ in enumerate(cls.factors)]
 
-            return self.get_index(factors)
-        return inner
-
-    def create_index(self, batches, batch_size):
-        fixed_factors = np.random.choice(len(self.factors), batches)
-        fixed_factors_value = [np.random.choice(self.num_values_per_factor[i]) for i in fixed_factors]
-        
-        idx = [self.batch_indices(batch_size)(i,j) for i,j in zip(fixed_factors, fixed_factors_value)]
-        return tf.data.Dataset.from_tensor_slices(idx)
-
+        fixed_factor = np.random.choice(len(cls.factors))
+        fixed_factor_value = np.random.choice(cls.num_values_per_factor[fixed_factor])
+        factors[fixed_factor] = fixed_factor_value
+        return cls.get_index(factors), fixed_factor, fixed_factor_value
 
     @classmethod
-    def read(cls):
-        data = h5py.File(cls.path, 'r')
-        def inner(idx):
+    def generator(cls, batch_size):
+        data = h5py.File(cls.path, 'r')['images']
+        for _ in itertools.count():
+            idx, factor, value= cls.batch_indices(batch_size)
             import pdb;pdb.set_trace()
-            return data['images'][idx]
-        return inner 
+            im = []
+            for number, i in enumerate(idx):
+                print("Read: {}, {}".format(i, number))
+                im.append(data[i])
+
+            im = np.stack(im)
+            yield im/255, factor, value 
+
+    @classmethod
+    def create(cls, batch_size):
+        def dict_map(image, factor, value):
+            return {'image': image, 'factor':factor, 'factor_value': value}
+
+        return tf.data.Dataset.from_generator(cls.generator, (tf.float32, tf.int64, tf.int64), output_shapes=((None, 64,64,3), (), ()), args=(batch_size,)).map(dict_map)
+
