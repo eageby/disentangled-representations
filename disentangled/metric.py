@@ -14,35 +14,28 @@ def majority_voting_classifier(data, n_latent, n_generative):
         return tf.math.argmax(V, axis=1)
 
 def encode_dataset(model, data):
-    def interleaving(element):
+    def encoding(element):
         representation = model.encode(element['image'])[0]
-        return tf.data.Dataset.from_tensors({'representation': representation})
+        element['representation'] = representation
+        return element
 
-    representation_set = data.interleave(interleaving, num_parallel_calls=tf.data.experimental.AUTOTUNE)
-    data = tf.data.Dataset.zip((data, representation_set))
+    return data.map(encoding, num_parallel_calls=tf.data.experimental.AUTOTUNE)
 
-    def combine(im, rep):
-        im.update(rep)
-        return im
-
-    return data.map(combine, num_parallel_calls=tf.data.experimental.AUTOTUNE)
 
 def representation_variance(data):
     var = []
 
     for batch in data:
         var.append(tf.math.reduce_variance(batch["representation"], axis=0))
-        break
 
     return tf.reduce_mean(tf.stack(var), axis=0)
 
 
 def metric_factorvae(model, dataset):
-    dataset = encode_dataset(model, dataset)
-
+    dataset = encode_dataset(model, dataset).take(130)
     empirical_var = representation_variance(dataset)
 
-    samples = []
+    samples = [] 
     for batch in dataset:
         representations = batch['representation'] 
         representations /= tf.math.sqrt(empirical_var)
@@ -54,8 +47,7 @@ def metric_factorvae(model, dataset):
 
     samples = tf.stack(samples)
 
-    import pdb;pdb.set_trace()
-    train_data, test_data = tf.split(samples, 2, axis=0) 
+    train_data, test_data = tf.split(samples, [50, 80], axis=0) 
 
     classifier = majority_voting_classifier(train_data, 32, 6)
 
@@ -67,7 +59,7 @@ def metric_factorvae(model, dataset):
 
 if __name__ == "__main__":
     model = disentangled.model.utils.load("betavae_shapes3d")
-    dataset = dataset.datasets.Shapes3d_ordered.create(64).take(2).cache()
-
+    import timeit
+    dataset = dataset.datasets.Shapes3d_ordered.create(batch_size=10)
     error_rate = metric_factorvae(model, dataset)
     print("Error Rate: {:%}".format(error_rate))

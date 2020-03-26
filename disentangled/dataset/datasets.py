@@ -4,6 +4,7 @@ import itertools
 from pathlib import Path
 import numpy as np
 import h5py
+import tqdm
 
 import tensorflow as tf
 import tensorflow_datasets as tfds
@@ -160,14 +161,12 @@ class Shapes3d_ordered(Shapes3d):
     @classmethod
     def generator(cls, batch_size):
         data = h5py.File(cls.path, 'r')['images']
-        for _ in itertools.count():
+        for _ in tqdm.tqdm(itertools.count(), total=1300):
             idx, factor, value= cls.batch_indices(batch_size)
-            import pdb;pdb.set_trace()
+            
             im = []
-            for number, i in enumerate(idx):
-                print("Read: {}, {}".format(i, number))
+            for i in idx: 
                 im.append(data[i])
-
             im = np.stack(im)
             yield im/255, factor, value 
 
@@ -176,5 +175,4 @@ class Shapes3d_ordered(Shapes3d):
         def dict_map(image, factor, value):
             return {'image': image, 'factor':factor, 'factor_value': value}
 
-        return tf.data.Dataset.from_generator(cls.generator, (tf.float32, tf.int64, tf.int64), output_shapes=((None, 64,64,3), (), ()), args=(batch_size,)).map(dict_map)
-
+        return tf.data.Dataset.from_generator(cls.generator, (tf.float32, tf.int64, tf.int64), output_shapes=((None, 64,64,3), (), ()), args=(batch_size,)).map(dict_map, num_parallel_calls=tf.data.experimental.AUTOTUNE)
