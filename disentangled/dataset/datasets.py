@@ -4,7 +4,6 @@ import itertools
 from pathlib import Path
 import numpy as np
 import h5py
-import tqdm
 
 import tensorflow as tf
 import tensorflow_datasets as tfds
@@ -159,19 +158,30 @@ class Shapes3d_ordered(Shapes3d):
 
     @classmethod
     def generator(cls, batch_size):
-        data = h5py.File(cls.path, 'r')['images']
-        for _ in tqdm.tqdm(itertools.count(), total=1300):
-            idx, factor, value= cls.batch_indices(batch_size)
-            
-            im = []
-            for i in idx: 
-                im.append(data[i])
-            im = np.stack(im)
-            yield im/255, factor, value 
+        for _ in itertools.count():
+            idx, factor, value = cls.batch_indices(batch_size)
+            idx = np.sort(idx) 
+            yield idx, factor, value 
+
+    @classmethod
+    def read(cls):
+        data = h5py.File(cls.path, 'r', swmr=True)['images']
+        
+        def wrapper(idx, factor, value):
+            def inner(idx, factor, value):
+                idx = np.asarray(idx)
+                print(idx)
+                return data[idx] / 255,  factor,  value
+            return tf.py_function(inner, inp=[idx, factor, value], Tout=(tf.float32, tf.int64, tf.int64)) 
+
+        return wrapper
 
     @classmethod
     def create(cls, batch_size):
         def dict_map(image, factor, value):
             return {'image': image, 'factor':factor, 'factor_value': value}
 
-        return tf.data.Dataset.from_generator(cls.generator, (tf.float32, tf.int64, tf.int64), output_shapes=((None, 64,64,3), (), ()), args=(batch_size,)).map(dict_map, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+        index = tf.data.Dataset.from_generator(cls.generator, (tf.int64, tf.int64, tf.int64), output_shapes=((None), (), ()), args=(batch_size,))
+        dataset = index.map(cls.read())
+
+        return dataset.map(dict_map, num_parallel_calls=tf.data.experimental.AUTOTUNE)
