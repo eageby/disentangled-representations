@@ -77,7 +77,4 @@ class VAE(tf.keras.Model):
         z_mean, z_log_var = self.encode(target)
         z = self.sample(z_mean, z_log_var, training)
         x_mean, x_log_var = self.decode(z)
-
-        self.add_loss(self.objective(target, x_mean, x_log_var, z_mean, z_log_var))
-
         return x_mean, z, target
