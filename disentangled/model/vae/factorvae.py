@@ -17,7 +17,6 @@ class FactorVAE(VAE):
         discriminator,
         latents,
         gamma,
-        **kwargs
     ):
         super().__init__(
             # Encoder
@@ -30,7 +29,7 @@ class FactorVAE(VAE):
             f_theta_log_var=f_theta_log_var,
             objective=objectives.FactorVAE(gamma),
             latents=latents,
-            **kwargs
+            name='FactorVAE'
         )
 
         self.discriminator_net = discriminator 
@@ -65,7 +64,7 @@ class FactorVAE(VAE):
         
         data = data.window(2)
 
-        progress = disentangled.utils.TrainingProgress(data, total=int(iterations))
+        progress = disentangled.utils.TrainingProgress(data.take(int(iterations)), total=int(iterations))
         for batch_theta, batch_psi in progress:        
             with tf.GradientTape() as tape:
                 z_mean, z_log_var = self.encode(batch_theta)
@@ -104,7 +103,7 @@ class FactorVAE(VAE):
 
 class factorvae_shapes3d(FactorVAE):
     """ """
-    def __init__(self, latents, gamma):
+    def __init__(self, latents, gamma, **kwargs):
         super().__init__(
             f_phi = networks.conv_4,
             f_theta = networks.conv_4_transpose,
