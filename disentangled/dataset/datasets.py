@@ -82,6 +82,5 @@ class Shapes3d(Dataset):
             .map(utils.get_image, num_parallel_calls=tf.data.experimental.AUTOTUNE)
             .batch(batch_size)
             .map(utils.normalize_uint8, num_parallel_calls=tf.data.experimental.AUTOTUNE)
-            .cache()
             .prefetch(prefetch_batches)
         )
