@@ -10,7 +10,7 @@ class BetaVAE(VAE):
         self.fit(data, steps_per_epoch=iterations)
 
 class betavae_mnist(BetaVAE):
-    def __init__(self, latents, beta):
+    def __init__(self, latents, beta, **kwargs):
         super().__init__(
             # Encoder
             f_phi=networks.conv_2,
@@ -29,7 +29,7 @@ class betavae_mnist(BetaVAE):
         )
 
 class betavae_shapes3d(BetaVAE):
-    def __init__(self, latents, beta):
+    def __init__(self, latents, beta, **kwargs):
         super().__init__(
             # Encoder
             f_phi=networks.conv_4,
