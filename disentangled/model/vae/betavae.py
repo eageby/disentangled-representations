@@ -2,12 +2,31 @@ import tensorflow as tf
 from .vae import VAE
 
 import disentangled.model.networks as networks
+import disentangled.utils
 import disentangled.model.objectives as objectives
 
 class BetaVAE(VAE):
     def train(self, data, learning_rate, iterations=100, **kwargs):
-        self.compile(tf.keras.optimizers.Adam(learning_rate))
-        self.fit(data, steps_per_epoch=iterations)
+        optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
+        
+        progress = disentangled.utils.TrainingProgress(data.take(int(iterations)), total=int(iterations))
+        for batch in progress:        
+            with tf.GradientTape() as tape:
+                z_mean, z_log_var = self.encode(batch)
+                z = self.sample(z_mean, z_log_var, training=True)
+               
+                x_mean, x_log_var = self.decode(z)
+            
+                loss = self.objective(batch, x_mean, x_log_var, z_mean, z_log_var)
+                self.add_loss(lambda: loss)
+
+            # Discriminator weights are assigned as not trainable in init
+            grad = tape.gradient(loss, self.trainable_variables)
+            optimizer.apply_gradients(zip(grad, self.trainable_variables))
+
+            progress.update(self)
+            progress.log(interval=5e4)
+
 
 class betavae_mnist(BetaVAE):
     def __init__(self, latents, beta, **kwargs):
