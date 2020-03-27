@@ -76,4 +76,3 @@ class AcceptAllCommand(click.Command):
         parser._long_opt = AcceptAllDict(parser._long_opt)
 
         return parser
-
