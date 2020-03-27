@@ -30,8 +30,7 @@ class Dataset:
         """Loads an instance of the tensorflow dataset.
 
         Args:
-            #as_dataset.
-            split:  From tensorflow_datasets doc https://www.tensorflow.org/datasets/api_docs/python/tfds/core/DatasetBuilder
+            split:  From tensorflow_datasets doc https://www.tensorflow.org/datasets/api_docs/python/tfds/core/DatasetBuilder#as_dataset.
                     Which subset(s) of the data to read.
                     If None (default), returns all splits in a dict <key: tfds.Split, value: tf.data.Dataset>.
         Returns:
@@ -92,13 +91,13 @@ class Shapes3d(Dataset):
     num_values_per_factor = [ 10, 10, 10, 8, 4, 15 ]
 
     @classmethod
-    def pipeline(cls, split="train", batch_size=64, prefetch_batches=5):
+    def pipeline(cls, split="train", batch_size=64, prefetch_batches=10):
         return (
             cls.load()
+            .map(utils.get_image, num_parallel_calls=tf.data.experimental.AUTOTUNE)
             .batch(batch_size)
+            .map(utils.normalize_uint8, num_parallel_calls=tf.data.experimental.AUTOTUNE)
             .prefetch(prefetch_batches)
-            .map(utils.get_image)
-            .map(utils.normalize_uint8)
         )
 
     @classmethod

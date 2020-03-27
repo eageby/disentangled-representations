@@ -3,14 +3,13 @@ from pathlib import Path
 import tensorflow as tf
 
 
-def save(model, filename, dir_="models", **kwargs):
-    path = Path(".") / dir_
+def save(model, filename, path=Path("./models"), overwrite=False, **kwargs):
     path.mkdir(exist_ok=True)
     path = path / filename
-    model.save(str(path), overwrite=False)
+    model.save(str(path), overwrite=overwrite)
 
 
-def load(filename, dir_="models"):
-    path = Path(".")/ dir_ / filename
+def load(filename, path=Path("./models")):
+    path = path / filename
 
     return tf.keras.models.load_model(str(path), compile=False)
