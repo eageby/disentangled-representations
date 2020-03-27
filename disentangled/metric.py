@@ -45,7 +45,6 @@ def metric_factorvae(model, dataset, training_votes =500, test_votes=800):
 
         samples.append(tf.stack((dimension, batch['factor'])))
 
-    import pdb;pdb.set_trace()
     samples = tf.stack(samples)
 
     train_data, test_data = tf.split(samples, [training_votes, test_votes], axis=0) 
@@ -58,12 +57,3 @@ def metric_factorvae(model, dataset, training_votes =500, test_votes=800):
     import pdb;pdb.set_trace()
     error_rate = tf.math.count_nonzero(target - test_estimate) / tf.size(target, out_type=tf.int64)
     return error_rate
-
-if __name__ == "__main__":
-    disentangled.utils.disable_gpu()
-    model = disentangled.model.utils.load("betavae_shapes3d")
-    dataset = dataset.datasets.Shapes3d_ordered.create(batch_size=100)
-    import pdb; pdb.set_trace()
-
-    error_rate = metric_factorvae(model, dataset, 500, 800)
-    print("Error Rate: {:%}".format(error_rate))
