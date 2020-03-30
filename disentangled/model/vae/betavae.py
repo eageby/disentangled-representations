@@ -20,6 +20,11 @@ class BetaVAE(VAE):
                 loss = self.objective(batch, x_mean, x_log_var, z_mean, z_log_var)
                 self.add_loss(lambda: loss)
 
+                try: 
+                    tf.debugging.check_numerics(loss, message='loss')
+                except:
+                    import pdb;pdb.set_trace()
+ 
             # Discriminator weights are assigned as not trainable in init
             grad = tape.gradient(loss, self.trainable_variables)
             optimizer.apply_gradients(zip(grad, self.trainable_variables))
