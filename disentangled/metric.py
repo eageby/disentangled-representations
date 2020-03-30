@@ -49,11 +49,10 @@ def metric_factorvae(model, dataset, training_votes =500, test_votes=800):
 
     train_data, test_data = tf.split(samples, [training_votes, test_votes], axis=0) 
 
-    classifier = majority_voting_classifier(train_data, 32, 6)
+    classifier = majority_voting_classifier(train_data, representations.shape[-1], 6)
 
     test_estimate = tf.gather(classifier, test_data[:, 0])
     target = test_data[:, 1]
 
-    import pdb;pdb.set_trace()
     error_rate = tf.math.count_nonzero(target - test_estimate) / tf.size(target, out_type=tf.int64)
     return error_rate
