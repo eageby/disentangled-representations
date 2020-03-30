@@ -4,6 +4,7 @@ import tensorflow as tf
 
 _TOLERANCE = 1e-10
 
+
 class _Objective(tf.keras.layers.Layer):
     def __init__(self, **kwargs):
         super(_Objective, self).__init__(**kwargs)
@@ -15,7 +16,9 @@ class _Objective(tf.keras.layers.Layer):
 
 @tf.function
 def log_likelihood_gaussian(target, x_mean, x_log_var):
-    x_log_var = tf.clip_by_value(x_log_var, -_TOLERANCE, tf.float32.max)
+    x_log_var = tf.clip_by_value(
+        x_log_var, tf.float32.min, tf.math.exp(tf.math.log(tf.float32.max)) - 1
+    )
 
     log_likelihood = -0.5 * tf.reduce_mean(
         tf.reduce_sum(
@@ -28,15 +31,16 @@ def log_likelihood_gaussian(target, x_mean, x_log_var):
     )
 
     normalized_log_likelihood = log_likelihood + tf.reduce_mean(
-        -0.5 * tf.reduce_sum(x_log_var + tf.math.log(2 * math.pi), axis=1), axis=0,
+        -0.5 * tf.reduce_sum(x_log_var + tf.math.log(2 * math.pi), axis=1), axis=0
     )
 
     return log_likelihood, normalized_log_likelihood
 
+
 def loglikelihood_bernoulli(target, x_mean):
     return tf.reduce_mean(
         tf.reduce_sum(
-            target * tf.math.log(x_mean+_TOLERANCE) + (1 - target) * tf.math.log(1 - x_mean+_TOLERANCE),
+            target * tf.math.log(x_mean + _TOLERANCE) + (1 - target) * tf.math.log(1 - x_mean + _TOLERANCE),
             axis=1,
         ),
         axis=0,
@@ -45,6 +49,10 @@ def loglikelihood_bernoulli(target, x_mean):
 
 @tf.function
 def kld_gaussian(z_mean, z_log_var):
+    z_log_var = tf.clip_by_value(
+        z_log_var, tf.float32.min, tf.math.exp(tf.math.log(tf.float32.max)) - 1
+    )
+
     return tf.reduce_mean(
         -0.5
         * tf.reduce_sum(1 + z_log_var - tf.square(z_mean) - tf.exp(z_log_var), axis=1),
@@ -75,7 +83,8 @@ class BetaVAE(_Objective):
 
         kld = kld_gaussian(z_mean, z_log_var)
 
-        self.add_metric(-log_likelihood, aggregation="mean", name="-loglikelihood")
+        self.add_metric(-log_likelihood, aggregation="mean",
+                        name="-loglikelihood")
         self.add_metric(kld, aggregation="mean", name="kld")
 
         return -log_likelihood + self.beta * kld
@@ -94,17 +103,14 @@ class FactorVAE(_Objective):
         kld = kld_gaussian(z_mean, z_log_var)
 
         kld_discriminator = tf.reduce_mean(
-            tf.math.log(discriminator_probability / ((1 - discriminator_probability) + _TOLERANCE))
+            tf.math.log(
+                discriminator_probability
+                / ((1 - discriminator_probability) + _TOLERANCE)
+            )
         )
 
-        try:
-            tf.debugging.check_numerics(log_likelihood,'')
-            tf.debugging.check_numerics(kld, '')
-            tf.debugging.check_numerics(kld_discriminator, '')
-        except:
-            import pdb;pdb.set_trace()
-
-        self.add_metric(-log_likelihood, aggregation="mean", name="-loglikelihood")
+        self.add_metric(-log_likelihood, aggregation="mean",
+                        name="-loglikelihood")
         self.add_metric(kld, aggregation="mean", name="kld1")
         self.add_metric(kld_discriminator, aggregation="mean", name="kld2")
 
