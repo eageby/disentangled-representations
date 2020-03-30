@@ -2,7 +2,7 @@ import math
 
 import tensorflow as tf
 
-_TOLERANCE = 1e-10
+_TOLERANCE = 1e-7
 
 
 class _Objective(tf.keras.layers.Layer):
