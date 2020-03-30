@@ -77,6 +77,7 @@ class FactorVAE(VAE):
             
                 loss_theta = self.objective(batch_theta, x_mean, x_log_var, z_mean, z_log_var, p_z)
                 self.add_loss(lambda: loss_theta)
+                tf.debugging.check_numerics(loss_theta, 'loss is invalid')
 
             # Discriminator weights are assigned as not trainable in init
             grad_theta = tape.gradient(loss_theta, self.trainable_variables)
