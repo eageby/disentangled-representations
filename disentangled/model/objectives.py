@@ -117,3 +117,10 @@ class FactorVAE(_Objective):
         self.add_metric(kld_discriminator, aggregation="mean", name="kld2")
 
         return -log_likelihood + kld + self.gamma * kld_discriminator
+
+    @staticmethod
+    def discriminator(p_z, p_permuted):
+        return -tf.reduce_mean(
+            tf.math.log(p_z + _TOLERANCE) +
+            tf.math.log(p_permuted + _TOLERANCE)
+        )

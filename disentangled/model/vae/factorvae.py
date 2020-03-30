@@ -90,10 +90,7 @@ class FactorVAE(VAE):
 
                 p_permuted = self.discriminator(z_permuted)
                 
-                tolerance = 1e-10
-                loss_psi = -tf.reduce_mean( 
-                    tf.math.log(p_z + tolerance) + tf.math.log(p_permuted + tolerance)
-                )
+                loss_psi = self.objective.discriminator(p_z, p_permuted)
 
             grad_psi = tape.gradient(loss_psi, self.discriminator_net.variables)
             optimizer_psi.apply_gradients(zip(grad_psi, self.discriminator_net.variables))
