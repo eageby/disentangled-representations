@@ -40,7 +40,8 @@ def log_likelihood_gaussian(target, x_mean, x_log_var):
 def loglikelihood_bernoulli(target, x_mean):
     return tf.reduce_mean(
         tf.reduce_sum(
-            target * tf.math.log(x_mean + _TOLERANCE) + (1 - target) * tf.math.log(1 - x_mean + _TOLERANCE),
+            target * tf.math.log(x_mean + _TOLERANCE)
+            + (1 - target) * tf.math.log(1 - x_mean + _TOLERANCE),
             axis=1,
         ),
         axis=0,
@@ -55,7 +56,8 @@ def kld_gaussian(z_mean, z_log_var):
 
     return tf.reduce_mean(
         -0.5
-        * tf.reduce_sum(1 + z_log_var - tf.square(z_mean) - tf.exp(z_log_var), axis=1),
+        * tf.reduce_sum(1 + z_log_var - tf.square(z_mean) -
+                        tf.exp(z_log_var), axis=1),
         axis=0,
     )
 
