@@ -62,10 +62,11 @@ class FactorVAE(VAE):
         optimizer_theta = tf.keras.optimizers.Adam(learning_rate=learning_rate)
         optimizer_psi = tf.keras.optimizers.Adam(learning_rate=learning_rate_discriminator)
         
-        data = data.window(2)
-
+        data = data.batch(2)
         progress = disentangled.utils.TrainingProgress(data.take(int(iterations)), total=int(iterations))
-        for batch_theta, batch_psi in progress:        
+
+        @tf.function
+        def step(batch_theta, batch_psi):
             with tf.GradientTape() as tape:
                 z_mean, z_log_var = self.encode(batch_theta)
                 z = self.sample(z_mean, z_log_var, training=True)
@@ -86,7 +87,8 @@ class FactorVAE(VAE):
                 z_mean, z_log_var = self.encode(batch_psi)
                 z = self.sample(z_mean, z_log_var, training=True)
                 
-                z_permuted = self.permute_dims(z)
+                z_permuted = tf.py_function(self.permute_dims, inp=[z], Tout=tf.float32)
+                z_permuted.set_shape(z.shape)
 
                 p_permuted = self.discriminator(z_permuted)
                 
@@ -95,8 +97,9 @@ class FactorVAE(VAE):
             grad_psi = tape.gradient(loss_psi, self.discriminator_net.variables)
             optimizer_psi.apply_gradients(zip(grad_psi, self.discriminator_net.variables))
 
-            progress.update(self)
-            progress.log(interval=5e4)
+
+        for batches in progress:
+            step(*batches)
 
 class factorvae_shapes3d(FactorVAE):
     """ """

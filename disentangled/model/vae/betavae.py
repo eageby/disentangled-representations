@@ -7,10 +7,12 @@ import disentangled.model.objectives as objectives
 
 class BetaVAE(VAE):
     def train(self, data, learning_rate, iterations=100, **kwargs):
+        data = data.take(int(iterations))
         optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
-        
-        progress = disentangled.utils.TrainingProgress(data.take(int(iterations)), total=int(iterations))
-        for batch in progress:        
+        progress = disentangled.utils.TrainingProgress(data, total=int(iterations))
+
+        @tf.function
+        def step(batch):
             with tf.GradientTape() as tape:
                 z_mean, z_log_var = self.encode(batch)
                 z = self.sample(z_mean, z_log_var, training=True)
@@ -24,8 +26,8 @@ class BetaVAE(VAE):
             grad = tape.gradient(loss, self.trainable_variables)
             optimizer.apply_gradients(zip(grad, self.trainable_variables))
 
-            progress.update(self)
-            progress.log(interval=5e4)
+        for batch in progress:        
+            step(batch)
 
 
 class betavae_mnist(BetaVAE):
