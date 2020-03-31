@@ -59,7 +59,6 @@ def cli(ctx, model, dataset, no_gpu, no_info, directory):
     ctx.obj["dataset"] = disentangled.dataset.get(dataset)
 
 
-# TODO: Fix flags
 @cli.command(cls=disentangled.utils.AcceptAllCommand)
 @click.option("--learning_rate", "-l", type=float)
 @click.option("--batch_size", "-b", type=int)

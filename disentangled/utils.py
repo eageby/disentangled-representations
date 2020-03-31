@@ -43,13 +43,16 @@ class AcceptAllCommand(click.Command):
         parser = super(AcceptAllCommand, self).make_parser(ctx)
         command = self
 
-        class AcceptAllDict(dict):
+        class AcceptAllLongOptsDict(dict):
 
             def __contains__(self, item):
                 """If the parser does no know this option, add it"""
 
-                if not super(AcceptAllDict, self).__contains__(item):
+                if not super(AcceptAllLongOptsDict, self).__contains__(item):
                     # create an option name
+                    if item[:2] != '--':
+                        return False
+                    
                     name = item.lstrip('-')
 
                     # add the option to our command
@@ -64,7 +67,6 @@ class AcceptAllCommand(click.Command):
                 return True
 
         # set the parser options to our dict
-        parser._short_opt = AcceptAllDict(parser._short_opt)
-        parser._long_opt = AcceptAllDict(parser._long_opt)
+        parser._long_opt = AcceptAllLongOptsDict(parser._long_opt)
 
         return parser
