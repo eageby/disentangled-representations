@@ -29,18 +29,10 @@ class TrainingProgress(tqdm.tqdm):
             **kwargs
         )
 
-    def update(self, model):
-        metrics = {m.name: m.result().numpy() for m in model.metrics}
-
-        self.postfix = 'Loss: {loss:.2f}, '.format(loss=model.losses[0])
-        self.postfix += ', '.join(key + ': ' + '{:.2f}'.format(metrics[key]) for key in metrics.keys())
-
-        self.refresh()
-
-    def log(self, interval=1000):
+    def update(self, loss, metrics, interval=10):
         if self.n % interval == 0:
-            message = "Iteration {} - ".format(self.n) + self.postfix
-            self.write(message) 
+            self.postfix = 'Loss: {loss:.2f}, '.format(loss=loss) + ', '.join(key + ': ' + '{:.2f}'.format(metrics[key]) for key in metrics.keys())
+            self.refresh()
 
 """https://stackoverflow.com/questions/54073767/command-line-interface-with-multiple-commands-using-click-add-unspecified-optio"""
 

@@ -98,9 +98,12 @@ class FactorVAE(VAE):
             grad_psi = tape.gradient(loss_psi, self.discriminator_net.variables)
             optimizer_psi.apply_gradients(zip(grad_psi, self.discriminator_net.variables))
 
+            metrics = {m.name: m.result() for m in self.metrics}
+
+            return loss_theta, metrics
 
         for batches in progress:
-            step(*batches)
+            progress.update(*step(*batches), interval=1)
 
 class factorvae_shapes3d(FactorVAE):
     """ """

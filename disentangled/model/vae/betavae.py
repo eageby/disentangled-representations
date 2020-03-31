@@ -20,16 +20,17 @@ class BetaVAE(VAE):
                 x_mean, x_log_var = self.decode(z)
             
                 loss = self.objective(batch, x_mean, x_log_var, z_mean, z_log_var)
-                self.add_loss(lambda: loss)
 
             tf.debugging.check_numerics(loss, 'Loss is not valid')
             # Discriminator weights are assigned as not trainable in init
             grad = tape.gradient(loss, self.trainable_variables)
             optimizer.apply_gradients(zip(grad, self.trainable_variables))
+            metrics = {m.name: m.result() for m in self.metrics}
+
+            return loss, metrics
 
         for batch in progress:        
-            step(batch)
-
+            progress.update(*step(batch), interval=1)
 
 class betavae_mnist(BetaVAE):
     def __init__(self, latents, beta, **kwargs):
