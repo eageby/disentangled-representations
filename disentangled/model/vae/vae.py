@@ -73,6 +73,7 @@ class VAE(tf.keras.Model):
 
         return self.reshape_output(x_mean), x_log_var
 
+    @tf.function
     def call(self, target, training=False):
         z_mean, z_log_var = self.encode(target)
         z = self.sample(z_mean, z_log_var, training)
