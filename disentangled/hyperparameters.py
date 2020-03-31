@@ -11,6 +11,11 @@ def complete(model_name: str, hyperparameters: dict) -> dict:
         if key not in hyperparameters_default:
             raise ValueError("{} is not a valid hyperparameter. See default hyperparameters for {}.".format(key, model_name))
 
+    try: 
+        hyperparameters = {key:type(hyperparameters_default[key])(hyperparameters[key]) for key in hyperparameters.keys()}
+    except (TypeError, ValueError) as e:
+        raise ValueError('Invalid hyperparameter type, {}'.format(e))
+
     hyperparameters_default.update(hyperparameters)
 
     return hyperparameters_default
