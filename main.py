@@ -139,10 +139,9 @@ def latent2d(ctx, **kwargs):
 @cli.command()
 @click.option("training_votes", "--train", type=int, default=500)
 @click.option("test_votes", "--test", type=int, default=800)
-@click.option("--batch_size", type=int, default=100)
 @click.pass_context
-def metric(ctx, batch_size, **kwargs):
+def metric(ctx, **kwargs):
     ctx = load(ctx)
-    error_rate = disentangled.metric.metric_factorvae(ctx.obj['model'], ctx.obj['dataset'].ordered.create(batch_size), **kwargs)
+    error_rate = disentangled.metric.metric_factorvae(ctx.obj['model'], ctx.obj['dataset'].ordered.load(), **kwargs)
 
     print("Error Rate: {:%}".format(error_rate))
