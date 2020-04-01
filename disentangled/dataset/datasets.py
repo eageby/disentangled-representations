@@ -9,6 +9,7 @@ import tensorflow as tf
 import tensorflow_datasets as tfds
 
 from . import utils
+from . import serialize
 
 # Handles Too many open files error
 # https://github.com/tensorflow/datasets/issues/1441
@@ -88,18 +89,7 @@ class Shapes3d(Dataset):
             .prefetch(prefetch_batches)
         )
 
-    @classmethod
-    def as_image_label(cls):
-        return cls.load().map(cls.label_map)
-
-    @classmethod
-    def label_map(cls, element):
-        labels = tf.convert_to_tensor([element[f]
-                                       for f in cls.factors], dtype=tf.uint8)
-
-        return {"image": element["image"] / 255, "label": labels}
-
-    class ordered:
+    class Ordered:
         factors = [
             "label_floor_hue",
             "label_wall_hue",
@@ -169,9 +159,29 @@ class Shapes3d(Dataset):
         @classmethod
         def create(cls, batch_size):
             def dict_map(image, factor, value):
+                image.set_shape((None, 64,64,3))
+                factor.set_shape(())
+                value.set_shape(())
                 return {'image': image, 'factor':factor, 'factor_value': value}
 
             index = tf.data.Dataset.from_generator(cls.generator, (tf.int64, tf.int64, tf.int64), output_shapes=((None), (), ()), args=(batch_size,))
             dataset = index.map(cls.read())
 
             return dataset.map(dict_map, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+
+        @staticmethod
+        def example(element):
+            features = {'image': serialize.bytes_feature(element['image']),
+                        'factor': serialize.int64_feature(element['factor']),
+                        'factor_value': serialize.int64_feature(element['factor_value'])}
+
+            return tf.train.Example(features=tf.train.Features(feature=features))
+        
+        @staticmethod
+        def parse_example(example):
+            image_feature_description = {
+                'image': tf.io.FixedLenFeature([], tf.string),
+                'factor': tf.io.FixedLenFeature([], tf.int64),
+                'factor_value': tf.io.FixedLenFeature([], tf.int64),
+            }
+            return tf.io.parse_single_example(example, image_feature_description)
