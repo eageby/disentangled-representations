@@ -46,5 +46,8 @@ def numpy(dataset):
 
 def normalize_uint8(x):
     """Normalizes data in uint8 range [0,255] to [0,1]"""
+    if isinstance(x, dict):
+        x['image'] /= 255
+        return x
 
     return x / 255
