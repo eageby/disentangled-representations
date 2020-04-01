@@ -43,6 +43,8 @@ def load(ctx):
 )
 @click.pass_context
 def cli(ctx, model, dataset, no_gpu, no_info, directory):
+    disentangled.utils.config()
+
     if no_gpu:
         disentangled.utils.disable_gpu()
     if no_info:
@@ -144,6 +146,3 @@ def metric(ctx, batch_size, **kwargs):
     error_rate = disentangled.metric.metric_factorvae(ctx.obj['model'], ctx.obj['dataset'].ordered.create(batch_size), **kwargs)
 
     print("Error Rate: {:%}".format(error_rate))
-
-disentangled.utils.config()
-cli() 
