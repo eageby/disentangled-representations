@@ -39,7 +39,7 @@ def traversal_2d(model, data, sample=0, steps=20, offset=0, shuffle=False):
 
     vi.show.show_grid(
         vi.show.batch_to_grid(x_traversal, steps, steps),
-        title='Latent Space Traversal 1D'
+        title='Latent Space Traversal 2D'
     )
 
 
