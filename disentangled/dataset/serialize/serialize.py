@@ -2,6 +2,7 @@ import disentangled.dataset
 import disentangled.utils
 import tensorflow as tf
 import tqdm
+import click
 
 
 def serialize_image(element):
@@ -16,12 +17,14 @@ def parse_image(element):
     return element
 
 
-def write(dataset, batches=1300, **kwargs):
+def write(dataset, batches=1300, overwrite=False, **kwargs):
     data = dataset.create(**kwargs).take(batches).map(serialize_image)
-    progress = disentangled.utils.TrainingProgress(data, total=batches)
 
     dataset.serialized_path.parent.mkdir(exist_ok=True)
+    if dataset.serialized_path.exists() and (overwrite or click.confirm('Do you want to overwrite {}'.format(dataset.serialized_path), abort=True)):
+        dataset.serialized_path.unlink()
 
+    progress = disentangled.utils.TrainingProgress(data, total=batches)
     progress.write("Serializing dataset to {}".format(dataset.serialized_path.resolve()))
     progress.write("batches: {}, {}".format(batches, ','.join(["{}: {}".format(k,v) for k,v in kwargs.items()])))
     with tf.io.TFRecordWriter(str(dataset.serialized_path)) as writer:
