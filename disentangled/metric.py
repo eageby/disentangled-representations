@@ -4,6 +4,7 @@ import disentangled.utils as utils
 import numpy as np
 import tensorflow as tf
 
+import scipy.stats
 
 def majority_voting_classifier(data, n_latent, n_generative):
     V = np.zeros((n_latent, n_generative))
@@ -30,6 +31,9 @@ def representation_variance(data):
 
     return tf.reduce_mean(tf.stack(var), axis=0)
 
+def intact_dimensions(representations, significance_level=0.05):
+    pvalues = [scipy.stats.kstest(representations[i], 'norm').pvalue for i in range(representations.shape[-1])]
+    return np.where(pvalues < significance_level)
 
 def metric_factorvae(model, dataset, training_votes =500, test_votes=800):
     dataset = encode_dataset(model, dataset).take(training_votes+test_votes).cache()
@@ -38,10 +42,14 @@ def metric_factorvae(model, dataset, training_votes =500, test_votes=800):
     samples = [] 
     for batch in dataset:
         representations = batch['representation'] 
+        import pdb;pdb.set_trace()
+
+
+        intact_idx = intact_dimensions(representations)
         representations /= tf.math.sqrt(empirical_var)
         representations_variance = tf.math.reduce_variance(
             representations, axis=0)
-        dimension = tf.argmin(representations_variance)
+        dimension = tf.argmin(tf.gather(representations_variance, intact_idx, axis=-1))
 
         samples.append(tf.stack((dimension, batch['factor'])))
 
