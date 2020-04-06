@@ -12,7 +12,7 @@ def majority_voting_classifier(data, n_latent, n_generative):
     for d, k in data:
         V[d, k] += 1
 
-        return tf.math.argmax(V, axis=1)
+    return tf.math.argmax(V, axis=1)
 
 def encode_dataset(model, data):
     def encoding(element):
@@ -22,11 +22,10 @@ def encode_dataset(model, data):
 
     return data.map(encoding, num_parallel_calls=tf.data.experimental.AUTOTUNE)
 
-
 def representation_variance(data):
     var = []
 
-    for batch in data:
+    for batch in utils.TrainingProgress(data):
         var.append(tf.math.reduce_variance(batch["representation"], axis=0))
 
     return tf.reduce_mean(tf.stack(var), axis=0)
@@ -35,23 +34,21 @@ def intact_dimensions(representations, significance_level=0.05):
     pvalues = [scipy.stats.kstest(representations[i], 'norm').pvalue for i in range(representations.shape[-1])]
     return np.where(pvalues < significance_level)
 
-def metric_factorvae(model, dataset, training_votes =500, test_votes=800):
-    dataset = encode_dataset(model, dataset).take(training_votes+test_votes).cache()
+def metric_factorvae(model, dataset, training_votes=800, test_votes=500):
+    dataset = encode_dataset(model, dataset).take(training_votes+test_votes)
     empirical_var = representation_variance(dataset)
+    intact_idx = intact_dimensions(dataset)
 
     samples = [] 
     for batch in dataset:
         representations = batch['representation'] 
-        import pdb;pdb.set_trace()
 
-
-        intact_idx = intact_dimensions(representations)
         representations /= tf.math.sqrt(empirical_var)
         representations_variance = tf.math.reduce_variance(
             representations, axis=0)
-        dimension = tf.argmin(tf.gather(representations_variance, intact_idx, axis=-1))
+        dimension = tf.argmin(tf.gather(representations_variance, intact_idx), axis=1)
 
-        samples.append(tf.stack((dimension, batch['factor'])))
+        samples.append(tf.stack((tf.squeeze(dimension), batch['factor'])))
 
     samples = tf.stack(samples)
 
