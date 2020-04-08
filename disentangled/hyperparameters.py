@@ -80,3 +80,12 @@ factorvae_shapes3d = {
     "gamma": 7,
     "latents": 32,
 }
+
+beta_tcvae_shapes3d = {
+    "iterations": 5e5,
+    "batch_size": 64,
+    "learning_rate": 1e-4,
+    "beta": 6,
+    "dataset_size": 480000,
+    "latents": 32,
+}

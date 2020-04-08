@@ -1,5 +1,5 @@
 from .models import *
 
-__all__ = ['activations', 'betavae', 'networks', 'objectives']
+__all__ = ['networks', 'objectives', ]
 
 from .utils import load, save

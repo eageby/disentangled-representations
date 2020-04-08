@@ -9,7 +9,7 @@ import disentangled.metric
 import disentangled.utils
 import disentangled.visualize.latentspace
 
-_MODELS = ["factorvae", "betavae"]
+_MODELS = ["factorvae", "betavae", "beta_tcvae"]
 _DATASETS = ["MNIST", "Shapes3d"]
 
 
@@ -137,8 +137,8 @@ def latent2d(ctx, **kwargs):
     )
 
 @cli.command()
-@click.option("training_votes", "--train", type=int, default=500)
-@click.option("test_votes", "--test", type=int, default=800)
+@click.option("training_votes", "--train", type=int, default=800)
+@click.option("test_votes", "--test", type=int, default=500)
 @click.pass_context
 def metric(ctx, **kwargs):
     ctx = load(ctx)
