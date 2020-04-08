@@ -30,14 +30,21 @@ def representation_variance(data):
 
     return tf.reduce_mean(tf.stack(var), axis=0)
 
-def intact_dimensions(representations, significance_level=0.05):
-    pvalues = [scipy.stats.kstest(representations[i], 'norm').pvalue for i in range(representations.shape[-1])]
+def intact_dimensions(dataset, significance_level=0.01):
+    representation_batches = []
+
+    for batch in utils.TrainingProgress(dataset):
+        representation_batches.append(batch['representation'])
+
+    representations = np.concatenate(representation_batches)
+    pvalues = np.array([scipy.stats.kstest(representations[i], 'norm').pvalue for i in range(representations.shape[-1])])
     return np.where(pvalues < significance_level)
 
 def metric_factorvae(model, dataset, training_votes=800, test_votes=500):
     dataset = encode_dataset(model, dataset).take(training_votes+test_votes)
     empirical_var = representation_variance(dataset)
     intact_idx = intact_dimensions(dataset)
+    import pdb;pdb.set_trace()
 
     samples = [] 
     for batch in dataset:
