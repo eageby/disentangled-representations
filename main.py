@@ -8,6 +8,7 @@ import disentangled.training
 import disentangled.metric
 import disentangled.utils
 import disentangled.visualize.latentspace
+import disentangled.visualize.gui
 
 _MODELS = ["factorvae", "betavae", "beta_tcvae"]
 _DATASETS = ["MNIST", "Shapes3d"]
@@ -145,3 +146,11 @@ def metric(ctx, **kwargs):
     error_rate = disentangled.metric.metric_factorvae(ctx.obj['model'], ctx.obj['dataset'].ordered.load(), **kwargs)
 
     print("Error Rate: {:%}".format(error_rate))
+
+@cli.command()
+@click.option("--batch_size", "-b", type=int, default=128)
+@click.pass_context
+def gui(ctx, **kwargs):
+    ctx = load(ctx)
+    ctx.obj['model_name'] = ctx.obj['model_name'].split('_')[0] 
+    disentangled.visualize.gui.main(ctx.obj['model'], ctx.obj['dataset'], model_name=ctx.obj['model_name'], dataset_name=ctx.obj['dataset_name'], **kwargs)
