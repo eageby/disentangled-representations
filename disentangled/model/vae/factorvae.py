@@ -59,8 +59,13 @@ class FactorVAE(VAE):
         return representation         
 
     def train(self, data, learning_rate, learning_rate_discriminator, iterations=100, **kwargs):
-        optimizer_theta = tf.keras.optimizers.Adam(learning_rate=learning_rate)
-        optimizer_psi = tf.keras.optimizers.Adam(learning_rate=learning_rate_discriminator)
+        beta_1 = kwargs.pop('beta_1', 0.9)
+        beta_2 = kwargs.pop('beta_2', 0.999)
+        beta_1_discriminator = kwargs.pop('beta_1_discriminator', 0.5)
+        beta_2_discriminator = kwargs.pop('beta_2_discriminator', 0.9)
+
+        optimizer_theta = tf.keras.optimizers.Adam(learning_rate=learning_rate, beta_1=beta_1, beta_2=beta_2)
+        optimizer_psi = tf.keras.optimizers.Adam(learning_rate=learning_rate_discriminator, beta_1=beta_1_discriminator, beta_2=beta_2_discriminator)
         
         data = data.batch(2)
         progress = disentangled.utils.TrainingProgress(data.take(int(iterations)), total=int(iterations))
@@ -119,12 +124,12 @@ class factorvae_shapes3d(FactorVAE):
             latents=latents,
             gamma=gamma,
             discriminator=tf.keras.Sequential([
-                tf.keras.layers.Dense(1000, activation='relu', input_shape=(latents,)),
-                tf.keras.layers.Dense(1000, activation='relu'),
-                tf.keras.layers.Dense(1000, activation='relu'),
-                tf.keras.layers.Dense(1000, activation='relu'),
-                tf.keras.layers.Dense(1000, activation='relu'),
-                tf.keras.layers.Dense(1000, activation='relu'),
+                tf.keras.layers.Dense(1000, activation=tf.nn.leaky_relu, input_shape=(latents,)),
+                tf.keras.layers.Dense(1000, activation=tf.nn.leaky_relu),
+                tf.keras.layers.Dense(1000, activation=tf.nn.leaky_relu),
+                tf.keras.layers.Dense(1000, activation=tf.nn.leaky_relu),
+                tf.keras.layers.Dense(1000, activation=tf.nn.leaky_relu),
+                tf.keras.layers.Dense(1000, activation=tf.nn.leaky_relu),
                 tf.keras.layers.Dense(2, activation='softmax')
             ])
         )

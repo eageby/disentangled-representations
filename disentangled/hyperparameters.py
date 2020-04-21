@@ -76,7 +76,11 @@ factorvae_shapes3d = {
     "iterations": 5e5,
     "batch_size": 64,
     "learning_rate": 1e-4,
+    "beta_1": 0.9,
+    "beta_2": 0.999,
     "learning_rate_discriminator": 1e-5,
+    "beta_1_discriminator": 0.5,
+    "beta_2_discriminator": 0.9,
     "gamma": 7,
     "latents": 32,
 }
