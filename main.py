@@ -6,11 +6,12 @@ import disentangled.hyperparameters
 import disentangled.model
 import disentangled.training
 import disentangled.metric
+import disentangled.metric.factorvae
 import disentangled.utils
 import disentangled.visualize.latentspace
 import disentangled.visualize.gui
 
-_MODELS = ["factorvae", "betavae", "beta_tcvae"]
+_MODELS = ["factorvae", "betavae", "beta_tcvae", "sparsevae"]
 _DATASETS = ["MNIST", "Shapes3d"]
 
 
@@ -140,12 +141,13 @@ def latent2d(ctx, **kwargs):
 @cli.command()
 @click.option("training_votes", "--train", type=int, default=800)
 @click.option("test_votes", "--test", type=int, default=500)
+@click.option("--subset", "-s", type=int, default=None)
 @click.pass_context
 def metric(ctx, **kwargs):
     ctx = load(ctx)
-    error_rate = disentangled.metric.metric_factorvae(ctx.obj['model'], ctx.obj['dataset'].ordered.load(), **kwargs)
+    accuracy = disentangled.metric.factorvae.metric(ctx.obj['model'], ctx.obj['dataset'].ordered.load(), **kwargs)
 
-    print("Error Rate: {:%}".format(error_rate))
+    print("Accuracy: {:%}".format(accuracy))
 
 @cli.command()
 @click.option("--batch_size", "-b", type=int, default=128)

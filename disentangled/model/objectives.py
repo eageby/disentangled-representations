@@ -4,7 +4,6 @@ import tensorflow as tf
 
 _TOLERANCE = 1e-7
 
-
 class _Objective(tf.keras.layers.Layer):
     def __init__(self, **kwargs):
         super(_Objective, self).__init__(**kwargs)
@@ -19,10 +18,13 @@ def logsumexp(data, axis=-1, keepdims=False):
     m = tf.math.reduce_max(data, axis=axis, keepdims=True)
 
     value = tf.math.log(tf.math.reduce_sum(tf.math.exp(data - m))) + m
+
     if not keepdims:
         return tf.squeeze(value)
+
     return value
-        
+
+
 @tf.function
 def log_likelihood_gaussian(x_mean, x_log_var):
     return -0.5 * (
@@ -30,6 +32,7 @@ def log_likelihood_gaussian(x_mean, x_log_var):
         + tf.square(x_mean) / (tf.exp(x_log_var) + _TOLERANCE)
         + tf.math.log(2 * math.pi)
     )
+
 
 @tf.function
 def log_likelihood_gaussian_objective(target, x_mean, x_log_var):
@@ -72,6 +75,17 @@ def kld_gaussian(z_mean, z_log_var):
         * tf.reduce_sum(1 + z_log_var - tf.square(z_mean) -
                         tf.exp(z_log_var), axis=1),
         axis=0,
+    )
+
+
+@tf.function
+def kld_laplacian(z_mean, z_log_var):
+    z_log_var = tf.clip_by_value(
+        z_log_var, tf.float32.min, tf.math.exp(tf.math.log(tf.float32.max)) - 1
+    )
+
+    return tf.reduce_mean(
+        tf.reduce_sum(tf.math.exp(z_log_var) - z_log_var, axis=1), axis=0
     )
 
 
@@ -150,7 +164,8 @@ class Beta_TCVAE(_Objective):
 
         log_px = loglikelihood_bernoulli(target, x_mean)
 
-        log_pz = tf.reduce_sum(log_likelihood_gaussian(z_mean, z_log_var), axis=1)
+        log_pz = tf.reduce_sum(
+            log_likelihood_gaussian(z_mean, z_log_var), axis=1)
         log_qzx = tf.reduce_sum(
             log_likelihood_gaussian(z_mean, z_log_var), axis=1)
 
@@ -159,20 +174,41 @@ class Beta_TCVAE(_Objective):
         )
 
         log_qz_prod = tf.reduce_sum(
-            logsumexp(log_qz_matrix, axis=1) - log_nm
-            , axis=1
-        )
+            logsumexp(log_qz_matrix, axis=1) - log_nm, axis=1)
 
-        log_qz = logsumexp(tf.reduce_sum(log_qz_matrix, axis=2), axis=1) - log_nm
+        log_qz = logsumexp(tf.reduce_sum(
+            log_qz_matrix, axis=2), axis=1) - log_nm
 
         mutual_information = log_qzx - log_qz
+        import pdb
+
+        pdb.set_trace()
         total_correlation = log_qz - log_qz_prod
         kld = log_qz_prod - log_pz
 
-        self.add_metric(-log_px, aggregation="mean",
-                        name="-loglikelihood")
+        self.add_metric(-log_px, aggregation="mean", name="-loglikelihood")
         self.add_metric(mutual_information, aggregation="mean", name="info")
         self.add_metric(kld, aggregation="mean", name="kld")
         self.add_metric(total_correlation, aggregation="mean", name="tc")
 
-        return -tf.reduce_mean(log_px - mutual_information - self.beta * total_correlation - kld, axis=0)
+        return -tf.reduce_mean(
+            log_px - mutual_information - self.beta * total_correlation - kld, axis=0
+        )
+
+
+class SparseVAE(_Objective):
+    def __init__(self, beta=1, **kwargs):
+        super(SparseVAE, self).__init__(**kwargs)
+        self.beta = beta
+
+    @tf.function
+    def objective(self, target, x_mean, x_log_var, z_mean, z_log_var):
+        log_likelihood = loglikelihood_bernoulli(target, x_mean)
+
+        kld = kld_laplacian(z_mean, z_log_var)
+
+        self.add_metric(-log_likelihood, aggregation="mean",
+                        name="-loglikelihood")
+        self.add_metric(kld, aggregation="mean", name="kld")
+
+        return -log_likelihood + self.beta * kld
