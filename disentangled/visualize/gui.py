@@ -382,9 +382,6 @@ class MainWindow(QtWidgets.QWidget):
         self.options.sampleBox.valueChanged.connect(self.update_sample)
         self.visualize.latent_variables.representationChanged.connect(self.update_representation)
 
-        with open('disentangled/visualize/style.qss.3', 'r') as style:
-            self.setStyleSheet(style.read())
-
     def update_representation(self, representation):
         self.representation = np.asarray(representation)
         self.output = self.model.decode(self.representation[None])[0][0]
