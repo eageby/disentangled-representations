@@ -94,6 +94,7 @@ class LatentVariables(QtWidgets.QWidget):
         self.n_max = len(initial)
 
 
+        scroll = QtWidgets.QScrollArea()
         layout = QtWidgets.QVBoxLayout(self)
         self.topSpacer = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
 
@@ -224,7 +225,6 @@ class Options(QtWidgets.QWidget):
         self.set_max_latent_variables(latents)
 
     def set_max_latent_variables(self, max_):
-        max_ = min(max_, 10)
         self.latentVariablesBox.setMaximum(max_)
 
     def random_sample(self):
@@ -325,8 +325,16 @@ class Visualize(QtWidgets.QWidget):
 
         self.gridLayout.addWidget(self.inputLine, 1, 1, 1, 1)
  
+        self.scroll = QtWidgets.QScrollArea()
+        self.scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.scroll.setWidgetResizable(True)
+        self.scroll.setFrameShape(QtWidgets.QFrame.NoFrame)
+        self.scroll.setMaximumWidth(500)
+        
         self.latent_variables = LatentVariables(**kwargs)
-        self.gridLayout.addWidget(self.latent_variables, 2, 3, 1, 1)
+        self.scroll.setWidget(self.latent_variables)
+        self.gridLayout.addWidget(self.scroll, 2, 3, 1, 1)
 
     def convert_image(self, image):
         image = np.asarray(255 * image, dtype=np.uint8)
@@ -367,12 +375,15 @@ class MainWindow(QtWidgets.QWidget):
         layout.addWidget(self.visualize)
 
         self.setLayout(layout)
-        self.resize(QtCore.QSize(1100,400))
+        self.resize(QtCore.QSize(1100, 500))
         
         self.update_sample(self.options.sampleBox.value())
         
         self.options.sampleBox.valueChanged.connect(self.update_sample)
         self.visualize.latent_variables.representationChanged.connect(self.update_representation)
+
+        with open('disentangled/visualize/style.qss.3', 'r') as style:
+            self.setStyleSheet(style.read())
 
     def update_representation(self, representation):
         self.representation = np.asarray(representation)
@@ -391,7 +402,6 @@ class MainWindow(QtWidgets.QWidget):
 
 def main(model, dataset, batch_size=128, shuffle=False, **kwargs):
     app = QtWidgets.QApplication([])
-
     data = dataset.pipeline(batch_size)
     
     batch = data.as_numpy_iterator().next()
