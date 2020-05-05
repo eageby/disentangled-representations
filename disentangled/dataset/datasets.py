@@ -1,15 +1,14 @@
+import itertools
 import resource
 import sys
-import itertools
 from pathlib import Path
-import numpy as np
-import h5py
 
+import h5py
+import numpy as np
 import tensorflow as tf
 import tensorflow_datasets as tfds
 
-from . import utils
-from . import serialize
+from . import serialize, utils
 
 # Handles Too many open files error
 # https://github.com/tensorflow/datasets/issues/1441
@@ -87,7 +86,7 @@ class Shapes3d(Dataset):
         "label_shape",
         "label_orientation",
     ]
-    num_values_per_factor = [ 10, 10, 10, 8, 4, 15 ]
+    num_values_per_factor = [10, 10, 10, 8, 4, 15]
 
     @classmethod
     def pipeline(cls, batch_size=64, prefetch_batches=10):
@@ -95,24 +94,32 @@ class Shapes3d(Dataset):
             cls.load()
             .map(utils.get_image, num_parallel_calls=tf.data.experimental.AUTOTUNE)
             .batch(batch_size)
-            .map(utils.normalize_uint8, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+            .map(
+                utils.normalize_uint8, num_parallel_calls=tf.data.experimental.AUTOTUNE
+            )
             .prefetch(prefetch_batches)
         )
 
     @classmethod
     def as_image_label(cls):
-        return cls.load().map(cls.label_map)
+        return (
+            cls.load()
+            .map(cls.label_map)
+            .map(
+                utils.normalize_uint8, num_parallel_calls=tf.data.experimental.AUTOTUNE
+            )
+        )
 
     @classmethod
     def label_map(cls, element):
         labels = tf.convert_to_tensor([element[f]
                                        for f in cls.factors], dtype=tf.uint8)
-        return {"image": element["image"] / 255, "label": labels}
 
-    class ordered():
+        return {"image": element["image"], "label": labels}
+
+    class ordered:
         @classmethod
         def load(cls):
-            return serialize.read(serialize.raw_datasets.Shapes3d).map(utils.normalize_uint8)
-
-
-
+            return serialize.read(serialize.raw_datasets.Shapes3d).map(
+                utils.normalize_uint8, num_parallel_calls=tf.data.experimental.AUTOTUNE
+            )
