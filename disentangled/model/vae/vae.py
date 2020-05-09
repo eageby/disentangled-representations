@@ -46,6 +46,7 @@ class VAE(tf.keras.Model):
 
         super().build(input_shape)
 
+    @tf.function
     def sample(self, mean, log_var, training):
         if not training:
             return mean
