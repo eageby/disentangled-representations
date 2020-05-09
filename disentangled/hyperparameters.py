@@ -77,6 +77,7 @@ sparsevae_shapes3d = {
     "batch_size": 64,
     "learning_rate": 1e-4,
     "beta": 4,
+    "gamma": 1e-4,
     "latents": 32,
 }
 factorvae_shapes3d = {
