@@ -22,7 +22,7 @@ def encode_dataset(model, data):
     def encoding(element):
         representation, representations_variance = model.encode(element['image'])
         element['representation'] = representation
-        element['representation_variance'] = representation_variance
+        element['representation_variance'] = representations_variance
         return element
 
     return data.map(encoding, num_parallel_calls=tf.data.experimental.AUTOTUNE)
