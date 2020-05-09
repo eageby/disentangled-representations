@@ -27,3 +27,31 @@ class beta_tcvae_shapes3d(Beta_TCVAE):
             objective=objectives.Beta_TCVAE(beta=beta, dataset_size=dataset_size),
             latents=latents
         )
+
+    def train(self, data, learning_rate, iterations=100, **kwargs):
+        data = data.take(int(iterations))
+        optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
+        progress = disentangled.utils.TrainingProgress(data, total=int(iterations))
+
+        @tf.function
+        def step(batch):
+            with tf.GradientTape() as tape:
+                z_mean, z_log_var = self.encode(batch)
+                z = self.sample(z_mean, z_log_var, training=True)
+               
+                x_mean, x_log_var = self.decode(z)
+            
+                loss = self.objective(batch, x_mean, x_log_var, z, z_mean, z_log_var)
+
+            tf.debugging.check_numerics(loss, 'Loss is not valid')
+            # Discriminator weights are assigned as not trainable in init
+            grad = tape.gradient(loss, self.trainable_variables)
+            optimizer.apply_gradients(zip(grad, self.trainable_variables))
+            metrics = {m.name: m.result() for m in self.metrics}
+
+            return loss, metrics
+
+        for batch in progress:        
+            progress.update(*step(batch), interval=1)
+
+
