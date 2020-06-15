@@ -140,7 +140,6 @@ def latent2d(ctx, **kwargs):
 
 @cli.command()
 @click.option("training_votes", "--train", type=int, default=800)
-@click.option("test_votes", "--test", type=int, default=500)
 @click.option("--subset", "-s", type=int, default=None)
 @click.pass_context
 def metric(ctx, **kwargs):
