@@ -1,60 +1,39 @@
-import tensorflow as tf
-from .betavae import BetaVAE
-
 import disentangled.model.networks as networks
-import disentangled.utils
 import disentangled.model.objectives as objectives
+import disentangled.model.distributions as dist
+import disentangled.utils
+import tensorflow as tf
 
-class SparseVAE(BetaVAE):
-    def __init__(
-        self,
-        f_phi,
-        f_theta,
-        f_theta_mean,
-        f_theta_log_var,
-        latents,
-        beta,
-        gamma
-    ):
+from .vae import VAE 
+
+
+class SparseVAE(VAE):
+    def __init__(self, latents, beta, gamma, **kwargs):
         super().__init__(
             # Encoder
-            f_phi=f_phi,
-            f_phi_mean= tf.keras.layers.Dense( latents, activation=None, kernel_regularizer=tf.keras.regularizers.l1(1)),
-            f_phi_log_var = tf.keras.layers.Dense( latents, activation=None, kernel_regularizer=tf.keras.regularizers.l1(1)),
-            # Decoder
-            f_theta=f_theta,
-            f_theta_mean=f_theta_mean,
-            f_theta_log_var=f_theta_log_var,
-            objective=objectives.SparseVAE(beta, gamma),
+            f_phi_mean=tf.keras.layers.Dense(
+                latents, activation=None, kernel_regularizer=tf.keras.regularizers.l1(1)
+            ),
+            f_phi_log_var=tf.keras.layers.Dense(
+                latents, activation=None, kernel_regularizer=None
+            ),
+            prior_dist=dist.Laplacian(mean=0., log_var=0.),
+            output_dist=dist.Bernoulli(),
+            objective=objectives.SparseVAE(),
             latents=latents,
-            name='SparseVAE'
+            name="SparseVAE",
+            **kwargs
         )
+        self.beta = beta
+        self.gamma = gamma
 
-    def train(self, data, learning_rate, iterations=100, **kwargs):
-        data = data.take(int(iterations))
-        optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
-        progress = disentangled.utils.TrainingProgress(data, total=int(iterations))
+    @tf.function
+    def sample(self, mean, log_var, training=False):
+        gammoid = tf.random.gamma([1], alpha=1, beta=1)
 
-        @tf.function
-        def step(batch):
-            with tf.GradientTape() as tape:
-                z_mean, z_log_var = self.encode(batch)
-                z = self.sample(z_mean, z_log_var, training=True)
-               
-                x_mean, x_log_var = self.decode(z)
-                l1 = tf.reshape(tf.reduce_sum(self.losses), (1,-1))
+        noise = tf.random.normal(shape=tf.shape(mean), mean=0., stddev=1.)
 
-                loss = self.objective(batch, x_mean, x_log_var, z_mean, z_log_var, l1)
-
-            tf.debugging.check_numerics(loss, 'Loss is not valid')
-            # Discriminator weights are assigned as not trainable in init
-            grad = tape.gradient(loss, self.trainable_variables)
-            optimizer.apply_gradients(zip(grad, self.trainable_variables))
-            metrics = {m.name: m.result() for m in self.metrics}
-            return loss, metrics
-
-        for batch in progress:        
-            progress.update(*step(batch), interval=1)
+        return gammoid * mean + tf.math.sqrt(gammoid) * noise * tf.math.exp(0.5*log_var)
 
 
 class sparsevae_shapes3d(SparseVAE):
@@ -72,5 +51,5 @@ class sparsevae_shapes3d(SparseVAE):
             ),
             latents=latents,
             beta=beta,
-            gamma=gamma
+            gamma=gamma,
         )

@@ -1,3 +1,4 @@
+import disentangled.utils 
 import tensorflow as tf
 
 class VAE(tf.keras.Model):
@@ -9,6 +10,8 @@ class VAE(tf.keras.Model):
         f_theta,
         f_theta_mean,
         f_theta_log_var,
+        prior_dist,
+        output_dist,
         objective,
         latents,
         **kwargs
@@ -25,6 +28,9 @@ class VAE(tf.keras.Model):
         self.f_theta = f_theta
         self.f_theta_mean = f_theta_mean
         self.f_theta_log_var = f_theta_log_var
+
+        self.prior_dist = prior_dist
+        self.output_dist = output_dist
 
         self.objective = objective
 
@@ -47,10 +53,7 @@ class VAE(tf.keras.Model):
         super().build(input_shape)
 
     @tf.function
-    def sample(self, mean, log_var, training):
-        if not training:
-            return mean
-
+    def sample(self, mean, log_var, training=False):
         noise = tf.random.normal(tf.shape(mean), mean=0.0, stddev=1.0)
 
         return mean + tf.exp(0.5 * log_var) * noise
@@ -80,3 +83,33 @@ class VAE(tf.keras.Model):
         z = self.sample(z_mean, z_log_var, training)
         x_mean, x_log_var = self.decode(z)
         return x_mean, z, target
+
+    def train(self, data, learning_rate, iterations=100, **kwargs):
+        data = data.take(int(iterations))
+        optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
+        progress = disentangled.utils.TrainingProgress(
+            data, total=int(iterations))
+
+        @tf.function
+        def step(batch):
+            with tf.GradientTape() as tape:
+                z_mean, z_log_var = self.encode(batch)
+                z = self.sample(z_mean, z_log_var, training=True)
+
+                x_mean, x_log_var = self.decode(z)
+
+                loss = self.objective(
+                    self, batch, x_mean, x_log_var, z, z_mean, z_log_var)
+
+            tf.debugging.check_numerics(loss, "Loss is not valid")
+            # Discriminator weights are assigned as not trainable in init
+            grad = tape.gradient(loss, self.trainable_variables)
+            optimizer.apply_gradients(zip(grad, self.trainable_variables))
+            metrics = {m.name: m.result() for m in self.metrics}
+
+            return loss, metrics
+
+        for batch in progress:
+            progress.update(*step(batch), interval=1)
+
+
