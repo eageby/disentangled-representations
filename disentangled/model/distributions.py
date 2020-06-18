@@ -1,10 +1,11 @@
 import math
-
+import gin
 import tensorflow as tf
 
 _TOLERANCE = 1e-7
 
 
+@gin.configurable
 class Gaussian:
     def __init__(self, mean=0.0, log_var=0.0):
         self.mean = mean
@@ -48,13 +49,14 @@ class Gaussian:
         )
 
 
+@gin.configurable
 class Bernoulli:
     @tf.function
     def log_likelihood(self, target, mean, *args):
         return target * tf.math.log(mean + _TOLERANCE)  \
             + (1 - target) * tf.math.log(1 - mean + _TOLERANCE)
 
-
+@gin.configurable
 class Laplacian:
     def __init__(self, mean=0.0, log_var=0.0):
         self.mean = mean

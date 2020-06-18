@@ -2,15 +2,23 @@ import disentangled.model.distributions as dist
 import disentangled.model.networks as networks
 import disentangled.model.objectives as objectives
 import disentangled.utils
+import gin.tf
 import tensorflow as tf
 
 from .vae import VAE
-
 class BetaVAE(VAE):
-    def __init__(self, beta, **kwargs):
+    def __init__(
+        self,
+        beta,
+        prior_dist=dist.Gaussian(mean=0.0, log_var=0.0),
+        output_dist=dist.Bernoulli(),
+        **kwargs
+    ):
+
+        breakpoint()
         super().__init__(
-            prior_dist=dist.Gaussian(mean=0.0, log_var=0.0),
-            output_dist=dist.Bernoulli(),
+            prior_dist=prior_dist,
+            output_dist=output_dist,
             objective=objectives.BetaVAE(),
             name="BetaVAE",
             **kwargs
@@ -55,3 +63,4 @@ class betavae_shapes3d(BetaVAE):
             latents=latents,
             beta=beta,
         )
+

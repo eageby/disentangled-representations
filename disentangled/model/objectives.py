@@ -1,6 +1,6 @@
 import math
 import disentangled.model.distributions as dist
-
+import gin
 import tensorflow as tf
 
 _TOLERANCE = 1e-7
@@ -14,9 +14,11 @@ class _Objective(tf.keras.layers.Layer):
         return self.objective(model, *[self.flatten(i) for i in args])
 
 
+@gin.configurable('BetaVAE', module='objectives')
 class BetaVAE(_Objective):
     @tf.function
-    def objective(self, model, target, x_mean, x_log_var, z, z_mean, z_log_var):
+    @gin.configurable(module='objectives.BetaVAE')
+    def objective(self, model, target, x_mean, x_log_var, z, z_mean, z_log_var, beta=gin.REQUIRED):
         log_likelihood = \
             tf.reduce_mean(
                     tf.reduce_sum(
@@ -34,7 +36,7 @@ class BetaVAE(_Objective):
                         name="-loglikelihood")
         self.add_metric(kld, aggregation="mean", name="kld")
 
-        return -log_likelihood + model.beta * kld
+        return -log_likelihood + beta * kld
 
 
 class FactorVAE(_Objective):

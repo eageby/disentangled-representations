@@ -2,7 +2,7 @@ import tensorflow as tf
 import disentangled.utils
 import disentangled.dataset
 import disentangled.model
-from disentangled.metric.factorvae import intact_dimensions, encode_dataset
+from disentangled.metric.factorvae import intact_dimensions_kld
 
 def gini_index(representation):
     """Returns the gini_index of a representation, being the sparsity measure.
@@ -38,23 +38,20 @@ def metric(model, dataset, subset=100):
     if subset is not None:
         dataset = dataset.take(subset)
 
-    breakpoint()
-    encoded = encode_dataset(model, dataset)
-    intact_idx = intact_dimensions(encoded, subset=None)
-    breakpoint()
+    intact_idx = intact_dimensions_kld(model, dataset, subset=None)
 
     progress = disentangled.utils.TrainingProgress(dataset, total=subset)
     gini = []
     for batch in progress:
-        representation = model.encode(batch)[0]
-        index = gini_index(representation)
+        representation = model.encode(batch['image'])[0]
+        index = gini_index(tf.gather(representation, intact_idx, axis=1))
         gini.append(index)
     
-    batch_size = batch.shape[0]
     gini = tf.stack(gini, axis=0)
     return tf.reduce_mean(gini, axis=0)
 
 if __name__ == '__main__':
-    dataset = disentangled.dataset.shapes3d.pipeline()
-    model = disentangled.model.utils.load("sparsevae_shapes3d")
-    print(metric(model, dataset, 10))
+    disentangled.utils.disable_gpu()
+    dataset = disentangled.dataset.shapes3d.as_image_label().batch(128)
+    model = disentangled.model.utils.load("betavae_shapes3d")
+    print(metric(model, dataset, 1000))

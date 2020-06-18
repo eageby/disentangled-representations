@@ -1,20 +1,23 @@
-import disentangled.utils 
+import disentangled.utils
+import gin.tf
 import tensorflow as tf
 
+
+@gin.configurable
 class VAE(tf.keras.Model):
     def __init__(
-        self,
-        f_phi,
-        f_phi_mean,
-        f_phi_log_var,
-        f_theta,
-        f_theta_mean,
-        f_theta_log_var,
-        prior_dist,
-        output_dist,
-        objective,
-        latents,
-        **kwargs
+            self,
+            f_phi,
+            f_phi_mean,
+            f_phi_log_var,
+            f_theta,
+            f_theta_mean,
+            f_theta_log_var,
+            prior_dist,
+            output_dist,
+            objective,
+            latents,
+            **kwargs
     ):
         super(VAE, self).__init__(**kwargs)
         self.flatten = tf.keras.layers.Flatten()
@@ -39,8 +42,7 @@ class VAE(tf.keras.Model):
     def build(self, input_shape):
         intermediate_shape = self.f_phi.compute_output_shape(input_shape)[1:]
         self.f_theta_dense = tf.keras.layers.Dense(
-            tf.reduce_prod(intermediate_shape),
-            activation='relu',
+            tf.reduce_prod(intermediate_shape), activation="relu"
         )
         self.reshape_theta = tf.keras.layers.Reshape(
             intermediate_shape, name="ReshapeTheta"
@@ -82,11 +84,12 @@ class VAE(tf.keras.Model):
         z_mean, z_log_var = self.encode(target)
         z = self.sample(z_mean, z_log_var, training)
         x_mean, x_log_var = self.decode(z)
+
         return x_mean, z, target
 
-    def train(self, data, learning_rate, iterations=100, **kwargs):
+    @gin.configurable('trainVAE')
+    def train(self, data, optimizer, iterations=100, **kwargs):
         data = data.take(int(iterations))
-        optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
         progress = disentangled.utils.TrainingProgress(
             data, total=int(iterations))
 
@@ -99,10 +102,11 @@ class VAE(tf.keras.Model):
                 x_mean, x_log_var = self.decode(z)
 
                 loss = self.objective(
-                    self, batch, x_mean, x_log_var, z, z_mean, z_log_var)
+                    self, batch, x_mean, x_log_var, z, z_mean, z_log_var
+                )
 
             tf.debugging.check_numerics(loss, "Loss is not valid")
-            # Discriminator weights are assigned as not trainable in init
+
             grad = tape.gradient(loss, self.trainable_variables)
             optimizer.apply_gradients(zip(grad, self.trainable_variables))
             metrics = {m.name: m.result() for m in self.metrics}
@@ -111,5 +115,3 @@ class VAE(tf.keras.Model):
 
         for batch in progress:
             progress.update(*step(batch), interval=1)
-
-

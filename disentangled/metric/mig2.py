@@ -1,11 +1,14 @@
 import disentangled.dataset as dataset
-import disentangled.model.distributions as dist import disentangled.model.networks as networks
+import disentangled.model.distributions as dist 
+import disentangled.model.networks as networks
 import disentangled.model.utils
 import disentangled.utils as utils
 import numpy as np
-import sklearn.metrics import tensorflow as tf
+import sklearn.metrics 
+import tensorflow as tf
 from disentangled.model.objectives import _TOLERANCE
 
+import gin
 
 def discrete_mutual_info(mus, ys):
     """Compute discrete mutual information."""
@@ -43,13 +46,16 @@ def discretize(target, bins):
     return discretized
 
 
-def mutual_information_gap(model, dataset):
+@gin.configurable
+def mutual_information_gap(model, dataset, batches, batch_size):
+    dataset = dataset.as_image_label().batch(batch_size).take(batches)
     mig = []
 
-    progress = disentangled.utils.TrainingProgress(dataset, total=480)
+    progress = disentangled.utils.TrainingProgress(dataset, total=batches)
+    progress.write('Calculating MIG')
 
     for batch in progress:
-        mean, log_var = model.encode(batch["image"])
+        mean, _ = model.encode(batch["image"])
         discrete_mean = discretize(mean, 20)
         mutual_information = discrete_mutual_info(
             discrete_mean, batch["label"])
@@ -64,8 +70,7 @@ def mutual_information_gap(model, dataset):
 
     return tf.reduce_mean(tf.stack(mig))
 
+gin.parse_config_file('disentangled/config/config.gin')
 
 if __name__ == "__main__":
-    dataset = disentangled.dataset.shapes3d.as_image_label().batch(1000).take(100)
-    model = disentangled.model.utils.load("beta_tcvae_shapes3d")
-    print(mutual_information_gap(model, dataset))
+    print(mutual_information_gap(model=gin.REQUIRED, dataset=gin.REQUIRED, batches=gin.REQUIRED, batch_size=gin.REQUIRED))

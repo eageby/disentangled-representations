@@ -8,6 +8,8 @@ import numpy as np
 import tensorflow as tf
 import tensorflow_datasets as tfds
 
+import gin
+
 from . import serialize, utils
 
 # Handles Too many open files error
@@ -16,6 +18,7 @@ _, _high = resource.getrlimit(resource.RLIMIT_NOFILE)
 resource.setrlimit(resource.RLIMIT_NOFILE, (_high, _high))
 
 
+@gin.configurable("Dataset")
 def get(name):
     return getattr(sys.modules[__name__], name)
 
