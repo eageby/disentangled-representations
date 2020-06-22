@@ -49,7 +49,23 @@ conv_2_transpose = tf.keras.Sequential([
             ),
         ])
 
-gin.constant('networks.conv_2', conv_2)
-gin.constant('networks.conv_2_transpose', conv_2_transpose)
-gin.constant('networks.conv_4', conv_4)
-gin.constant('networks.conv_4_transpose', conv_4_transpose)
+@gin.configurable
+def discriminator(latents, activation):
+    return tf.keras.Sequential(
+                [
+                    tf.keras.layers.Dense(
+                        1000, activation=activation, input_shape=(latents,)
+                    ),
+                    tf.keras.layers.Dense(1000, activation=activation),
+                    tf.keras.layers.Dense(1000, activation=activation),
+                    tf.keras.layers.Dense(1000, activation=activation),
+                    tf.keras.layers.Dense(1000, activation=activation),
+                    tf.keras.layers.Dense(1000, activation=activation),
+                    tf.keras.layers.Dense(2, activation="softmax"),
+                ]
+            )
+
+gin.constant('disentangled.model.networks.conv_2', conv_2)
+gin.constant('disentangled.model.networks.conv_2_transpose', conv_2_transpose)
+gin.constant('disentangled.model.networks.conv_4', conv_4)
+gin.constant('disentangled.model.networks.conv_4_transpose', conv_4_transpose)

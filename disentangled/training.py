@@ -1,23 +1,29 @@
-import sys
-from inspect import signature
-import tensorflow as tf 
 import disentangled.dataset
 import disentangled.model
+import disentangled.model.utils
+import disentangled.utils
 import disentangled.visualize
+import tensorflow as tf
 import gin.tf
 
-__all__ = ["train"]
+import os
+
+from decouple import config
 
 @gin.configurable
-def train(model, dataset, batch_size) -> tf.keras.Model:
-    data = dataset.pipeline(batch_size=batch_size)
+def run_training(model, dataset, save=False) -> tf.keras.Model:
+    model.predict(dataset, steps=1)  # Instantiating model
+    model.train(dataset.repeat())
 
-    model.predict(data, steps=1) # Instantiating model 
-    model.train(data.repeat())
-    
+    if save:
+        disentangled.model.utils.save(model, gin.REQUIRED)
+
     return model
 
-if __name__ == '__main__':
-    gin.parse_config_file('disentangled/config/betavae/shapes3d.gin')
-    train(batch_size=1)
-    print(gin.operative_config_str())
+if __name__ == "__main__":
+    with disentangled.utils.config_path():
+        gin.parse_config_file("BetaVAE/Shapes3d.gin")
+
+    gin.bind_parameter('VAE.train.iterations', 1000)
+    # print(gin.operative_config_str())
+    run_training(model=gin.REQUIRED, dataset=gin.REQUIRED)

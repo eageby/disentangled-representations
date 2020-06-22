@@ -1,16 +1,46 @@
 import tqdm
-import os 
+import os
 import click
 import tensorflow as tf
+from pathlib import Path
+from decouple import config
+from contextlib import contextmanager
+import gin
 
-def disable_gpu():
-    os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+def get_data_path():
+    return Path(config("DISENTANGLED_REPRESENTATIONS_DIRECTORY"))
 
-def disable_info_output(level=1):
-    os.environ['TF_CPP_MIN_LOG_LEVEL'] = str(level)
+@gin.configurable
+def get_logs_path(suffix=None):
+    base = Path(config("DISENTANGLED_REPRESENTATIONS_DIRECTORY")) / "logs"
 
-def config():
-    tf.random.set_seed(10)
+    if suffix is not None:
+        base /= suffix
+
+    subdir = [b for b in base.iterdir()]
+    if len(subdir) == 0:
+        counter = 0
+    else:
+        counter = max([b.parts[-1] for b in subdir])
+   
+    return base / str(counter + 1)
+
+def get_config_path():
+    return Path(__file__).resolve().parent / "config"
+
+@contextmanager
+def config_path():
+    old = Path('.')
+    os.chdir(get_config_path())
+    try:
+        yield
+    finally:
+        os.chdir(old)
+
+def parse_config_file(path):
+    with config_path():
+        gin.parse_config_file(path)
+
 
 class TrainingProgress(tqdm.tqdm):
     def __init__(self, iterable, **kwargs):
@@ -29,10 +59,12 @@ class TrainingProgress(tqdm.tqdm):
             **kwargs
         )
 
-    def update(self, loss, metrics, interval=10):
+    def update(self, logs, interval=10):
+        loss = logs.pop('loss')
         if self.n % interval == 0:
-            self.postfix = 'Loss: {loss:.2f}, '.format(loss=loss) + ', '.join(key + ': ' + '{:.2f}'.format(metrics[key]) for key in metrics.keys())
+            self.postfix = 'Loss: {loss:.2f}, '.format(loss=loss) + ', '.join(key + ': ' + '{:.2f}'.format(logs[key]) for key in logs.keys())
             self.refresh()
+
 
 """https://stackoverflow.com/questions/54073767/command-line-interface-with-multiple-commands-using-click-add-unspecified-optio"""
 

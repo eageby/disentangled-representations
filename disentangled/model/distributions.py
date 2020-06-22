@@ -2,14 +2,12 @@ import math
 import gin
 import tensorflow as tf
 
-_TOLERANCE = 1e-7
-
-
 @gin.configurable
 class Gaussian:
-    def __init__(self, mean=0.0, log_var=0.0):
+    def __init__(self, mean=0.0, log_var=0.0, tolerance=0.0):
         self.mean = mean
         self.log_var = log_var
+        self.tolerance = tolerance
 
     @tf.function
     def log_likelihood(self, sample=0.0, mean=None, log_var=None):
@@ -21,7 +19,7 @@ class Gaussian:
 
         return -0.5 * (
             log_var
-            + tf.square(sample - mean) / (tf.exp(log_var) + _TOLERANCE)
+            + tf.square(sample - mean) / (tf.exp(log_var) + self.tolerance)
             + tf.math.log(2 * math.pi)
         )
 
@@ -51,17 +49,21 @@ class Gaussian:
 
 @gin.configurable
 class Bernoulli:
+    def __init__(self, tolerance=0.0):
+        self.tolerance = tolerance
+
     @tf.function
     def log_likelihood(self, target, mean, *args):
-        return target * tf.math.log(mean + _TOLERANCE)  \
-            + (1 - target) * tf.math.log(1 - mean + _TOLERANCE)
+        return target * tf.math.log(mean + self.tolerance)  \
+            + (1 - target) * tf.math.log(1 - mean + self.tolerance)
 
 @gin.configurable
 class Laplacian:
-    def __init__(self, mean=0.0, log_var=0.0):
+    def __init__(self, mean=0.0, log_var=0.0, tolerance=0.0):
         self.mean = mean
         self.log_var = log_var
-
+        self.tolerance = tolerance
+ 
     # @tf.function
     # def kld(self, x_mean, x_log_var, y_mean=None, y_log_var=None):
     #     """ Analytical Lower Bound"""
@@ -87,7 +89,7 @@ class Laplacian:
                 tf.math.log(tf.float32.max)) - 1
         )
 
-        return tf.math.exp(0.5*x_log_var) / (tf.math.exp(0.5*y_log_var) - _TOLERANCE) - \
+        return tf.math.exp(0.5*x_log_var) / (tf.math.exp(0.5*y_log_var) - self.tolerance) - \
         0.5*x_log_var + 0.5*y_log_var - 1 \
         + tf.math.abs(x_mean - y_mean) / \
-        (tf.math.exp(0.5*y_log_var) + _TOLERANCE)
+        (tf.math.exp(0.5*y_log_var) + self.tolerance)

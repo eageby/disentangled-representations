@@ -1,0 +1,32 @@
+include 'config.gin'
+
+import disentangled.model.objectives
+import disentangled.model
+import gin.tf.external_configurables
+
+# Training
+# ==============================================================================
+run_training.model=@model.FactorVAE()
+
+# Objective
+# ==============================================================================
+FactorVAE.objective = @Objective()
+Objective.objective_fn = @objectives.factorvae
+objectives.factorvae.tolerance = %TOLERANCE
+
+# Discriminator 
+# ==============================================================================
+model.FactorVAE.discriminator = @disentangled.model.networks.discriminator()
+discriminator.latents=%LATENTS
+discriminator.activation=@tf.nn.leaky_relu
+
+model.FactorVAE.train.discriminator_loss = @objectives.discriminator_loss
+discriminator_loss.tolerance=%TOLERANCE
+
+# Distributions
+# ==============================================================================
+objectives.factorvae.prior_dist=@Gaussian()
+objectives.factorvae.output_dist = @Bernoulli()
+
+Gaussian.mean = 0.0
+Gaussian.log_var = 0.0

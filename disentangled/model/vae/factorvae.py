@@ -4,21 +4,19 @@ import disentangled.model.objectives as objectives
 import disentangled.utils
 import numpy as np
 import tensorflow as tf
+import gin.tf
 
 from .vae import VAE
 
 
+@gin.configurable(module='model')
 class FactorVAE(VAE):
-    def __init__(self, discriminator, gamma, **kwargs):
+    def __init__(self, discriminator, **kwargs):
         super().__init__(
-            objective=objectives.FactorVAE(),
-            prior_dist=dist.Gaussian(mean=0.0, log_var=0.0),
-            output_dist=dist.Bernoulli(),
             name="FactorVAE",
             **kwargs
         )
 
-        self.gamma = gamma
         self.discriminator_net = discriminator
         self.discriminator_net.trainable = False
 
@@ -37,24 +35,12 @@ class FactorVAE(VAE):
 
         return representation
 
+    @gin.configurable(module='model.FactorVAE', blacklist=['data'])
     def train(
-        self, data, learning_rate, learning_rate_discriminator, iterations=100, **kwargs
+        self, data, optimizer=gin.REQUIRED, optimizer_discriminator=gin.REQUIRED, iterations=gin.REQUIRED, discriminator_loss=gin.REQUIRED
     ):
-        beta_1 = kwargs.pop("beta_1", 0.9)
-        beta_2 = kwargs.pop("beta_2", 0.999)
-        beta_1_discriminator = kwargs.pop("beta_1_discriminator", 0.5)
-        beta_2_discriminator = kwargs.pop("beta_2_discriminator", 0.9)
-
-        optimizer_theta = tf.keras.optimizers.Adam(
-            learning_rate=learning_rate, beta_1=beta_1, beta_2=beta_2
-        )
-        optimizer_psi = tf.keras.optimizers.Adam(
-            learning_rate=learning_rate_discriminator,
-            beta_1=beta_1_discriminator,
-            beta_2=beta_2_discriminator,
-        )
-
         data = data.batch(2)
+
         progress = disentangled.utils.TrainingProgress(
             data.take(int(iterations)), total=int(iterations)
         )
@@ -70,13 +56,13 @@ class FactorVAE(VAE):
                 x_mean, x_log_var = self.decode(z)
 
                 loss_theta = self.objective(
-                    self, batch_theta, x_mean, x_log_var, z_mean, z_log_var, p_z
+                    batch_theta, x_mean, x_log_var, z_mean, z_log_var, p_z
                 )
                 tf.debugging.check_numerics(loss_theta, "loss is invalid")
 
             # Discriminator weights are assigned as not trainable in init
             grad_theta = tape.gradient(loss_theta, self.trainable_variables)
-            optimizer_theta.apply_gradients(
+            optimizer.apply_gradients(
                 zip(grad_theta, self.trainable_variables))
 
             # Updating Discriminator
@@ -90,11 +76,11 @@ class FactorVAE(VAE):
 
                 p_permuted = self.discriminator(z_permuted)
 
-                loss_psi = self.objective.discriminator(p_z, p_permuted)
+                loss_psi = discriminator_loss(p_z, p_permuted)
 
             grad_psi = tape.gradient(
                 loss_psi, self.discriminator_net.variables)
-            optimizer_psi.apply_gradients(
+            optimizer_discriminator.apply_gradients(
                 zip(grad_psi, self.discriminator_net.variables)
             )
 

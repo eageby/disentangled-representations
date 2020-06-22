@@ -6,7 +6,7 @@ import disentangled.utils as utils
 import numpy as np
 import sklearn.metrics 
 import tensorflow as tf
-from disentangled.model.objectives import _TOLERANCE
+
 
 import gin
 
@@ -48,7 +48,7 @@ def discretize(target, bins):
 
 @gin.configurable
 def mutual_information_gap(model, dataset, batches, batch_size):
-    dataset = dataset.as_image_label().batch(batch_size).take(batches)
+    dataset = dataset.batch(batch_size).take(batches)
     mig = []
 
     progress = disentangled.utils.TrainingProgress(dataset, total=batches)
@@ -56,6 +56,8 @@ def mutual_information_gap(model, dataset, batches, batch_size):
 
     for batch in progress:
         mean, _ = model.encode(batch["image"])
+
+        breakpoint()
         discrete_mean = discretize(mean, 20)
         mutual_information = discrete_mutual_info(
             discrete_mean, batch["label"])
@@ -70,7 +72,8 @@ def mutual_information_gap(model, dataset, batches, batch_size):
 
     return tf.reduce_mean(tf.stack(mig))
 
-gin.parse_config_file('disentangled/config/config.gin')
 
 if __name__ == "__main__":
+    disentangled.utils.parse_config_file('mig.gin')
     print(mutual_information_gap(model=gin.REQUIRED, dataset=gin.REQUIRED, batches=gin.REQUIRED, batch_size=gin.REQUIRED))
+

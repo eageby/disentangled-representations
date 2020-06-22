@@ -1,0 +1,10 @@
+include 'config.gin'
+
+clustering.model=@disentangled.model.utils.load()
+load.filename='betavae_shapes3d'
+
+clustering.dataset=@Shapes3d.supervised()
+supervised.num_parallel_calls=%PARALLEL_CALLS
+
+clustering.batches=1
+clustering.batch_size=500

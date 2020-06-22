@@ -1,14 +1,10 @@
 import itertools
 import resource
 import sys
-from pathlib import Path
-
-import h5py
-import numpy as np
-import tensorflow as tf
-import tensorflow_datasets as tfds
 
 import gin
+import tensorflow as tf
+import tensorflow_datasets as tfds
 
 from . import serialize, utils
 
@@ -18,7 +14,6 @@ _, _high = resource.getrlimit(resource.RLIMIT_NOFILE)
 resource.setrlimit(resource.RLIMIT_NOFILE, (_high, _high))
 
 
-@gin.configurable("Dataset")
 def get(name):
     return getattr(sys.modules[__name__], name)
 
@@ -63,10 +58,10 @@ class MNIST(Dataset):
 
     _builder = tfds.builder("{}:{}".format(_name, __version__))
 
-    @classmethod
-    def pipeline(cls, split="train", batch_size=128):
+    @staticmethod
+    def pipeline(split="train", batch_size=128):
         return (
-            cls.load(split)
+            MNIST.load(split)
             .map(utils.get_image)
             .map(utils.normalize_uint8)
             .batch(batch_size)
@@ -91,32 +86,44 @@ class Shapes3d(Dataset):
     ]
     num_values_per_factor = [10, 10, 10, 8, 4, 15]
 
-    @classmethod
-    def pipeline(cls, batch_size=64, prefetch_batches=10):
-        return (
-            cls.load()
-            .map(utils.get_image, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+    @staticmethod
+    @gin.configurable(module="Shapes3d")
+    def pipeline(batch_size, prefetch_batches, num_parallel_calls, shuffle=None):
+        dataset = (
+            Shapes3d.load()
+            .map(utils.get_image, num_parallel_calls=num_parallel_calls)
             .batch(batch_size)
-            .map(
-                utils.normalize_uint8, num_parallel_calls=tf.data.experimental.AUTOTUNE
-            )
+            .map(utils.normalize_uint8, num_parallel_calls=num_parallel_calls)
             .prefetch(prefetch_batches)
-        )
+            )
+    
+        if shuffle is None:
+            return dataset
 
-    @classmethod
-    def as_image_label(cls):
-        return (
-            cls.load()
-            .map(cls.label_map)
+        return shuffle(dataset)
+
+    @staticmethod
+    @gin.configurable(module='Shapes3d')
+    def supervised(num_parallel_calls, shuffle=None):
+        dataset = (
+            Shapes3d.load()
+            .map(Shapes3d.label_map, num_parallel_calls=num_parallel_calls)
             .map(
-                utils.normalize_uint8, num_parallel_calls=tf.data.experimental.AUTOTUNE
+                utils.normalize_uint8, num_parallel_calls=num_parallel_calls
             )
         )
 
-    @classmethod
-    def label_map(cls, element):
-        labels = tf.convert_to_tensor([element[f]
-                                       for f in cls.factors], dtype=tf.uint8)
+        if shuffle is None:
+            return dataset
+
+        return shuffle(dataset)
+
+
+    @staticmethod
+    def label_map(element):
+        labels = tf.convert_to_tensor(
+            [element[f] for f in Shapes3d.factors], dtype=tf.uint8
+        )
 
         return {"image": element["image"], "label": labels}
 

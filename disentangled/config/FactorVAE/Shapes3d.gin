@@ -1,0 +1,57 @@
+include 'FactorVAE/FactorVAE.gin'
+
+LATENTS = 10
+
+# Training Parameters 
+# ==============================================================================
+FactorVAE.train.iterations = 1e5
+objectives.factorvae.gamma = 7
+
+# Dataset
+# ==============================================================================
+run_training.dataset=@Shapes3d.pipeline()
+pipeline.batch_size = 64
+pipeline.prefetch_batches = 10
+pipeline.num_parallel_calls = %PARALLEL_CALLS
+
+# Model
+# ==============================================================================
+FactorVAE.latents=%LATENTS
+
+# Encoder
+# ==============================================================================
+FactorVAE.f_phi = %networks.conv_4
+FactorVAE.f_phi_mean=@mean/tf.keras.layers.Dense()
+FactorVAE.f_phi_log_var=@log_var/tf.keras.layers.Dense()
+Dense.units=%LATENTS
+Dense.activation=None
+
+# Decoder
+# ==============================================================================
+FactorVAE.f_theta = %networks.conv_4_transpose
+FactorVAE.f_theta_mean=@mean/tf.keras.layers.Conv2DTranspose()
+FactorVAE.f_theta_log_var=@log_var/tf.keras.layers.Conv2DTranspose()
+
+Conv2DTranspose.filters=3
+Conv2DTranspose.kernel_size=(3,3)
+Conv2DTranspose.strides=(1,1)
+
+mean/Conv2DTranspose.activation="sigmoid"
+log_var/Conv2DTranspose.activation=None
+
+# Optimizer 
+# ==============================================================================
+FactorVAE.train.optimizer = @network/tf.keras.optimizers.Adam()
+FactorVAE.train.optimizer_discriminator = @discriminator/tf.keras.optimizers.Adam()
+
+network/Adam.learning_rate = 1e-4
+network/Adam.beta_1 = 0.9
+network/Adam.beta_2 = 0.999
+
+discriminator/Adam.learning_rate = 1e-5
+discriminator/Adam.beta_1 = 0.5
+discriminator/Adam.beta_2 = 0.9
+
+# Saving
+# ==============================================================================
+disentangled.model.utils.save.filename='factorvae_shapes3d'

@@ -1,0 +1,36 @@
+import disentangled.config.externals
+import disentangled.model.utils
+import disentangled.dataset
+
+
+TOLERANCE = 1e-7
+
+RANDOM_SEED = 10
+
+PARALLEL_CALLS = %tf.data.experimental.AUTOTUNE
+
+disentangled.model.utils.save.overwrite=False
+
+# Distributions
+# ==============================================================================
+Gaussian.tolerance = %TOLERANCE
+Bernoulli.tolerance = %TOLERANCE
+Laplacian.tolerance = %TOLERANCE
+
+# Dataset Shuffling
+# ==============================================================================
+pipeline.shuffle=@tf.data.Dataset.shuffle
+supervised.shuffle=@tf.data.Dataset.shuffle
+
+shuffle.buffer_size = 100
+shuffle.seed = %RANDOM_SEED
+shuffle.reshuffle_each_iteration = True
+
+# Tensorboard
+# ==============================================================================
+
+TensorBoard.update_freq = 1
+TensorBoard.write_graph = False
+
+TensorBoard.log_dir = @get_logs_path()
+get_logs_path.suffix='1'
