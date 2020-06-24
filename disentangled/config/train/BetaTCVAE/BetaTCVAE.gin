@@ -1,4 +1,5 @@
 include 'config.gin'
+include 'train/training.gin'
 
 import disentangled.model.objectives
 import gin.tf.external_configurables
@@ -6,21 +7,16 @@ import gin.tf.external_configurables
 # Training
 # ==============================================================================
 run_training.model=@VAE()
-VAE.name = "BetaVAE"
-
+VAE.name = "BetaTCVAE"
 # Objective
 # ==============================================================================
 VAE.objective = @Objective()
-Objective.objective_fn = @objective/betavae
+Objective.objective_fn = @objective/betatcvae
 
 # Distributions
 # ==============================================================================
-betavae.prior_dist=@Gaussian()
-betavae.output_dist = @Bernoulli()
+objectives.betatcvae.prior_dist=@Gaussian()
+objectives.betatcvae.output_dist = @Bernoulli()
 
 Gaussian.mean = 0.0
 Gaussian.log_var = 0.0
-
-
-VAE.train.callbacks = [@tf.keras.callbacks.TensorBoard()]
-get_logs_path.suffix = 'betavae'

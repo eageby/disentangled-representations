@@ -1,0 +1,30 @@
+import disentangled.training
+
+# Dataset Shuffling
+# ==============================================================================
+pipeline.shuffle=@tf.data.Dataset.shuffle
+supervised.shuffle=@tf.data.Dataset.shuffle
+
+shuffle.buffer_size = 100
+shuffle.seed = %RANDOM_SEED
+shuffle.reshuffle_each_iteration = True
+
+
+# Callbacks
+# ==============================================================================
+run_training.callbacks = [@OperativeConfigCallback(), @tf.keras.callbacks.TensorBoard()]
+
+OperativeConfigCallback.log_dir =%LOGS_PATH
+
+LOGS_PATH = @logs_path/singleton()
+logs_path/singleton.constructor = @get_logs_path
+
+# Tensorboard
+# ==============================================================================
+TensorBoard.update_freq = 1
+TensorBoard.write_graph = False
+
+TensorBoard.log_dir = %LOGS_PATH
+get_logs_path.suffix='1'
+
+

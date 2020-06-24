@@ -1,10 +1,10 @@
-include 'BetaVAE/BetaVAE.gin'
+include 'train/BetaVAE/BetaVAE.gin'
 
 LATENTS = 10
 
 # Training Parameters 
 # ==============================================================================
-VAE.train.iterations = 1e5
+run_training.iterations = 1e5
 objectives.betavae.beta = 4
 
 # Dataset
@@ -48,4 +48,8 @@ Adam.learning_rate = 1e-4
 
 # Saving
 # ==============================================================================
-disentangled.model.utils.save.filename='betavae_shapes3d'
+disentangled.model.utils.save.filename='BetaVAE/Shapes3d'
+
+# Tensorboard
+# ==============================================================================
+get_logs_path.suffix = 'BetaVAE/Shapes3d'

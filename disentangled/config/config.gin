@@ -1,5 +1,6 @@
 import disentangled.config.externals
 import disentangled.model.utils
+import disentangled.utils
 import disentangled.dataset
 
 
@@ -17,20 +18,14 @@ Gaussian.tolerance = %TOLERANCE
 Bernoulli.tolerance = %TOLERANCE
 Laplacian.tolerance = %TOLERANCE
 
-# Dataset Shuffling
+# import disentangled.metric.callback
+# include 'mig.gin'
+# MetricCallback.metric_fn = @mutual_information_gap
+# MetricCallback.metric_name = 'mutual_information_gap'
+
+# Working Directory
 # ==============================================================================
-pipeline.shuffle=@tf.data.Dataset.shuffle
-supervised.shuffle=@tf.data.Dataset.shuffle
-
-shuffle.buffer_size = 100
-shuffle.seed = %RANDOM_SEED
-shuffle.reshuffle_each_iteration = True
-
-# Tensorboard
-# ==============================================================================
-
-TensorBoard.update_freq = 1
-TensorBoard.write_graph = False
-
-TensorBoard.log_dir = @get_logs_path()
-get_logs_path.suffix='1'
+# Assing either through gin
+# disentangled.utils.get_data_path.data_path = PATH
+# or environment variable 
+# DISENTANGLED_REPRESENTATIONS_DIRECTORY = PATH

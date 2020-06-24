@@ -1,10 +1,10 @@
-include 'BetaTCVAE/BetaTCVAE.gin'
+include 'train/BetaTCVAE/BetaTCVAE.gin'
 
 LATENTS = 10
 
 # Training Parameters 
 # ==============================================================================
-VAE.train.iterations = 1e5
+run_training.iterations = 1e5
 objectives.betatcvae.beta = 4
 objectives.betatcvae.dataset_size = 5e5
 
@@ -49,4 +49,4 @@ Adam.learning_rate = 1e-4
 
 # Saving
 # ==============================================================================
-disentangled.model.utils.save.filename='betatcvae_shapes3d'
+disentangled.model.utils.save.filename='BetaTCVAE/Shapes3d'

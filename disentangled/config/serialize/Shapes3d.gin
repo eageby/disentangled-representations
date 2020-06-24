@@ -1,0 +1,10 @@
+include 'config.gin'
+
+import disentangled.dataset.serialize
+import disentangled.dataset.serialize.raw_datasets
+
+disentangled.dataset.serialize.write.dataset = @disentangled.dataset.serialize.raw_datasets.Shapes3d.create()
+disentangled.dataset.serialize.write.path = @disentangled.dataset.serialize.raw_datasets.Shapes3d.get_serialized_path()
+disentangled.dataset.serialize.write.batches = 1300
+
+disentangled.dataset.serialize.raw_datasets.Shapes3d.create.batch_size = 100

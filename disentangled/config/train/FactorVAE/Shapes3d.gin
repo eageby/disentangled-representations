@@ -1,10 +1,10 @@
-include 'FactorVAE/FactorVAE.gin'
+include 'train/FactorVAE/FactorVAE.gin'
 
 LATENTS = 10
 
 # Training Parameters 
 # ==============================================================================
-FactorVAE.train.iterations = 1e5
+run_training.iterations = 1e5
 objectives.factorvae.gamma = 7
 
 # Dataset
@@ -54,4 +54,4 @@ discriminator/Adam.beta_2 = 0.9
 
 # Saving
 # ==============================================================================
-disentangled.model.utils.save.filename='factorvae_shapes3d'
+disentangled.model.utils.save.filename='FactorVAE/Shapes3d'
