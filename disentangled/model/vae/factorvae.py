@@ -9,13 +9,10 @@ import tensorflow as tf
 from .vae import VAE
 
 
-@gin.configurable(module='model')
+@gin.configurable(module="model")
 class FactorVAE(VAE):
     def __init__(self, discriminator, **kwargs):
-        super().__init__(
-            name="FactorVAE",
-            **kwargs
-        )
+        super().__init__(name="FactorVAE", **kwargs)
 
         self.discriminator_net = discriminator
         self.discriminator_net.trainable = False
@@ -35,9 +32,15 @@ class FactorVAE(VAE):
 
         return representation
 
-    @gin.configurable(module='model.FactorVAE', blacklist=['data'])
+    @gin.configurable(module="model.FactorVAE", blacklist=["data"])
     def train(
-        self, data, optimizer, optimizer_discriminator, iterations, discriminator_loss, callbacks
+        self,
+        data,
+        optimizer,
+        optimizer_discriminator,
+        iterations,
+        discriminator_loss,
+        callbacks,
     ):
         data = data.batch(2)
 
@@ -65,30 +68,27 @@ class FactorVAE(VAE):
 
             # Discriminator weights are assigned as not trainable in init
             grad_theta = tape.gradient(loss_theta, self.trainable_variables)
-            optimizer.apply_gradients(
-                zip(grad_theta, self.trainable_variables))
+            optimizer.apply_gradients(zip(grad_theta, self.trainable_variables))
 
             # Updating Discriminator
             with tf.GradientTape() as tape:
                 z_mean, z_log_var = self.encode(batch_psi)
                 z = self.sample(z_mean, z_log_var, training=True)
 
-                z_permuted = tf.py_function(
-                    self.permute_dims, inp=[z], Tout=tf.float32)
+                z_permuted = tf.py_function(self.permute_dims, inp=[z], Tout=tf.float32)
                 z_permuted.set_shape(z.shape)
 
                 p_permuted = self.discriminator(z_permuted)
 
                 loss_psi = discriminator_loss(p_z, p_permuted)
 
-            grad_psi = tape.gradient(
-                loss_psi, self.discriminator_net.variables)
+            grad_psi = tape.gradient(loss_psi, self.discriminator_net.variables)
             optimizer_discriminator.apply_gradients(
                 zip(grad_psi, self.discriminator_net.variables)
             )
 
             logs = {m.name: m.result() for m in self.metrics}
-            logs['loss'] = loss_psi
+            logs["loss"] = loss_psi
 
             return logs
 

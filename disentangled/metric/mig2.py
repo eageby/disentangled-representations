@@ -1,14 +1,15 @@
 import disentangled.dataset as dataset
-import disentangled.model.distributions as dist 
+import disentangled.model.distributions as dist
 import disentangled.model.networks as networks
 import disentangled.model.utils
 import disentangled.utils as utils
 import numpy as np
-import sklearn.metrics 
+import sklearn.metrics
 import tensorflow as tf
 
 
 import gin
+
 
 def discrete_mutual_info(mus, ys):
     """Compute discrete mutual information."""
@@ -53,7 +54,7 @@ def mutual_information_gap(model, dataset, batches, batch_size, progress_bar=Tru
 
     if progress_bar:
         progress = disentangled.utils.TrainingProgress(dataset, total=batches)
-        progress.write('Calculating MIG')
+        progress.write("Calculating MIG")
     else:
         progress = dataset
 
@@ -61,8 +62,7 @@ def mutual_information_gap(model, dataset, batches, batch_size, progress_bar=Tru
         mean, _ = model.encode(batch["image"])
 
         discrete_mean = discretize(mean, 20)
-        mutual_information = discrete_mutual_info(
-            discrete_mean, batch["label"])
+        mutual_information = discrete_mutual_info(discrete_mean, batch["label"])
 
         factor_entropy = discrete_entropy(batch["label"])
         mutual_information_sorted = np.sort(mutual_information, axis=0)[::-1]
@@ -76,6 +76,12 @@ def mutual_information_gap(model, dataset, batches, batch_size, progress_bar=Tru
 
 
 if __name__ == "__main__":
-    disentangled.utils.parse_config_file('mig.gin')
-    print(mutual_information_gap(model=gin.REQUIRED, dataset=gin.REQUIRED, batches=gin.REQUIRED, batch_size=gin.REQUIRED))
-
+    disentangled.utils.parse_config_file("mig.gin")
+    print(
+        mutual_information_gap(
+            model=gin.REQUIRED,
+            dataset=gin.REQUIRED,
+            batches=gin.REQUIRED,
+            batch_size=gin.REQUIRED,
+        )
+    )

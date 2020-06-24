@@ -69,7 +69,6 @@ def estimator(dataset):
 
     output_layers = [
         tf.keras.layers.Dense(int(n), activation="softmax", name=str(i))
-
         for i, n in enumerate(factor_possibilities)
     ]
 
@@ -88,8 +87,7 @@ def estimator(dataset):
 
     estimator.compile(
         optimizer=tf.keras.optimizers.Adam(learning_rate=1e-2),
-        loss=[tf.keras.losses.SparseCategoricalCrossentropy()
-              for i in outputs],
+        loss=[tf.keras.losses.SparseCategoricalCrossentropy() for i in outputs],
         metrics=tf.keras.metrics.SparseCategoricalAccuracy(),
     )
     estimator.fit(dataset, steps_per_epoch=50000)
@@ -148,15 +146,13 @@ def mutual_information_gap(model, dataset):
         )
 
     mutual_information = tf.reduce_mean(tf.stack(mutual_information, 0), 0)
-    mutual_information = tf.sort(
-        mutual_information, axis=0, direction="DESCENDING")
+    mutual_information = tf.sort(mutual_information, axis=0, direction="DESCENDING")
 
     normalized_mutual_information = mutual_information / factor_entropy
     breakpoint()
 
     mig = tf.reduce_mean(
-        normalized_mutual_information[0, :] -
-        normalized_mutual_information[1, :]
+        normalized_mutual_information[0, :] - normalized_mutual_information[1, :]
     )
 
     return tf.reduce_mean(tf.stack(mig))
@@ -206,15 +202,13 @@ def mutual_information_gap_slow(model, dataset):
         )
 
     mutual_information = tf.reduce_mean(tf.stack(mutual_information, 0), 0)
-    mutual_information = tf.sort(
-        mutual_information, axis=0, direction="DESCENDING")
+    mutual_information = tf.sort(mutual_information, axis=0, direction="DESCENDING")
 
     normalized_mutual_information = mutual_information / factor_entropy
     breakpoint()
 
     mig = tf.reduce_mean(
-        normalized_mutual_information[0, :] -
-        normalized_mutual_information[1, :]
+        normalized_mutual_information[0, :] - normalized_mutual_information[1, :]
     )
 
     return tf.reduce_mean(tf.stack(mig))

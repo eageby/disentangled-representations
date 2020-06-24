@@ -6,6 +6,7 @@ import tensorflow as tf
 
 from .vae import VAE
 
+
 class SparseVAE(VAE):
     def __init__(self, latents, beta, gamma, **kwargs):
         super().__init__(
@@ -16,7 +17,7 @@ class SparseVAE(VAE):
             f_phi_log_var=tf.keras.layers.Dense(
                 latents, activation=None, kernel_regularizer=None
             ),
-            prior_dist=dist.Laplacian(mean=0., log_var=0.),
+            prior_dist=dist.Laplacian(mean=0.0, log_var=0.0),
             output_dist=dist.Bernoulli(),
             objective=objectives.SparseVAE(),
             latents=latents,
@@ -30,9 +31,11 @@ class SparseVAE(VAE):
     def sample(self, mean, log_var, training=False):
         gammoid = tf.random.gamma([1], alpha=1, beta=1)
 
-        noise = tf.random.normal(shape=tf.shape(mean), mean=0., stddev=1.)
+        noise = tf.random.normal(shape=tf.shape(mean), mean=0.0, stddev=1.0)
 
-        return gammoid * mean + tf.math.sqrt(gammoid) * noise * tf.math.exp(0.5*log_var)
+        return gammoid * mean + tf.math.sqrt(gammoid) * noise * tf.math.exp(
+            0.5 * log_var
+        )
 
 
 class sparsevae_shapes3d(SparseVAE):

@@ -17,30 +17,29 @@ def clustering(model, dataset, batches, batch_size):
         mean, log_var = model.encode(batch["image"])
         samples = model.sample(mean, log_var)
         embedding_samples = reducer.fit_transform(samples)
-    
 
-        n_labels = batch['label'].shape[-1]
+        n_labels = batch["label"].shape[-1]
         n = np.ceil(np.sqrt(n_labels))
 
         for i in range(n_labels):
-            ax = plt.subplot(n, n, i+1)
-            ax.scatter(embedding_samples[:, 0],
-                        embedding_samples[:, 1],
-                        c=batch['label'][:, i])
-            ax.set_title('Label {}'.format(i))
+            ax = plt.subplot(n, n, i + 1)
+            ax.scatter(
+                embedding_samples[:, 0], embedding_samples[:, 1], c=batch["label"][:, i]
+            )
+            ax.set_title("Label {}".format(i))
 
-        plt.suptitle('Samples')
+        plt.suptitle("Samples")
         plt.show()
-        
-        embedding_samples = reducer.fit_transform(batch['label'])
-        for i in range(n_labels):
-            ax = plt.subplot(n, n, i+1)
-            ax.scatter(embedding_samples[:, 0],
-                        embedding_samples[:, 1],
-                        c=batch['label'][:, i])
-            ax.set_title('Label {}'.format(i))
 
-        plt.suptitle('Labels')
+        embedding_samples = reducer.fit_transform(batch["label"])
+        for i in range(n_labels):
+            ax = plt.subplot(n, n, i + 1)
+            ax.scatter(
+                embedding_samples[:, 0], embedding_samples[:, 1], c=batch["label"][:, i]
+            )
+            ax.set_title("Label {}".format(i))
+
+        plt.suptitle("Labels")
         plt.show()
 
 

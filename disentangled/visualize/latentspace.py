@@ -26,7 +26,6 @@ def traversal_2d(model, data, sample=0, steps=20, offset=0, shuffle=False):
 
     range_ = [
         np.linspace(min_values[d] - offset, max_values[d] + offset, num=steps)
-
         for d in dimensions
     ]
     grid = np.meshgrid(*range_)
@@ -39,7 +38,7 @@ def traversal_2d(model, data, sample=0, steps=20, offset=0, shuffle=False):
 
     vi.show.show_grid(
         vi.show.batch_to_grid(x_traversal, steps, steps),
-        title='Latent Space Traversal 2D'
+        title="Latent Space Traversal 2D",
     )
 
 
@@ -63,7 +62,6 @@ def traversal_1d(model, data, sample, dimensions=10, steps=31, offset=0, shuffle
     range_ = np.stack(
         [
             np.linspace(min_values[d] - offset, max_values[d] + offset, num=steps)
-
             for d in dimensions
         ],
         axis=0,
@@ -79,5 +77,5 @@ def traversal_1d(model, data, sample, dimensions=10, steps=31, offset=0, shuffle
 
     vi.show.show_grid(
         vi.show.batch_to_grid(x_traversal, rows=dimensions.size, cols=steps),
-        title='Latent Space Traversal 1D'
+        title="Latent Space Traversal 1D",
     )

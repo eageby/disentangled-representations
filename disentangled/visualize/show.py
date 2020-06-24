@@ -9,6 +9,7 @@ matplotlib.rcParams["toolbar"] = "None"
 
 plt.rcParams["figure.figsize"] = [2 * i for i in plt.rcParams["figure.figsize"]]
 
+
 def batch_to_grid(images, rows=4, cols=8):
     images = images[: rows * cols]
     cols = np.array_split(images, rows, axis=0)

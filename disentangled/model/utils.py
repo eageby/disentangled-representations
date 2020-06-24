@@ -6,6 +6,7 @@ from decouple import config
 
 import disentangled.utils
 
+
 @gin.configurable(module="disentangled.model.utils")
 def save(model, filename, overwrite=False):
     path = disentangled.utils.get_data_path() / "models"

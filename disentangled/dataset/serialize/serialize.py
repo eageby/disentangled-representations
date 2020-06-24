@@ -18,28 +18,23 @@ def parse_image(element):
     return element
 
 
-@gin.configurable(module='disentangled.dataset.serialize')
+@gin.configurable(module="disentangled.dataset.serialize")
 def write(dataset, path, batches, overwrite=False, **kwargs):
     data = dataset.take(batches).map(serialize_image)
 
     path.parent.mkdir(exist_ok=True)
 
     if path.exists() and (
-            overwrite
-            or click.confirm(
-                "Do you want to overwrite {}".format(path), abort=True
-        )
+        overwrite
+        or click.confirm("Do you want to overwrite {}".format(path), abort=True)
     ):
         path.unlink()
 
     progress = disentangled.utils.TrainingProgress(data, total=batches)
-    progress.write(
-        "Serializing dataset to {}".format(path.resolve())
-    )
+    progress.write("Serializing dataset to {}".format(path.resolve()))
     progress.write(
         "batches: {}, {}".format(
-            batches, ",".join(["{}: {}".format(k, v)
-                               for k, v in kwargs.items()])
+            batches, ",".join(["{}: {}".format(k, v) for k, v in kwargs.items()])
         )
     )
     with tf.io.TFRecordWriter(str(path)) as writer:

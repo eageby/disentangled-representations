@@ -4,8 +4,10 @@ from PySide2.QtCore import Qt
 import numpy as np
 import tensorflow as tf
 
+
 class Latent(QtWidgets.QWidget):
     updated_value = QtCore.Signal(float)
+
     def __init__(self, idx, value, min_=0, max_=1, *args, **kwargs):
         super(Latent, self).__init__()
         self.min_ = min_
@@ -18,7 +20,7 @@ class Latent(QtWidgets.QWidget):
         self.setMaximumWidth(500)
         self.setMaximumHeight(100)
 
-        self.label = QtWidgets.QLabel(text='Latent Variable {}'.format(self.idx))
+        self.label = QtWidgets.QLabel(text="Latent Variable {}".format(self.idx))
         self.label.setTextInteractionFlags(Qt.TextEditorInteraction)
         layout.addWidget(self.label)
 
@@ -26,9 +28,9 @@ class Latent(QtWidgets.QWidget):
         self.slider.setOrientation(Qt.Horizontal)
         self.slider.setTickPosition(QtWidgets.QSlider.TicksBelow)
         self.slider.setTickInterval(0.01)
-        self.slider.setMinimum(100*min_)
-        self.slider.setMaximum(100*max_)
- 
+        self.slider.setMinimum(100 * min_)
+        self.slider.setMaximum(100 * max_)
+
         layout.addWidget(self.slider)
 
         self.values = QtWidgets.QHBoxLayout()
@@ -37,7 +39,7 @@ class Latent(QtWidgets.QWidget):
         self.min.setObjectName(u"min")
         self.min.setText("{:.2f}".format(min_))
 
-        self.values.addWidget(self.min, 0, Qt.AlignLeft|Qt.AlignTop)
+        self.values.addWidget(self.min, 0, Qt.AlignLeft | Qt.AlignTop)
 
         self.current = QtWidgets.QDoubleSpinBox(self)
         self.current.setObjectName(u"current")
@@ -47,14 +49,13 @@ class Latent(QtWidgets.QWidget):
         self.current.setMaximum(self.max_)
         self.current.setMaximumSize(QtCore.QSize(60, 30))
 
-
         self.values.addWidget(self.current)
 
         self.max = QtWidgets.QLabel(self)
         self.max.setObjectName(u"max")
         self.max.setText("{:.2f}".format(max_))
 
-        self.values.addWidget(self.max, 0, Qt.AlignRight|Qt.AlignTop)
+        self.values.addWidget(self.max, 0, Qt.AlignRight | Qt.AlignTop)
         layout.addLayout(self.values)
 
         self.set(self.value)
@@ -67,53 +68,55 @@ class Latent(QtWidgets.QWidget):
         self.updated_value.connect(self.set)
 
     def set(self, value):
-        self.value = value                
-        self.slider.setValue(100 *value)
+        self.value = value
+        self.slider.setValue(100 * value)
         self.current.setValue(value)
 
     def update_current(self, value):
-        self.current.setValue(value/100)
+        self.current.setValue(value / 100)
 
     def update_slider(self, value):
         self.slider.setValue(100 * value)
         self.updated_value.emit(value)
 
+
 class LatentVariables(QtWidgets.QWidget):
     representationChanged = QtCore.Signal(object)
-    def __init__(self, initial, min_, max_, indices,n_variables=2,*args, **kwargs):
+
+    def __init__(self, initial, min_, max_, indices, n_variables=2, *args, **kwargs):
         super(LatentVariables, self).__init__(*args, **kwargs)
         self.setMaximumWidth(500)
 
         self.initial = np.asarray(initial)
 
-        self.representation = self.initial.copy() 
+        self.representation = self.initial.copy()
         self.indices = indices
 
         self.max_ = max_
         self.min_ = min_
         self.n_max = len(initial)
 
-
         scroll = QtWidgets.QScrollArea()
         layout = QtWidgets.QVBoxLayout(self)
-        self.topSpacer = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
+        self.topSpacer = QtWidgets.QSpacerItem(
+            20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed
+        )
 
         layout.addItem(self.topSpacer)
 
         self.variables = []
         self.variable_layout = QtWidgets.QVBoxLayout()
-        self.set_variables(n_variables) 
+        self.set_variables(n_variables)
 
         layout.addLayout(self.variable_layout)
 
-        self.button = QtWidgets.QPushButton(text='Reset')
+        self.button = QtWidgets.QPushButton(text="Reset")
         self.button.setMaximumWidth(100)
         self.button.clicked.connect(self.reset)
         layout.addWidget(self.button, alignment=Qt.AlignHCenter)
 
         # layout.addItem(self.botSpacer)
         self.setLayout(layout)
-        
 
     def set_sample(self, s):
         self.sample = s
@@ -124,9 +127,14 @@ class LatentVariables(QtWidgets.QWidget):
     def add_variable(self):
         i = len(self.variables)
         if i < self.n_max:
-            latent = Latent(self.indices[i], float(self.initial[self.indices[i]]), self.min_[self.indices[i]], self.max_[self.indices[i]])
+            latent = Latent(
+                self.indices[i],
+                float(self.initial[self.indices[i]]),
+                self.min_[self.indices[i]],
+                self.max_[self.indices[i]],
+            )
             self.variables.append(latent)
-            self.variable_layout.addWidget(latent) 
+            self.variable_layout.addWidget(latent)
             latent.updated_value.connect(self.update)
 
     def remove_variable(self):
@@ -147,7 +155,7 @@ class LatentVariables(QtWidgets.QWidget):
 
     def update(self):
         values = np.asarray([v.value for v in self.variables])
-        self.representation[self.indices[:len(self.variables)]] = values
+        self.representation[self.indices[: len(self.variables)]] = values
         self.representationChanged.emit(self.representation)
 
     def set(self, representation):
@@ -160,7 +168,9 @@ class LatentVariables(QtWidgets.QWidget):
 class Options(QtWidgets.QWidget):
     def __init__(self, model, dataset, latents, batch_size, *args, **kwargs):
         super(Options, self).__init__(*args, **kwargs)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed
+        )
         self.setSizePolicy(sizePolicy)
 
         self.layout = QtWidgets.QGridLayout(self)
@@ -175,26 +185,30 @@ class Options(QtWidgets.QWidget):
 
         self.layout.addWidget(self.sampleBox, 5, 4, 1, 1)
 
-        self.latentLabel = QtWidgets.QLabel(self, text='Latent Variables')
-        self.latentLabel.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignVCenter)
+        self.latentLabel = QtWidgets.QLabel(self, text="Latent Variables")
+        self.latentLabel.setAlignment(Qt.AlignLeading | Qt.AlignLeft | Qt.AlignVCenter)
         self.latentLabel.setFont(font)
         self.layout.addWidget(self.latentLabel, 0, 3, 1, 1)
 
-        self.datasetLabel = QtWidgets.QLabel(self, text='Dataset')
+        self.datasetLabel = QtWidgets.QLabel(self, text="Dataset")
         self.datasetLabel.setFont(font)
         self.layout.addWidget(self.datasetLabel, 0, 2, 1, 1)
 
-        self.modelLabel = QtWidgets.QLabel(self, text='Model')
+        self.modelLabel = QtWidgets.QLabel(self, text="Model")
         self.modelLabel.setFont(font)
         self.layout.addWidget(self.modelLabel, 0, 1, 1, 1)
 
-        self.leftSpacer = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.leftSpacer = QtWidgets.QSpacerItem(
+            40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum
+        )
         self.layout.addItem(self.leftSpacer, 5, 0, 1, 1)
 
-        self.rightSpacer = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.rightSpacer = QtWidgets.QSpacerItem(
+            40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum
+        )
         self.layout.addItem(self.rightSpacer, 5, 5, 1, 1)
 
-        self.sampleLabel = QtWidgets.QLabel(self, text='Sample')
+        self.sampleLabel = QtWidgets.QLabel(self, text="Sample")
         self.sampleLabel.setFont(font)
         self.layout.addWidget(self.sampleLabel, 0, 4, 1, 1)
 
@@ -208,16 +222,21 @@ class Options(QtWidgets.QWidget):
 
         self.model = QtWidgets.QLabel(self, text=model)
         self.layout.addWidget(self.model, 5, 1, 1, 1)
-        self.midSpacer = QtWidgets.QSpacerItem(20, 20, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        self.midSpacer = QtWidgets.QSpacerItem(
+            20, 20, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed
+        )
         self.layout.addItem(self.midSpacer, 5, 3, 1, 1)
 
+        self.rightSpacer = QtWidgets.QSpacerItem(
+            20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding
+        )
+        self.leftSpacer = QtWidgets.QSpacerItem(
+            20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding
+        )
+        self.layout.addItem(self.leftSpacer, 5, 0, 1, 1)
+        self.layout.addItem(self.rightSpacer, 5, 6, 1, 1)
 
-        self.rightSpacer = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        self.leftSpacer = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        self.layout.addItem(self.leftSpacer,5,0 ,1,1)
-        self.layout.addItem(self.rightSpacer,5,6 ,1,1)
-        
-        self.shuffleButton = QtWidgets.QPushButton(text='Shuffle')
+        self.shuffleButton = QtWidgets.QPushButton(text="Shuffle")
         self.shuffleButton.setMaximumWidth(80)
         self.layout.addWidget(self.shuffleButton, 5, 5, 1, 1)
         self.shuffleButton.clicked.connect(self.random_sample)
@@ -231,10 +250,13 @@ class Options(QtWidgets.QWidget):
         sample = np.random.randint(0, self.sampleBox.maximum())
         self.sampleBox.setValue(sample)
 
+
 class Image(QtWidgets.QLabel):
     def __init__(self):
         super(Image, self).__init__()
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred
+        )
         self.setSizePolicy(sizePolicy)
         sizePolicy.setHeightForWidth(self.sizePolicy().hasHeightForWidth())
         self.setSizePolicy(sizePolicy)
@@ -253,22 +275,29 @@ class Image(QtWidgets.QLabel):
         self.setFixedHeight(self.size().width())
         super(Image, self).paintEvent(event)
 
+
 class Visualize(QtWidgets.QWidget):
     def __init__(self, *args, **kwargs):
         super(Visualize, self).__init__()
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred
+        )
         self.setSizePolicy(sizePolicy)
 
         self.gridLayout = QtWidgets.QGridLayout(self)
-        self.rightSpacer = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Minimum)
+        self.rightSpacer = QtWidgets.QSpacerItem(
+            40, 20, QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Minimum
+        )
 
         self.gridLayout.addItem(self.rightSpacer, 2, 4, 1, 1)
 
-        self.leftSpacer = QtWidgets.QSpacerItem(20, 20, QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Minimum)
+        self.leftSpacer = QtWidgets.QSpacerItem(
+            20, 20, QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Minimum
+        )
 
         self.gridLayout.addItem(self.leftSpacer, 2, 2, 1, 1)
 
-        self.outputLabel = QtWidgets.QLabel(self,text='Output')
+        self.outputLabel = QtWidgets.QLabel(self, text="Output")
         self.outputLabel.setObjectName(u"outputLabel")
         font = QtGui.QFont()
         font.setBold(True)
@@ -278,7 +307,7 @@ class Visualize(QtWidgets.QWidget):
 
         self.gridLayout.addWidget(self.outputLabel, 0, 5, 1, 1)
 
-        self.representationLabel = QtWidgets.QLabel(self,text='Representation')
+        self.representationLabel = QtWidgets.QLabel(self, text="Representation")
         self.representationLabel.setObjectName(u"representationLabel")
         self.representationLabel.setFont(font)
         self.representationLabel.setAlignment(Qt.AlignCenter)
@@ -302,7 +331,7 @@ class Visualize(QtWidgets.QWidget):
         self.outputImage = Image()
         self.gridLayout.addWidget(self.outputImage, 2, 5, 2, 1)
 
-        self.inputLabel = QtWidgets.QLabel(self, text='Input')
+        self.inputLabel = QtWidgets.QLabel(self, text="Input")
         self.inputLabel.setObjectName(u"inputLabel")
         self.inputLabel.setFont(font)
         self.inputLabel.setAlignment(Qt.AlignCenter)
@@ -314,7 +343,9 @@ class Visualize(QtWidgets.QWidget):
 
         self.inputLine = QtWidgets.QFrame(self)
         self.inputLine.setObjectName(u"inputLine")
-        sizePolicy1 = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
+        sizePolicy1 = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum
+        )
         sizePolicy1.setHorizontalStretch(0)
         sizePolicy1.setVerticalStretch(0)
         sizePolicy1.setHeightForWidth(self.inputLine.sizePolicy().hasHeightForWidth())
@@ -324,21 +355,23 @@ class Visualize(QtWidgets.QWidget):
         self.inputLine.setFrameShape(QtWidgets.QFrame.HLine)
 
         self.gridLayout.addWidget(self.inputLine, 1, 1, 1, 1)
- 
+
         self.scroll = QtWidgets.QScrollArea()
         self.scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.scroll.setWidgetResizable(True)
         self.scroll.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.scroll.setMaximumWidth(500)
-        
+
         self.latent_variables = LatentVariables(**kwargs)
         self.scroll.setWidget(self.latent_variables)
         self.gridLayout.addWidget(self.scroll, 2, 3, 1, 1)
 
     def convert_image(self, image):
         image = np.asarray(255 * image, dtype=np.uint8)
-        qimage = QtGui.QImage(image, image.shape[0],image.shape[1], QtGui.QImage.Format_RGB888)
+        qimage = QtGui.QImage(
+            image, image.shape[0], image.shape[1], QtGui.QImage.Format_RGB888
+        )
         return QtGui.QPixmap(qimage)
 
     def set_input(self, input_):
@@ -347,8 +380,9 @@ class Visualize(QtWidgets.QWidget):
     def set_output(self, output):
         self.outputImage.setPixmap(self.convert_image(output))
 
+
 class MainWindow(QtWidgets.QWidget):
-    def __init__(self, model, data, model_name='', dataset_name='', **kwargs):
+    def __init__(self, model, data, model_name="", dataset_name="", **kwargs):
         super(MainWindow, self).__init__()
         self.model = model
         self.data = np.asarray(data)
@@ -357,7 +391,7 @@ class MainWindow(QtWidgets.QWidget):
 
         self.options = Options(model_name, dataset_name, 32, 128)
         layout.addWidget(self.options)
-        
+
         representation = np.asarray(self.model.encode(self.data)[0])
 
         min_ = np.asarray(tf.math.reduce_min(representation, axis=0))
@@ -365,22 +399,30 @@ class MainWindow(QtWidgets.QWidget):
         var = tf.math.reduce_variance(representation, axis=0)
         idx = np.argsort(var)[::-1]
 
-        self.visualize = Visualize(initial=representation[0], min_=min_, max_=max_, indices=idx)
+        self.visualize = Visualize(
+            initial=representation[0], min_=min_, max_=max_, indices=idx
+        )
         self.options.set_max_latent_variables(representation.shape[-1])
-        self.options.latentVariablesBox.valueChanged.connect(self.visualize.latent_variables.set_variables)
+        self.options.latentVariablesBox.valueChanged.connect(
+            self.visualize.latent_variables.set_variables
+        )
         self.options.latentVariablesBox.valueChanged.connect(self.size)
         self.options.set_max_latent_variables(self.visualize.latent_variables.n_max)
-        self.options.latentVariablesBox.setValue(len(self.visualize.latent_variables.variables))
+        self.options.latentVariablesBox.setValue(
+            len(self.visualize.latent_variables.variables)
+        )
 
         layout.addWidget(self.visualize)
 
         self.setLayout(layout)
         self.resize(QtCore.QSize(1100, 500))
-        
+
         self.update_sample(self.options.sampleBox.value())
-        
+
         self.options.sampleBox.valueChanged.connect(self.update_sample)
-        self.visualize.latent_variables.representationChanged.connect(self.update_representation)
+        self.visualize.latent_variables.representationChanged.connect(
+            self.update_representation
+        )
 
     def update_representation(self, representation):
         self.representation = np.asarray(representation)
@@ -391,16 +433,19 @@ class MainWindow(QtWidgets.QWidget):
         self.sample = sample
         self.visualize.set_input(self.data[self.sample])
 
-        self.representation = np.asarray(self.model.encode(self.data[None, self.sample])[0])[0].copy()
+        self.representation = np.asarray(
+            self.model.encode(self.data[None, self.sample])[0]
+        )[0].copy()
         self.visualize.latent_variables.set(self.representation)
 
         self.output = np.asarray(self.model.decode(self.representation[None])[0])[0]
         self.visualize.set_output(self.output)
 
+
 def main(model, dataset, batch_size=128, shuffle=False, **kwargs):
     app = QtWidgets.QApplication([])
     data = dataset.pipeline(batch_size)
-    
+
     batch = data.as_numpy_iterator().next()
     main = MainWindow(model, batch, **kwargs)
 

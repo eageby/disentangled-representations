@@ -82,11 +82,10 @@ class VAE(tf.keras.Model):
 
         return x_mean, z, target
 
-    @gin.configurable(module="VAE", blacklist=['iterations', "callbacks"])
+    @gin.configurable(module="VAE", blacklist=["iterations", "callbacks"])
     def train(self, data, optimizer, iterations, callbacks):
         data = data.take(int(iterations))
-        progress = disentangled.utils.TrainingProgress(
-            data, total=int(iterations))
+        progress = disentangled.utils.TrainingProgress(data, total=int(iterations))
 
         [cb.set_model(self) for cb in callbacks]
 
@@ -100,8 +99,7 @@ class VAE(tf.keras.Model):
 
                 x_mean, x_log_var = self.decode(z)
 
-                loss = self.objective(
-                    batch, x_mean, x_log_var, z, z_mean, z_log_var)
+                loss = self.objective(batch, x_mean, x_log_var, z, z_mean, z_log_var)
 
             tf.debugging.check_numerics(loss, "Loss is not valid")
 

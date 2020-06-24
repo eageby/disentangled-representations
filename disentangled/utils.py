@@ -57,20 +57,21 @@ def parse_config_file(path):
 def markdownify_operative_config_str(string):
     """Convert an operative config string to markdown format.
         Pasted from future release of Gin-config"""
+
     def process(line):
         """Convert a single line to markdown format."""
-        if not line.startswith('#'):
-            return '    ' + line
+        if not line.startswith("#"):
+            return "    " + line
 
         line = line[2:]
-        if line.startswith('===='):
-            return ''
+        if line.startswith("===="):
+            return ""
 
-        if line.startswith('None'):
-            return '    # None.'
+        if line.startswith("None"):
+            return "    # None."
 
-        if line.endswith(':'):
-            return '#### ' + line
+        if line.endswith(":"):
+            return "#### " + line
 
         return line
 
@@ -82,20 +83,18 @@ def markdownify_operative_config_str(string):
         if procd_line is not None:
             output_lines.append(procd_line)
 
-    return '\n'.join(output_lines)
+    return "\n".join(output_lines)
 
 
 @gin.configurable
 class OperativeConfigCallback(tf.keras.callbacks.Callback):
     def __init__(self, log_dir):
         super(OperativeConfigCallback, self).__init__()
-        self.writer = tf.summary.create_file_writer(
-            logdir=str(log_dir / 'train'))
+        self.writer = tf.summary.create_file_writer(logdir=str(log_dir / "train"))
 
     def on_train_end(self, batch):
         with self.writer.as_default():
-            config = markdownify_operative_config_str(
-                gin.operative_config_str())
+            config = markdownify_operative_config_str(gin.operative_config_str())
             # config = gin.operative_config_str()
             tf.summary.text("operative_config", config, step=0)
 
@@ -155,8 +154,7 @@ class AcceptAllCommand(click.Command):
                     option = command.params[-1]
 
                     # add the option instance to the parser
-                    parser.add_option(
-                        [item], name.replace("-", "_"), obj=option)
+                    parser.add_option([item], name.replace("-", "_"), obj=option)
 
                 return True
 

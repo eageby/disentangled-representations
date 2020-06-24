@@ -30,10 +30,10 @@ class Shapes3d:
     path = None
 
     @staticmethod
-    @gin.configurable(module='disentangled.dataset.serialize.raw_datasets.Shapes3d')
+    @gin.configurable(module="disentangled.dataset.serialize.raw_datasets.Shapes3d")
     def get_serialized_path():
         return disentangled.utils.get_data_path() / "serialized" / "Shapes3d.tfrecords"
-    
+
     def get_file_path():
         file_path = disentangled.utils.get_data_path() / "downloads/3dshapes.h5"
         file_path.parent.mkdir(exist_ok=True, parents=True)
@@ -63,7 +63,6 @@ class Shapes3d:
     def batch_indices(batch_size):
         factors = [
             np.random.choice(Shapes3d.num_values_per_factor[f], batch_size)
-
             for f, _ in enumerate(Shapes3d.factors)
         ]
 
@@ -99,20 +98,19 @@ class Shapes3d:
                 return im, factor, value
 
             return tf.py_function(
-                inner, inp=[idx, factor, value], Tout=(
-                    tf.float32, tf.int64, tf.int64)
+                inner, inp=[idx, factor, value], Tout=(tf.float32, tf.int64, tf.int64)
             )
 
         return wrapper
 
     @staticmethod
-    @gin.configurable(module='disentangled.dataset.serialize.raw_datasets.Shapes3d')
+    @gin.configurable(module="disentangled.dataset.serialize.raw_datasets.Shapes3d")
     def create(batch_size, num_parallel_calls=tf.data.experimental.AUTOTUNE):
         if Shapes3d.path is None:
             Shapes3d.path = tf.keras.utils.get_file(
-                str(Shapes3d.get_file_path().resolve()), "https://storage.googleapis.com/3d-shapes/3dshapes.h5"
-            ) 
-
+                str(Shapes3d.get_file_path().resolve()),
+                "https://storage.googleapis.com/3d-shapes/3dshapes.h5",
+            )
 
         def dict_map(image, factor, value):
             image.set_shape((None, 64, 64, 3))

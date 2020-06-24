@@ -1,20 +1,28 @@
 import sys
 
+
 def complete(model_name: str, hyperparameters: dict) -> dict:
     hyperparameters = {
         key: value for key, value in hyperparameters.items() if value is not None
     }
-     
+
     hyperparameters_default = get_default(model_name)
 
     for key in hyperparameters:
         if key not in hyperparameters_default:
-            raise ValueError("{} is not a valid hyperparameter. See default hyperparameters for {}.".format(key, model_name))
+            raise ValueError(
+                "{} is not a valid hyperparameter. See default hyperparameters for {}.".format(
+                    key, model_name
+                )
+            )
 
-    try: 
-        hyperparameters = {key:type(hyperparameters_default[key])(hyperparameters[key]) for key in hyperparameters.keys()}
+    try:
+        hyperparameters = {
+            key: type(hyperparameters_default[key])(hyperparameters[key])
+            for key in hyperparameters.keys()
+        }
     except (TypeError, ValueError) as e:
-        raise ValueError('Invalid hyperparameter type, {}'.format(e))
+        raise ValueError("Invalid hyperparameter type, {}".format(e))
 
     hyperparameters_default.update(hyperparameters)
 
@@ -37,7 +45,9 @@ Default Hyperparameters""".format(
 def print_(model_name: str, parameters: dict, dataset: str = None):
     line = "\u2500" * 40
 
-    parameter_str = "\n".join(["{:16.16}   {}".format(k,v) for k,v in parameters.items()])
+    parameter_str = "\n".join(
+        ["{:16.16}   {}".format(k, v) for k, v in parameters.items()]
+    )
 
     message = """{line}
 Model              {name}
