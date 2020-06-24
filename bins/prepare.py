@@ -22,5 +22,3 @@ def main(config, gin_file, gin_param, overwrite):
     disentangled.dataset.serialize.write(
         dataset=gin.REQUIRED, batches=gin.REQUIRED, overwrite=overwrite
     )
-
-main()
