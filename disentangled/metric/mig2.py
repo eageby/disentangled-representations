@@ -47,17 +47,19 @@ def discretize(target, bins):
 
 
 @gin.configurable
-def mutual_information_gap(model, dataset, batches, batch_size):
+def mutual_information_gap(model, dataset, batches, batch_size, progress_bar=True):
     dataset = dataset.batch(batch_size).take(batches)
     mig = []
 
-    progress = disentangled.utils.TrainingProgress(dataset, total=batches)
-    progress.write('Calculating MIG')
+    if progress_bar:
+        progress = disentangled.utils.TrainingProgress(dataset, total=batches)
+        progress.write('Calculating MIG')
+    else:
+        progress = dataset
 
     for batch in progress:
         mean, _ = model.encode(batch["image"])
 
-        breakpoint()
         discrete_mean = discretize(mean, 20)
         mutual_information = discrete_mutual_info(
             discrete_mean, batch["label"])
