@@ -18,7 +18,6 @@ def main(config, gin_file, gin_param, overwrite):
 
     gin.parse_config_files_and_bindings(gin_file, gin_param)
 
-    breakpoint()
     disentangled.dataset.serialize.write(
         dataset=gin.REQUIRED, batches=gin.REQUIRED, overwrite=overwrite
     )

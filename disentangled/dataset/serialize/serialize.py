@@ -20,7 +20,6 @@ def parse_image(element):
 
 @gin.configurable(module='disentangled.dataset.serialize')
 def write(dataset, path, batches, overwrite=False, **kwargs):
-    breakpoint()
     data = dataset.take(batches).map(serialize_image)
 
     path.parent.mkdir(exist_ok=True)
