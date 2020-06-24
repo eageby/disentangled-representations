@@ -3,12 +3,11 @@ import sys
 from pathlib import Path
 
 import disentangled.dataset.serialize.utils as utils
+import disentangled.utils
+import gin
 import h5py
 import numpy as np
 import tensorflow as tf
-from decouple import config
-
-__all__ = ["Shapes3d"]
 
 
 def get(name):
@@ -26,14 +25,21 @@ class Shapes3d:
     ]
     num_values_per_factor = [10, 10, 10, 8, 4, 15]
 
-    path = tf.keras.utils.get_file(
-        "3dshapes.h5", "https://storage.googleapis.com/3d-shapes/3dshapes.h5"
-    )
+    data_base_dir = disentangled.utils.get_data_path()
 
-    WORKING_DIR = Path(config("DISENTANGLED_REPRESENTATIONS_DIRECTORY"))
-    serialized_path = WORKING_DIR / "data" / "3dshapes_serialized.tfrecords"
+    path = None
 
-    @classmethod
+    @staticmethod
+    @gin.configurable(module='disentangled.dataset.serialize.raw_datasets.Shapes3d')
+    def get_serialized_path():
+        return disentangled.utils.get_data_path() / "serialized" / "Shapes3d.tfrecords"
+    
+    def get_file_path():
+        file_path = disentangled.utils.get_data_path() / "downloads/3dshapes.h5"
+        file_path.parent.mkdir(exist_ok=True, parents=True)
+        return file_path
+
+    @staticmethod
     def get_index(factors):
         """ Converts factors to indices in range(num_data)
         Args:
@@ -48,7 +54,7 @@ class Shapes3d:
         base = 1
 
         for factor, _ in reversed(list(enumerate(Shapes3d.factors))):
-            indices += Shapes3d.factors[factor] * base
+            indices += factors[factor] * base
             base *= Shapes3d.num_values_per_factor[factor]
 
         return indices
@@ -63,7 +69,8 @@ class Shapes3d:
 
         fixed_factor = np.random.choice(len(Shapes3d.factors))
         fixed_factor_value = np.random.choice(
-            Shapes3d.num_values_per_factor[fixed_factor])
+            Shapes3d.num_values_per_factor[fixed_factor]
+        )
         factors[fixed_factor] = fixed_factor_value
 
         return Shapes3d.get_index(factors), fixed_factor, fixed_factor_value
@@ -99,7 +106,14 @@ class Shapes3d:
         return wrapper
 
     @staticmethod
-    def create(batch_size=100):
+    @gin.configurable(module='disentangled.dataset.serialize.raw_datasets.Shapes3d')
+    def create(batch_size, num_parallel_calls=tf.data.experimental.AUTOTUNE):
+        if Shapes3d.path is None:
+            Shapes3d.path = tf.keras.utils.get_file(
+                str(Shapes3d.get_file_path().resolve()), "https://storage.googleapis.com/3d-shapes/3dshapes.h5"
+            ) 
+
+
         def dict_map(image, factor, value):
             image.set_shape((None, 64, 64, 3))
             factor.set_shape(())
@@ -115,7 +129,7 @@ class Shapes3d:
         )
         dataset = index.map(Shapes3d.read())
 
-        return dataset.map(dict_map, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+        return dataset.map(dict_map, num_parallel_calls=num_parallel_calls)
 
     @staticmethod
     def example(element):
