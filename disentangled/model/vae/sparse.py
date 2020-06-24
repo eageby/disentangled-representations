@@ -4,8 +4,7 @@ import disentangled.model.distributions as dist
 import disentangled.utils
 import tensorflow as tf
 
-from .vae import VAE 
-
+from .vae import VAE
 
 class SparseVAE(VAE):
     def __init__(self, latents, beta, gamma, **kwargs):

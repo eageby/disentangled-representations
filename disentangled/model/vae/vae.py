@@ -6,16 +6,16 @@ import tensorflow as tf
 @gin.configurable
 class VAE(tf.keras.Model):
     def __init__(
-            self,
-            f_phi,
-            f_phi_mean,
-            f_phi_log_var,
-            f_theta,
-            f_theta_mean,
-            f_theta_log_var,
-            objective,
-            latents,
-            **kwargs
+        self,
+        f_phi,
+        f_phi_mean,
+        f_phi_log_var,
+        f_theta,
+        f_theta_mean,
+        f_theta_log_var,
+        objective,
+        latents,
+        **kwargs
     ):
         super(VAE, self).__init__(**kwargs)
         self.flatten = tf.keras.layers.Flatten()
@@ -82,17 +82,16 @@ class VAE(tf.keras.Model):
 
         return x_mean, z, target
 
-    @gin.configurable(module='VAE')
-    def train(self, data, optimizer, iterations, callbacks, **kwargs):
-        breakpoint()
+    @gin.configurable(module="VAE", blacklist=['iterations', "callbacks"])
+    def train(self, data, optimizer, iterations, callbacks):
         data = data.take(int(iterations))
         progress = disentangled.utils.TrainingProgress(
             data, total=int(iterations))
 
-        breakpoint()
         [cb.set_model(self) for cb in callbacks]
 
         [cb.on_train_begin(progress.n) for cb in callbacks]
+
         @tf.function
         def step(batch):
             with tf.GradientTape() as tape:
@@ -102,22 +101,27 @@ class VAE(tf.keras.Model):
                 x_mean, x_log_var = self.decode(z)
 
                 loss = self.objective(
-                    batch, x_mean, x_log_var, z, z_mean, z_log_var
-                )
+                    batch, x_mean, x_log_var, z, z_mean, z_log_var)
 
             tf.debugging.check_numerics(loss, "Loss is not valid")
 
             grad = tape.gradient(loss, self.trainable_variables)
             optimizer.apply_gradients(zip(grad, self.trainable_variables))
             logs = {m.name: m.result() for m in self.metrics}
-            logs['loss'] = loss
+            logs["loss"] = loss
 
             return logs
 
         for batch in progress:
             [cb.on_train_batch_begin(progress.n) for cb in callbacks]
             logs = step(batch)
+
+            for cb in callbacks:
+                updated_log = cb.on_train_batch_end(progress.n, logs)
+
+                if updated_log is not None:
+                    logs = updated_log
+
             progress.update(logs.copy(), interval=1)
-            [cb.on_train_batch_end(progress.n, logs) for cb in callbacks]
 
         [cb.on_train_end(progress.n) for cb in callbacks]

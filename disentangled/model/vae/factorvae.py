@@ -2,9 +2,9 @@ import disentangled.model.distributions as dist
 import disentangled.model.networks as networks
 import disentangled.model.objectives as objectives
 import disentangled.utils
+import gin.tf
 import numpy as np
 import tensorflow as tf
-import gin.tf
 
 from .vae import VAE
 
@@ -37,13 +37,16 @@ class FactorVAE(VAE):
 
     @gin.configurable(module='model.FactorVAE', blacklist=['data'])
     def train(
-        self, data, optimizer=gin.REQUIRED, optimizer_discriminator=gin.REQUIRED, iterations=gin.REQUIRED, discriminator_loss=gin.REQUIRED
+        self, data, optimizer, optimizer_discriminator, iterations, discriminator_loss, callbacks
     ):
         data = data.batch(2)
 
         progress = disentangled.utils.TrainingProgress(
             data.take(int(iterations)), total=int(iterations)
         )
+
+        [cb.set_model(self) for cb in callbacks]
+        [cb.on_train_begin(progress.n) for cb in callbacks]
 
         @tf.function
         def step(batch_theta, batch_psi):
@@ -84,12 +87,24 @@ class FactorVAE(VAE):
                 zip(grad_psi, self.discriminator_net.variables)
             )
 
-            metrics = {m.name: m.result() for m in self.metrics}
+            logs = {m.name: m.result() for m in self.metrics}
+            logs['loss'] = loss_psi
 
-            return loss_theta, metrics
+            return logs
 
         for batches in progress:
-            progress.update(*step(*batches), interval=1)
+            [cb.on_train_batch_begin(progress.n) for cb in callbacks]
+            logs = step(*batches)
+
+            for cb in callbacks:
+                updated_log = cb.on_train_batch_end(progress.n, logs)
+
+                if updated_log is not None:
+                    logs = updated_log
+
+            progress.update(logs.copy(), interval=1)
+
+        [cb.on_train_end(progress.n) for cb in callbacks]
 
 
 class factorvae_shapes3d(FactorVAE):

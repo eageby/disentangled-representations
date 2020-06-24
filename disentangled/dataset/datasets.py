@@ -10,8 +10,8 @@ from . import serialize, utils
 
 # Handles Too many open files error
 # https://github.com/tensorflow/datasets/issues/1441
-_, _high = resource.getrlimit(resource.RLIMIT_NOFILE)
-resource.setrlimit(resource.RLIMIT_NOFILE, (_high, _high))
+# _, _high = resource.getrlimit(resource.RLIMIT_NOFILE)
+# resource.setrlimit(resource.RLIMIT_NOFILE, (_high, _high))
 
 
 def get(name):
@@ -95,22 +95,6 @@ class Shapes3d(Dataset):
             .batch(batch_size)
             .map(utils.normalize_uint8, num_parallel_calls=num_parallel_calls)
             .prefetch(prefetch_batches)
-            )
-    
-        if shuffle is None:
-            return dataset
-
-        return shuffle(dataset)
-
-    @staticmethod
-    @gin.configurable(module='Shapes3d')
-    def supervised(num_parallel_calls, shuffle=None):
-        dataset = (
-            Shapes3d.load()
-            .map(Shapes3d.label_map, num_parallel_calls=num_parallel_calls)
-            .map(
-                utils.normalize_uint8, num_parallel_calls=num_parallel_calls
-            )
         )
 
         if shuffle is None:
@@ -118,6 +102,19 @@ class Shapes3d(Dataset):
 
         return shuffle(dataset)
 
+    @staticmethod
+    @gin.configurable(module="Shapes3d")
+    def supervised(num_parallel_calls, shuffle=None):
+        dataset = (
+            Shapes3d.load()
+            .map(Shapes3d.label_map, num_parallel_calls=num_parallel_calls)
+            .map(utils.normalize_uint8, num_parallel_calls=num_parallel_calls)
+        )
+
+        if shuffle is None:
+            return dataset
+
+        return shuffle(dataset)
 
     @staticmethod
     def label_map(element):
@@ -128,8 +125,8 @@ class Shapes3d(Dataset):
         return {"image": element["image"], "label": labels}
 
     class ordered:
-        @classmethod
-        def load(cls):
-            return serialize.read(serialize.raw_datasets.Shapes3d).map(
-                utils.normalize_uint8, num_parallel_calls=tf.data.experimental.AUTOTUNE
-            )
+        @staticmethod
+        def load(num_parallel_calls):
+            return serialize.read(
+                serialize.raw_datasets.Shapes3d, num_parallel_calls
+            ).map(utils.normalize_uint8, num_parallel_calls=num_parallel_calls)
