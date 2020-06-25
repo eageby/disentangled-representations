@@ -10,12 +10,12 @@ BetaSVAE: train/BetaSVAE/Shapes3d
 
 experiments: full_metric
 
-full_metric: full_metric/BetaVAE/Shapes3d
+full_metric: repeat/full_metric/BetaVAE/Shapes3d
 # full_metric: full_metric/FactorVAE/Shapes3d
 # full_metric: full_metric/BetaTCVAE/Shapes3d
 
 TESTING_FLAGS=--gin-parameter 'run_training.iterations=100'\
-			  # --gin-parameter 'MetricCallback.interval=1000'\
+			  --gin-parameter 'MetricCallback.interval=1000'\
 			  --gin-parameter 'mutual_information_gap.batches=10'\
 			  --gin-parameter 'factorvae_score.training_votes=10'\
 			  --gin-parameter 'factorvae_score.subset=100'\
@@ -26,14 +26,15 @@ train/%:
 	disentangled-training --config $@.gin $(TESTING_FLAGS)
 
 repeat/%:
-	{ \
+	@{ \
     for seed in $(RANDOM_SEED_LIST) ; \
 	do make -s FLAGS='--gin-parameter run_training.seed='$${seed} $*;\
 	done ;\
     }
 
 full_metric/%:
-	disentangled-training --config train/$*.gin --config experiment/full.gin $(TESTING_FLAGS) $(FLAGS)
+	echo $@ | sed -E "s/(full_metric\/)(.+\/)(.+)/\1\3\.gin/" | xargs -n 1 -I {} \
+		disentangled-training --config train/$*.gin --config experiment/{} $(TESTING_FLAGS) $(FLAGS)
 	
 tensorboard:
 	tensorboard --logdir $(DISENTANGLED_REPRESENTATIONS_DIRECTORY)logs --reload_multifile=true $(FLAGS)
