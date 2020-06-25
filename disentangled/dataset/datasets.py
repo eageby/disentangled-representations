@@ -8,12 +8,6 @@ import tensorflow_datasets as tfds
 
 from . import serialize, utils
 
-# Handles Too many open files error
-# https://github.com/tensorflow/datasets/issues/1441
-# _, _high = resource.getrlimit(resource.RLIMIT_NOFILE)
-# resource.setrlimit(resource.RLIMIT_NOFILE, (_high, _high))
-
-
 def get(name):
     return getattr(sys.modules[__name__], name)
 
@@ -126,6 +120,7 @@ class Shapes3d(Dataset):
 
     class ordered:
         @staticmethod
+        @gin.configurable(module='Shapes3d.ordered')
         def load(num_parallel_calls):
             return serialize.read(
                 serialize.raw_datasets.Shapes3d, num_parallel_calls

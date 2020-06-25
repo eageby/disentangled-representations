@@ -25,9 +25,11 @@ class FactorVAE(VAE):
     @staticmethod
     def permute_dims(representation):
         representation = np.array(representation)
+        random_state = disentangled.utils.get_numpy_random_state(gin.REQUIRED)
 
         for j in range(representation.shape[1]):
-            permutation_index = np.random.permutation(representation.shape[0])
+            permutation_index = random_state.permutation(
+                representation.shape[0])
             representation[:, j] = representation[permutation_index, j]
 
         return representation
@@ -68,21 +70,24 @@ class FactorVAE(VAE):
 
             # Discriminator weights are assigned as not trainable in init
             grad_theta = tape.gradient(loss_theta, self.trainable_variables)
-            optimizer.apply_gradients(zip(grad_theta, self.trainable_variables))
+            optimizer.apply_gradients(
+                zip(grad_theta, self.trainable_variables))
 
             # Updating Discriminator
             with tf.GradientTape() as tape:
                 z_mean, z_log_var = self.encode(batch_psi)
                 z = self.sample(z_mean, z_log_var, training=True)
 
-                z_permuted = tf.py_function(self.permute_dims, inp=[z], Tout=tf.float32)
+                z_permuted = tf.py_function(
+                    self.permute_dims, inp=[z], Tout=tf.float32)
                 z_permuted.set_shape(z.shape)
 
                 p_permuted = self.discriminator(z_permuted)
 
                 loss_psi = discriminator_loss(p_z, p_permuted)
 
-            grad_psi = tape.gradient(loss_psi, self.discriminator_net.variables)
+            grad_psi = tape.gradient(
+                loss_psi, self.discriminator_net.variables)
             optimizer_discriminator.apply_gradients(
                 zip(grad_psi, self.discriminator_net.variables)
             )
@@ -105,34 +110,3 @@ class FactorVAE(VAE):
             progress.update(logs.copy(), interval=1)
 
         [cb.on_train_end(progress.n) for cb in callbacks]
-
-
-class factorvae_shapes3d(FactorVAE):
-    def __init__(self, latents, gamma, **kwargs):
-        super().__init__(
-            f_phi=networks.conv_4,
-            f_phi_mean=tf.keras.layers.Dense(latents, activation=None),
-            f_phi_log_var=tf.keras.layers.Dense(latents, activation=None),
-            f_theta=networks.conv_4_transpose,
-            f_theta_mean=tf.keras.layers.Conv2DTranspose(
-                3, kernel_size=(3, 3), strides=(1, 1), activation="sigmoid"
-            ),
-            f_theta_log_var=tf.keras.layers.Conv2DTranspose(
-                3, kernel_size=(3, 3), strides=(1, 1), activation=None
-            ),
-            latents=latents,
-            gamma=gamma,
-            discriminator=tf.keras.Sequential(
-                [
-                    tf.keras.layers.Dense(
-                        1000, activation=tf.nn.leaky_relu, input_shape=(latents,)
-                    ),
-                    tf.keras.layers.Dense(1000, activation=tf.nn.leaky_relu),
-                    tf.keras.layers.Dense(1000, activation=tf.nn.leaky_relu),
-                    tf.keras.layers.Dense(1000, activation=tf.nn.leaky_relu),
-                    tf.keras.layers.Dense(1000, activation=tf.nn.leaky_relu),
-                    tf.keras.layers.Dense(1000, activation=tf.nn.leaky_relu),
-                    tf.keras.layers.Dense(2, activation="softmax"),
-                ]
-            ),
-        )

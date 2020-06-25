@@ -6,9 +6,12 @@ pipeline.shuffle=@tf.data.Dataset.shuffle
 supervised.shuffle=@tf.data.Dataset.shuffle
 
 shuffle.buffer_size = 100
-shuffle.seed = %RANDOM_SEED
+shuffle.seed = None
 shuffle.reshuffle_each_iteration = True
 
+# Random seed
+# ==============================================================================
+run_training.seed = %RANDOM_SEED
 
 # Callbacks
 # ==============================================================================
@@ -23,8 +26,7 @@ logs_path/singleton.constructor = @get_logs_path
 # ==============================================================================
 TensorBoard.update_freq = 1
 TensorBoard.write_graph = False
+TensorBoard.profile_batch = 0
 
 TensorBoard.log_dir = %LOGS_PATH
 get_logs_path.suffix='1'
-
-

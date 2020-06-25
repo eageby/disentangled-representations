@@ -11,7 +11,7 @@ class MetricCallback(tf.keras.callbacks.Callback):
         self.writer = tf.summary.create_file_writer(logdir=str(log_dir / "train"))
 
     def on_train_batch_end(self, batch, logs=None):
-        if batch % self.interval == 0:
+        if (batch % self.interval) == 0:
             metric_result = self.metric_fn(model=self.model)
 
             with self.writer.as_default():
