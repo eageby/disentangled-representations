@@ -1,0 +1,24 @@
+include 'config.gin'
+include 'train/training.gin'
+
+import disentangled.model.objectives
+import disentangled.model
+import gin.tf.external_configurables
+
+# Training
+# ==============================================================================
+run_training.model=@model.BetaSVAE()
+
+# Objective
+# ==============================================================================
+BetaSVAE.objective = @Objective()
+Objective.objective_fn = @objectives.betavae
+objectives.betavae.tolerance = %TOLERANCE
+
+# Distributions
+# ==============================================================================
+objectives.betavae.prior_dist=@Laplacian()
+objectives.betavae.output_dist = @Bernoulli()
+
+Laplacian.location = 0.0
+Laplacian.log_scale = 0.0
