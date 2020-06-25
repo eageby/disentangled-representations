@@ -61,13 +61,14 @@ class Shapes3d:
 
     @staticmethod
     def batch_indices(batch_size):
+        random_state = disentangled.utils.get_numpy_random_state(gin.REQUIRED)
         factors = [
-            np.random.choice(Shapes3d.num_values_per_factor[f], batch_size)
+            random_state.choice(Shapes3d.num_values_per_factor[f], batch_size)
             for f, _ in enumerate(Shapes3d.factors)
         ]
 
-        fixed_factor = np.random.choice(len(Shapes3d.factors))
-        fixed_factor_value = np.random.choice(
+        fixed_factor = random_state.choice(len(Shapes3d.factors))
+        fixed_factor_value = random_state.choice(
             Shapes3d.num_values_per_factor[fixed_factor]
         )
         factors[fixed_factor] = fixed_factor_value

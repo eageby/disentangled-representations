@@ -44,7 +44,7 @@ def write(dataset, path, batches, overwrite=False, **kwargs):
 
 
 def read(dataset, num_parallel_calls=tf.data.experimental.AUTOTUNE):
-    data = tf.data.TFRecordDataset(str(path))
+    data = tf.data.TFRecordDataset(str(dataset.get_serialized_path()))
 
     return (
         data.map(dataset.parse_example, num_parallel_calls=num_parallel_calls)
