@@ -3,6 +3,7 @@ from PySide2.QtCore import Qt
 
 import numpy as np
 import tensorflow as tf
+import gin
 
 
 class Latent(QtWidgets.QWidget):
@@ -442,12 +443,12 @@ class MainWindow(QtWidgets.QWidget):
         self.visualize.set_output(self.output)
 
 
-def main(model, dataset, batch_size=128, shuffle=False, **kwargs):
+@gin.configurable('gui', module='disentangled.visualize')
+def main(model, dataset):
     app = QtWidgets.QApplication([])
-    data = dataset.pipeline(batch_size)
 
-    batch = data.as_numpy_iterator().next()
-    main = MainWindow(model, batch, **kwargs)
+    batch = dataset.as_numpy_iterator().next()
+    main = MainWindow(model, batch)
 
     main.show()
     app.exec_()

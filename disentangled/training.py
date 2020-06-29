@@ -18,6 +18,7 @@ def run_training(
     model.predict(dataset, steps=1)  # Instantiating model
     model.train(dataset.repeat(), callbacks=callbacks, iterations=iterations)
 
+        
     if save:
         disentangled.model.utils.save(model, gin.REQUIRED)
 

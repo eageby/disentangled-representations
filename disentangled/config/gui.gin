@@ -1,0 +1,11 @@
+include 'config.gin'
+
+import disentangled.model.utils 
+
+disentangled.visualize.gui.model=@disentangled.model.utils.load()
+disentangled.model.utils.load.filename='BetaVAE/DSprites'
+
+disentangled.visualize.gui.dataset=@DSprites.pipeline()
+DSprites.pipeline.batch_size = 128
+DSprites.pipeline.num_parallel_calls = %PARALLEL_CALLS
+DSprites.pipeline.prefetch_batches = 1

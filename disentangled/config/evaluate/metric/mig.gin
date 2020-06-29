@@ -1,0 +1,16 @@
+include 'config.gin'
+
+import disentangled.metric.utils
+import disentangled.metric.mig2
+
+run.run_fn = @disentangled.metric.utils.log_metric
+disentangled.metric.utils.log_metric.metric = @disentangled.metric.mutual_information_gap
+disentangled.metric.utils.log_metric.metric_name = 'MIG'
+disentangled.metric.utils.log_metric.name = %FILENAME
+
+disentangled.metric.mutual_information_gap.model = @model()
+disentangled.metric.mutual_information_gap.dataset = @dataset()
+disentangled.metric.mutual_information_gap.prior_dist = %PRIOR_DIST
+dataset.get = 'supervised'
+
+disentangled.metric.utils.log_metric.print_=True

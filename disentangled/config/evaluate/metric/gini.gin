@@ -1,0 +1,21 @@
+include 'config.gin'
+
+import disentangled.metric.utils
+import disentangled.metric.mig2
+
+run.run_fn = @disentangled.metric.utils.log_metric
+disentangled.metric.utils.log_metric.metric = @disentangled.metric.gini_index
+disentangled.metric.utils.log_metric.metric_name = 'gini_index'
+disentangled.metric.utils.log_metric.name = %FILENAME
+
+disentangled.metric.gini_index.model = @model()
+disentangled.metric.gini_index.dataset = @dataset()
+dataset.get = 'dataset'
+
+disentangled.metric.gini_index.prior_dist = %PRIOR_DIST
+
+disentangled.metric.gini_index.tolerance = 1e-2
+disentangled.metric.gini_index.subset = 1000
+
+
+disentangled.metric.utils.log_metric.print_=True

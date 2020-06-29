@@ -3,16 +3,18 @@ include 'config.gin'
 import disentangled.metric.factorvae_score
 import disentangled.metric.callback
 import disentangled.metric.mig2
+import disentangled.metric.gini_index
 
-run_training.callbacks = [@MIG/MetricCallback(), @FactorVAE_Score/MetricCallback(), @OperativeConfigCallback(), @tf.keras.callbacks.TensorBoard()]
+run_training.callbacks = [@GINI/MetricCallback(), [@MIG/MetricCallback(), @FactorVAE_Score/MetricCallback(), @OperativeConfigCallback(), @tf.keras.callbacks.TensorBoard()]
 
 OperativeConfigCallback.log_dir =%LOGS_PATH
 
-MetricCallback.interval = 1000
+MetricCallback.interval = 25000
+disentangled.model.utils.save.suffix=%RANDOM_SEED
 
+MetricCallback.log_dir = %LOGS_PATH
 # FactorVAE_Score 
 # ==============================================================================
-FactorVAE_Score/MetricCallback.log_dir = %LOGS_PATH
 FactorVAE_Score/MetricCallback.metric_fn= @factorvae_score
 FactorVAE_Score/MetricCallback.metric_name = 'FactorVAE_Score' 
 
@@ -26,13 +28,26 @@ factorvae_score.progress_bar=False
 
 # Mutual Information Gap
 # ==============================================================================
-MIG/MetricCallback.log_dir = %LOGS_PATH
 MIG/MetricCallback.metric_fn= @mutual_information_gap
 MIG/MetricCallback.metric_name = 'MIG' 
 
 mutual_information_gap.dataset=@Shapes3d.supervised()
-supervised.num_parallel_calls=%PARALLEL_CALLS
+Shapes3d.supervised.num_parallel_calls=%PARALLEL_CALLS
 
 mutual_information_gap.batches=480
 mutual_information_gap.batch_size=1000
 mutual_information_gap.progress_bar=False
+
+# Gini Index
+# ==============================================================================
+GINI/MetricCallback.metric_fn = @disentangled.metric.gini_index
+GINI/MetricCallback.metric_name = 'Gini_index'
+
+
+# Shuffling
+# ==============================================================================
+Shapes3d.pipeline.shuffle = @tf.data.Dataset.shuffle
+Shapes3d.supervised.shuffle = @tf.data.Dataset.shuffle
+Shapes3d.ordered.load.shuffle = @tf.data.Dataset.shuffle
+
+run_training.save = False

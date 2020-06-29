@@ -1,16 +1,20 @@
+import disentangled.visualize
 import disentangled.config.externals
 import disentangled.model.utils
 import disentangled.utils
 import disentangled.dataset
+import disentangled.metric
 
 
+# Distributions
+# ==============================================================================
 TOLERANCE = 1e-7
-
 RANDOM_SEED = 10
-
 PARALLEL_CALLS = %tf.data.experimental.AUTOTUNE
 
-disentangled.model.utils.save.overwrite=False
+disentangled.model.utils.save.overwrite=True 	# False: Enables overwrite prompt
+												# True: Disables overwrite prompt, forces overwrite
+
 
 # Distributions
 # ==============================================================================
@@ -18,14 +22,44 @@ Gaussian.tolerance = %TOLERANCE
 Bernoulli.tolerance = %TOLERANCE
 Laplacian.tolerance = %TOLERANCE
 
-# import disentangled.metric.callback
-# include 'mig.gin'
-# MetricCallback.metric_fn = @mutual_information_gap
-# MetricCallback.metric_name = 'mutual_information_gap'
-
 # Working Directory
 # ==============================================================================
 # Assing either through gin
 # disentangled.utils.get_data_path.data_path = PATH
 # or environment variable 
 # DISENTANGLED_REPRESENTATIONS_DIRECTORY = PATH
+
+# Visualization
+# ==============================================================================
+VISUALIZE_ROWS = 1
+VISUALIZE_COLS = 10
+disentangled.visualize.reconstructed.rows = %VISUALIZE_ROWS
+disentangled.visualize.reconstructed.cols = %VISUALIZE_COLS
+disentangled.visualize.data.rows = %VISUALIZE_ROWS
+disentangled.visualize.data.cols = %VISUALIZE_COLS
+disentangled.visualize.comparison.rows = %VISUALIZE_ROWS
+disentangled.visualize.comparison.cols = %VISUALIZE_COLS
+
+disentangled.visualize.show.output.show_plot = False
+
+# Dataset Defaults
+# ==============================================================================
+DSprites.pipeline.batch_size = 64
+DSprites.pipeline.prefetch_batches = 10
+DSprites.pipeline.num_parallel_calls = %PARALLEL_CALLS
+DSprites.supervised.num_parallel_calls = %PARALLEL_CALLS
+DSprites.ordered.load.num_parallel_calls = %PARALLEL_CALLS
+
+Shapes3d.pipeline.batch_size = 64
+Shapes3d.pipeline.prefetch_batches = 10
+Shapes3d.pipeline.num_parallel_calls = %PARALLEL_CALLS
+Shapes3d.supervised.num_parallel_calls = %PARALLEL_CALLS
+Shapes3d.ordered.load.num_parallel_calls = %PARALLEL_CALLS
+
+CelebA.pipeline.batch_size = 64
+CelebA.pipeline.prefetch_batches = 10
+CelebA.pipeline.num_parallel_calls = %PARALLEL_CALLS
+CelebA.supervised.num_parallel_calls = %PARALLEL_CALLS
+CelebA.ordered.load.num_parallel_calls = %PARALLEL_CALLS
+
+disentangled.utils.get_numpy_random_state.seed = %RANDOM_SEED

@@ -1,12 +1,8 @@
-import disentangled.dataset as dataset
-import disentangled.model.distributions as dist
-import disentangled.model.networks as networks
 import disentangled.model.utils
 import disentangled.utils as utils
 import numpy as np
 import sklearn.metrics
 import tensorflow as tf
-
 
 import gin
 
@@ -47,7 +43,7 @@ def discretize(target, bins):
     return discretized
 
 
-@gin.configurable
+@gin.configurable('mutual_information_gap', module='disentangled.metric')
 def mutual_information_gap(model, dataset, batches, batch_size, progress_bar=True):
     dataset = dataset.batch(batch_size).take(batches)
     mig = []
@@ -73,7 +69,6 @@ def mutual_information_gap(model, dataset, batches, batch_size, progress_bar=Tru
         )
 
     return tf.reduce_mean(tf.stack(mig))
-
 
 if __name__ == "__main__":
     disentangled.utils.parse_config_file("mig.gin")

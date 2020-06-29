@@ -4,15 +4,15 @@ LATENTS = 10
 
 # Training Parameters 
 # ==============================================================================
-run_training.iterations = 1e5
+run_training.iterations = 5e5
 objectives.factorvae.gamma = 7
 
 # Dataset
 # ==============================================================================
 run_training.dataset=@Shapes3d.pipeline()
-pipeline.batch_size = 64
-pipeline.prefetch_batches = 10
-pipeline.num_parallel_calls = %PARALLEL_CALLS
+Shapes3d.pipeline.batch_size = 64
+Shapes3d.pipeline.prefetch_batches = 10
+Shapes3d.pipeline.num_parallel_calls = %PARALLEL_CALLS
 
 # Model
 # ==============================================================================
@@ -44,7 +44,7 @@ log_var/Conv2DTranspose.activation=None
 FactorVAE.train.optimizer = @network/tf.keras.optimizers.Adam()
 FactorVAE.train.optimizer_discriminator = @discriminator/tf.keras.optimizers.Adam()
 
-network/Adam.learning_rate = 1e-4
+network/Adam.learning_rate = 1e-5
 network/Adam.beta_1 = 0.9
 network/Adam.beta_2 = 0.999
 

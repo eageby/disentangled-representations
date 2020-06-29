@@ -1,14 +1,15 @@
-import tensorflow as tf
-import disentangled.utils
 import disentangled.dataset
 import disentangled.model
-from disentangled.metric.factorvae import intact_dimensions_kld
+import disentangled.utils
+import gin
+import tensorflow as tf
+from disentangled.metric.utils import intact_dimensions_kld
 
 
-def gini_index(representation):
+def _gini_index_representation(representation):
     """Returns the gini_index of a representation, being the sparsity measure.
     1 is the most sparse, 0 is the least.
-    
+
     Args: 
         representation (tf.Tensor): Batch axis 0 and feature axis 1
     Returns:
@@ -20,6 +21,7 @@ def gini_index(representation):
 
     N = representation.shape[-1]
     k = tf.reshape(1.0 + tf.range(N, dtype=tf.float32), [1, N])
+
     return tf.reduce_mean(
         1.0
         - 2.0
@@ -31,25 +33,28 @@ def gini_index(representation):
     )
 
 
-def metric(model, dataset, subset=100):
+@gin.configurable(module="disentangled.metric")
+def gini_index(model, dataset, prior_dist, tolerance, subset, progress_bar=True):
     if subset is not None:
         dataset = dataset.take(subset)
 
-    intact_idx = intact_dimensions_kld(model, dataset, subset=None)
+    intact_idx = intact_dimensions_kld(model, dataset, tolerance, prior_dist, subset=None)
 
-    progress = disentangled.utils.TrainingProgress(dataset, total=subset)
+    if progress_bar:
+        progress = disentangled.utils.TrainingProgress(dataset, total=subset)
+        progress.write('Calculating Gini Index')
+    else:
+        progress = dataset
+
     gini = []
+
     for batch in progress:
-        representation = model.encode(batch["image"])[0]
-        index = gini_index(tf.gather(representation, intact_idx, axis=1))
+        representation = model.encode(batch)[0]
+        index = _gini_index_representation(
+            tf.gather(representation, intact_idx, axis=1)
+        )
         gini.append(index)
 
     gini = tf.stack(gini, axis=0)
+
     return tf.reduce_mean(gini, axis=0)
-
-
-if __name__ == "__main__":
-    disentangled.utils.disable_gpu()
-    dataset = disentangled.dataset.shapes3d.as_image_label().batch(128)
-    model = disentangled.model.utils.load("betavae_shapes3d")
-    print(metric(model, dataset, 1000))

@@ -1,0 +1,18 @@
+include 'config.gin'
+
+model.model = @disentangled.model.utils.load()
+FILENAME = 'BetaTCVAE/DSprites'
+disentangled.model.utils.load.filename = %FILENAME
+
+dataset.dataset = @DSprites.pipeline()
+dataset.supervised = @DSprites.supervised()
+dataset.ordered = @DSprites.ordered.load()
+
+disentangled.visualize.show.output.filename = %FILENAME
+
+mutual_information_gap.batches=180
+mutual_information_gap.batch_size= 4096
+
+PRIOR_DIST = @disentangled.model.distributions.Gaussian()
+disentangled.model.distributions.Gaussian.mean = 0.0
+disentangled.model.distributions.Gaussian.log_var = 0.0

@@ -2,11 +2,8 @@ import disentangled.training
 
 # Dataset Shuffling
 # ==============================================================================
-pipeline.shuffle=@tf.data.Dataset.shuffle
-supervised.shuffle=@tf.data.Dataset.shuffle
-
 shuffle.buffer_size = 100
-shuffle.seed = None
+shuffle.seed = 6
 shuffle.reshuffle_each_iteration = True
 
 # Random seed
@@ -30,3 +27,5 @@ TensorBoard.profile_batch = 0
 
 TensorBoard.log_dir = %LOGS_PATH
 get_logs_path.suffix='1'
+
+run_training.save=True

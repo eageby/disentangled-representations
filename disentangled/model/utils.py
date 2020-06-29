@@ -8,11 +8,10 @@ import disentangled.utils
 
 
 @gin.configurable(module="disentangled.model.utils")
-def save(model, filename, overwrite=False):
+def save(model, filename, suffix='', overwrite=False):
     path = disentangled.utils.get_data_path() / "models"
     path.mkdir(exist_ok=True)
-    path = path / filename
-    breakpoint()
+    path = path / (filename + '_' + str(suffix))
     model.save(str(path), overwrite=overwrite)
 
 

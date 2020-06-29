@@ -6,19 +6,18 @@ import disentangled.hyperparameters
 import disentangled.model
 import disentangled.training
 import disentangled.metric
-import disentangled.metric.factorvae
+import disentangled.metric.factorvae_score
 import disentangled.utils
 import disentangled.visualize.latentspace
 import disentangled.visualize.gui
 
-_MODELS = ["factorvae", "betavae", "beta_tcvae", "sparsevae"]
-_DATASETS = ["MNIST", "Shapes3d"]
+_MODELS = ["FactorVAE", "BetaVAE", "BetaTCVAE", "BetaSVAE"]
+_DATASETS = ["DSprites", "Shapes3d"]
 
-
-def load(ctx): 
+def load(ctx):
     if ctx.obj['model'] is None: 
-        ctx.obj['model'] = disentangled.model.utils.load(ctx.obj['model_name'], ctx.obj['directory'])
-    return ctx
+        ctx.obj['model'] = disentangled.model.utils.load(ctx.obj['model_name'])
+        return ctx
 
 @click.group(
     chain=True,
@@ -29,11 +28,12 @@ def load(ctx):
     ),
 )
 @click.argument(
-    "model", type=click.Choice(_MODELS, case_sensitive=False),
+    "model", type=click.Choice(_MODELS, case_sensitive=True),
 )
 @click.argument(
-    "dataset", type=click.Choice(_DATASETS, case_sensitive=False),
+    "dataset", type=click.Choice(_DATASETS, case_sensitive=True),
 )
+
 @click.option("--no-gpu", is_flag=True, default=False)
 @click.option("--no-info", is_flag=True, default=False)
 @click.option(
@@ -45,17 +45,11 @@ def load(ctx):
 )
 @click.pass_context
 def cli(ctx, model, dataset, no_gpu, no_info, directory):
-    disentangled.utils.config()
-
-    if no_gpu:
-        disentangled.utils.disable_gpu()
-    if no_info:
-        disentangled.utils.disable_info_output(2)
-
     ctx.ensure_object(dict)
+
     ctx.obj["directory"] = directory
 
-    ctx.obj["model_name"] = "_".join([model, dataset]).lower()
+    ctx.obj["model_name"] = "/".join([model, dataset])
 
     ctx.obj["model"] = None
 
@@ -149,9 +143,8 @@ def metric(ctx, **kwargs):
     print("Accuracy: {:%}".format(accuracy))
 
 @cli.command()
-@click.option("--batch_size", "-b", type=int, default=128)
 @click.pass_context
-def gui(ctx, **kwargs):
+def gui(ctx):
     ctx = load(ctx)
-    ctx.obj['model_name'] = ctx.obj['model_name'].split('_')[0] 
-    disentangled.visualize.gui.main(ctx.obj['model'], ctx.obj['dataset'], model_name=ctx.obj['model_name'], dataset_name=ctx.obj['dataset_name'], **kwargs)
+    ctx.obj['model_name'] = ctx.obj['model_name'].split('/')[0]
+    disentangled.visualize.gui(ctx.obj['model'], ctx.obj['dataset'].pipeline())

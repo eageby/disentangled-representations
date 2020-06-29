@@ -19,9 +19,10 @@ def parse_image(element):
 
 
 @gin.configurable(module="disentangled.dataset.serialize")
-def write(dataset, path, batches, overwrite=False, **kwargs):
-    data = dataset.take(batches).map(serialize_image)
+def write(dataset, batches, overwrite=False, **kwargs):
+    data = dataset.create().take(batches).map(serialize_image)
 
+    path = dataset.get_serialized_path()
     path.parent.mkdir(exist_ok=True)
 
     if path.exists() and (

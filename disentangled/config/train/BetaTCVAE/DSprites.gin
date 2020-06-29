@@ -4,15 +4,15 @@ LATENTS = 10
 
 # Training Parameters 
 # ==============================================================================
-run_training.iterations = 5e5
+run_training.iterations = 3e5
 objectives.betavae.beta = 4
 
 # Dataset
 # ==============================================================================
-run_training.dataset=@Shapes3d.pipeline()
-Shapes3d.pipeline.batch_size = 64
-Shapes3d.pipeline.prefetch_batches = 10
-Shapes3d.pipeline.num_parallel_calls = %PARALLEL_CALLS
+run_training.dataset=@DSprites.pipeline()
+DSprites.pipeline.batch_size = 64
+DSprites.pipeline.prefetch_batches = 10
+DSprites.pipeline.num_parallel_calls = %PARALLEL_CALLS
 
 # Model
 # ==============================================================================
@@ -34,7 +34,7 @@ VAE.f_theta = %disentangled.model.networks.conv_4_transpose
 VAE.f_theta_mean=@mean/tf.keras.layers.Conv2DTranspose()
 VAE.f_theta_log_var=@log_var/tf.keras.layers.Conv2DTranspose()
 
-Conv2DTranspose.filters=3
+Conv2DTranspose.filters=1
 Conv2DTranspose.kernel_size=(3,3)
 Conv2DTranspose.strides=(1,1)
 
@@ -44,12 +44,12 @@ log_var/Conv2DTranspose.activation=None
 # Optimizer 
 # ==============================================================================
 VAE.train.optimizer = @tf.keras.optimizers.Adam()
-Adam.learning_rate = 1e-5
+Adam.learning_rate = 1e-4
 
 # Saving
 # ==============================================================================
-disentangled.model.utils.save.filename='BetaVAE/Shapes3d'
+disentangled.model.utils.save.filename='BetaTCVAE/DSprites'
 
 # Tensorboard
 # ==============================================================================
-get_logs_path.suffix = 'BetaVAE/Shapes3d'
+get_logs_path.suffix = 'BetaTCVAE/DSprites'

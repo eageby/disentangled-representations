@@ -1,1 +1,1 @@
-__all__ = ["model", "dataset", "visualize"]
+__all__ = ["model", "dataset", "visualize", "metric"]
