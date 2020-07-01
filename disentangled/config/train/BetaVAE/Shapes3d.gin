@@ -1,6 +1,7 @@
 include 'train/BetaVAE/BetaVAE.gin'
 
 LATENTS = 10
+FILENAME = 'BetaVAE/Shapes3d'
 
 # Training Parameters 
 # ==============================================================================
@@ -45,11 +46,3 @@ log_var/Conv2DTranspose.activation=None
 # ==============================================================================
 VAE.train.optimizer = @tf.keras.optimizers.Adam()
 Adam.learning_rate = 1e-5
-
-# Saving
-# ==============================================================================
-disentangled.model.utils.save.filename='BetaVAE/Shapes3d'
-
-# Tensorboard
-# ==============================================================================
-get_logs_path.suffix = 'BetaVAE/Shapes3d'

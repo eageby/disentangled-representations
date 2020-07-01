@@ -7,7 +7,7 @@ RANDOM_SEED = 10
 RANDOM_SHUFFLE_SEED = 6
 PARALLEL_CALLS = %tf.data.experimental.AUTOTUNE
 
-disentangled.model.utils.save.overwrite=True 	# False: Enables overwrite prompt
+disentangled.model.utils.save.overwrite=False 	# False: Enables overwrite prompt
 												# True: Disables overwrite prompt, forces overwrite
 
 # Distributions
@@ -58,3 +58,7 @@ CelebA.pipeline.num_parallel_calls = %PARALLEL_CALLS
 CelebA.pipeline.shuffle = @tf.data.Dataset.shuffle
 CelebA.supervised.num_parallel_calls = %PARALLEL_CALLS
 CelebA.supervised.shuffle = @tf.data.Dataset.shuffle
+
+shuffle.buffer_size = 100
+shuffle.seed = %RANDOM_SHUFFLE_SEED
+shuffle.reshuffle_each_iteration = True

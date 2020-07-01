@@ -21,11 +21,16 @@ logs_path/singleton.constructor = @get_logs_path
 
 # Tensorboard
 # ==============================================================================
+get_logs_path.name = %FILENAME
+
 TensorBoard.update_freq = 1
 TensorBoard.write_graph = False
 TensorBoard.profile_batch = 0
 
 TensorBoard.log_dir = %LOGS_PATH
-get_logs_path.suffix='1'
 
 run_training.save=True
+
+# Saving
+# ==============================================================================
+disentangled.model.utils.save.filename=%FILENAME

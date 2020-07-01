@@ -9,6 +9,7 @@ import disentangled.model.utils
 
 run_training.callbacks = [@GINI/MetricCallback(),@MIG/MetricCallback(), @FactorVAE_Score/MetricCallback(), @OperativeConfigCallback(), @tf.keras.callbacks.TensorBoard()]
 
+disentangled.utils.get_logs_path.suffix = 'full_metric'
 OperativeConfigCallback.log_dir =%LOGS_PATH
 
 MetricCallback.interval = 25000 

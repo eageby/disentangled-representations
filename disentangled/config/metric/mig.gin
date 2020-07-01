@@ -8,5 +8,5 @@ disentangled.metric.utils.log_metric.metric_name = 'MIG'
 disentangled.metric.mutual_information_gap.dataset = @dataset()
 dataset.get = 'supervised'
 
-mutual_information_gap.batches=100
+mutual_information_gap.batches=1000
 mutual_information_gap.batch_size=100
