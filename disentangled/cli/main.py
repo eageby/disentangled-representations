@@ -3,8 +3,9 @@ import click
 import disentangled.utils
 import gin
 
-from disentangled.cli.evaluate import evaluate
+from disentangled.cli.evaluate import evaluate, gin_options, add_gin
 from disentangled.cli.training import train
+from disentangled.cli.dataset import dataset
 
 @click.group(
     context_settings=dict(
@@ -12,8 +13,11 @@ from disentangled.cli.training import train
     ),
 )
 
-def cli():
-    pass
+@gin_options
+@click.pass_context
+def cli(ctx, **kwargs):
+    add_gin(ctx, 'config', ['config.gin'])
 
 cli.add_command(evaluate)
 cli.add_command(train)
+cli.add_command(dataset)
