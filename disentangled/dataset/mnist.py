@@ -2,7 +2,7 @@ import gin
 import tensorflow as tf
 import tensorflow_datasets as tfds
 
-from . import serialize, utils
+from . import utils
 from ._dataset import Dataset
 
 class MNIST(Dataset):
