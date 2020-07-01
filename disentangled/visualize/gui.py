@@ -370,9 +370,14 @@ class Visualize(QtWidgets.QWidget):
 
     def convert_image(self, image):
         image = np.asarray(255 * image, dtype=np.uint8)
+
+        if image.shape[-1] == 3:
+            format_ = QtGui.QImage.Format_RGB888
+        else:
+            format_ = QtGui.QImage.Format_Grayscale8
+
         qimage = QtGui.QImage(
-            image, image.shape[0], image.shape[1], QtGui.QImage.Format_RGB888
-        )
+            image, image.shape[0], image.shape[1], format_)
         return QtGui.QPixmap(qimage)
 
     def set_input(self, input_):
