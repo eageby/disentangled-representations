@@ -4,7 +4,6 @@ from pathlib import Path
 
 import click
 import gin
-import numpy
 import tensorflow as tf
 import tqdm
 from decouple import config
@@ -143,10 +142,6 @@ def model(model):
 @gin.configurable
 def run(run_fn):
     run_fn()
-
-@gin.configurable
-def get_numpy_random_state(seed):
-    return numpy.random.RandomState(seed)
 
 """https://stackoverflow.com/questions/54073767/command-line-interface-with-multiple-commands-using-click-add-unspecified-optio"""
 

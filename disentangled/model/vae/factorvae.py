@@ -25,11 +25,9 @@ class FactorVAE(VAE):
     @staticmethod
     def permute_dims(representation):
         representation = np.array(representation)
-        random_state = disentangled.utils.get_numpy_random_state(gin.REQUIRED)
-
+        
         for j in range(representation.shape[1]):
-            permutation_index = random_state.permutation(
-                representation.shape[0])
+            permutation_index = tf.random.shuffle(tf.range(representation.shape[0]))        
             representation[:, j] = representation[permutation_index, j]
 
         return representation
