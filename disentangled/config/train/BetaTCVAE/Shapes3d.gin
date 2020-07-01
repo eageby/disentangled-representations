@@ -11,9 +11,9 @@ objectives.betatcvae.dataset_size = 5e5
 # Dataset
 # ==============================================================================
 run_training.dataset=@Shapes3d.pipeline()
-pipeline.batch_size = 64
-pipeline.prefetch_batches = 10
-pipeline.num_parallel_calls = %PARALLEL_CALLS
+Shapes3d.pipeline.batch_size = 64
+Shapes3d.pipeline.prefetch_batches = 10
+Shapes3d.pipeline.num_parallel_calls = %PARALLEL_CALLS
 
 # Model
 # ==============================================================================

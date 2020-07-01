@@ -1,0 +1,8 @@
+import disentangled.dataset
+
+dataset.dataset = @Shapes3d.pipeline()
+dataset.supervised = @Shapes3d.supervised()
+Shapes3d.pipeline.shuffle = @tf.data.Dataset.shuffle
+Shapes3d.supervised.shuffle = @tf.data.Dataset.shuffle
+
+NUM_VALUES_PER_FACTOR = %Shapes3d.num_values_per_factor

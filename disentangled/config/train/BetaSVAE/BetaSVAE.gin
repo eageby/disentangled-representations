@@ -13,7 +13,6 @@ run_training.model=@model.BetaSVAE()
 # ==============================================================================
 BetaSVAE.objective = @Objective()
 Objective.objective_fn = @objectives.betavae
-objectives.betavae.tolerance = %TOLERANCE
 
 # Distributions
 # ==============================================================================

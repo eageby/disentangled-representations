@@ -1,0 +1,12 @@
+include 'config.gin'
+
+import disentangled.metric.mig2
+
+disentangled.metric.utils.log_metric.metric = @disentangled.metric.mutual_information_gap
+disentangled.metric.utils.log_metric.metric_name = 'MIG'
+
+disentangled.metric.mutual_information_gap.dataset = @dataset()
+dataset.get = 'supervised'
+
+mutual_information_gap.batches=100
+mutual_information_gap.batch_size=100

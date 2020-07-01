@@ -1,11 +1,11 @@
-include 'train/BetaVAE/BetaVAE.gin'
+include 'train/BetaTCVAE/BetaTCVAE.gin'
 
 LATENTS = 10
 
 # Training Parameters 
 # ==============================================================================
 run_training.iterations = 3e5
-objectives.betavae.beta = 4
+objectives.betavae.beta = 6
 
 # Dataset
 # ==============================================================================

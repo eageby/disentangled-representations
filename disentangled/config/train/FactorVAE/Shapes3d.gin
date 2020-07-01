@@ -4,8 +4,8 @@ LATENTS = 10
 
 # Training Parameters 
 # ==============================================================================
-run_training.iterations = 5e5
-objectives.factorvae.gamma = 7
+run_training.iterations = 1e5
+objectives.factorvae.gamma = 35
 
 # Dataset
 # ==============================================================================
@@ -13,6 +13,7 @@ run_training.dataset=@Shapes3d.pipeline()
 Shapes3d.pipeline.batch_size = 64
 Shapes3d.pipeline.prefetch_batches = 10
 Shapes3d.pipeline.num_parallel_calls = %PARALLEL_CALLS
+Shapes3d.pipeline.shuffle = @tf.data.Dataset.shuffle
 
 # Model
 # ==============================================================================

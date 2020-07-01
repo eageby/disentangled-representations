@@ -1,0 +1,12 @@
+include 'config.gin' 
+
+import disentangled.metric.utils
+
+shuffle.buffer_size = 100
+shuffle.seed = %RANDOM_SHUFFLE_SEED
+shuffle.reshuffle_each_iteration = True
+
+disentangled.metric.utils.log_metric.print_=True
+
+disentangled.metric.representation_variance.samples = 10000
+disentangled.metric.representation_variance.batch_size = 256

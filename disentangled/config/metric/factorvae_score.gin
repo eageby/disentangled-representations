@@ -1,0 +1,16 @@
+include 'config.gin'
+
+import disentangled.metric.factorvae_score
+
+disentangled.metric.utils.log_metric.metric = @disentangled.metric.factorvae_score
+disentangled.metric.utils.log_metric.metric_name = 'factorvae_score'
+
+disentangled.metric.factorvae_score.dataset = @dataset()
+dataset.get = 'supervised'
+
+factorvae_score.training_votes=50
+factorvae_score.test_votes=50
+factorvae_score.tolerance=5e-2
+
+disentangled.metric.fixed_factor_dataset.batch_size = 64
+disentangled.metric.fixed_factor_dataset.num_values_per_factor = %NUM_VALUES_PER_FACTOR

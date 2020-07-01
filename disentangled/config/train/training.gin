@@ -3,7 +3,7 @@ import disentangled.training
 # Dataset Shuffling
 # ==============================================================================
 shuffle.buffer_size = 100
-shuffle.seed = 6
+shuffle.seed = %RANDOM_SHUFFLE_SEED
 shuffle.reshuffle_each_iteration = True
 
 # Random seed

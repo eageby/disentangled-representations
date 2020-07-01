@@ -1,0 +1,14 @@
+include 'config.gin'
+
+import disentangled.metric.utils
+import disentangled.metric.mig2
+
+disentangled.metric.utils.log_metric.metric = @disentangled.metric.gini_index
+disentangled.metric.utils.log_metric.metric_name = 'gini_index'
+
+disentangled.metric.gini_index.dataset = @dataset()
+dataset.get = 'supervised'
+
+disentangled.metric.gini_index.tolerance = 5e-2
+disentangled.metric.gini_index.samples = 1000
+disentangled.metric.gini_index.batch_size = 64

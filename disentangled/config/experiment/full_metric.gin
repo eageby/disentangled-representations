@@ -1,0 +1,40 @@
+include 'config.gin'
+include 'metric/factorvae_score.gin'
+include 'metric/gini.gin'
+include 'metric/mig.gin'
+
+import disentangled.metric
+import disentangled.utils
+import disentangled.model.utils
+
+run_training.callbacks = [@GINI/MetricCallback(),@MIG/MetricCallback(), @FactorVAE_Score/MetricCallback(), @OperativeConfigCallback(), @tf.keras.callbacks.TensorBoard()]
+
+OperativeConfigCallback.log_dir =%LOGS_PATH
+
+MetricCallback.interval = 25000 
+
+# FactorVAE_Score 
+# ==============================================================================
+FactorVAE_Score/MetricCallback.log_dir = %LOGS_PATH
+FactorVAE_Score/MetricCallback.metric_fn= @factorvae_score
+FactorVAE_Score/MetricCallback.metric_name = 'FactorVAE_Score' 
+
+# Gini Index
+# ==============================================================================
+GINI/MetricCallback.log_dir = %LOGS_PATH
+GINI/MetricCallback.metric_fn= @gini_index
+GINI/MetricCallback.metric_name = 'Gini_Index' 
+
+# Mutual Information Gap
+# ==============================================================================
+MIG/MetricCallback.log_dir = %LOGS_PATH
+MIG/MetricCallback.metric_fn= @mutual_information_gap
+MIG/MetricCallback.metric_name = 'MIG' 
+
+representation_variance.progress_bar=False
+factorvae_score.progress_bar=False
+gini_index.progress_bar=False
+mutual_information_gap.progress_bar=False
+
+run_training.save = True
+disentangled.model.utils.save.suffix = %RANDOM_SEED

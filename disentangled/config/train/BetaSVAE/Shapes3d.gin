@@ -1,4 +1,4 @@
-include 'train/BetaVAE/BetaVAE.gin'
+include 'train/BetaSVAE/BetaSVAE.gin'
 
 LATENTS = 10
 
@@ -13,7 +13,6 @@ run_training.dataset=@Shapes3d.pipeline()
 Shapes3d.pipeline.batch_size = 64
 Shapes3d.pipeline.prefetch_batches = 10
 Shapes3d.pipeline.num_parallel_calls = %PARALLEL_CALLS
-Shapes3d.pipeline.shuffle = @tf.data.Dataset.shuffle
 
 # Model
 # ==============================================================================
@@ -50,7 +49,3 @@ Adam.learning_rate = 1e-5
 # Saving
 # ==============================================================================
 disentangled.model.utils.save.filename='BetaSVAE/Shapes3d'
-
-# Tensorboard
-# ==============================================================================
-get_logs_path.suffix = 'BetaSVAE/Shapes3d'
