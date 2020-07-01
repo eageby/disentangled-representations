@@ -111,7 +111,6 @@ def mutual_information_gap(model, dataset, batches, batch_size, prior_dist, prog
     mutual_information = tf.sort(mutual_information, axis=0, direction="DESCENDING")
 
     normalized_mutual_information = mutual_information / factor_entropy
-    breakpoint()
 
     mig = tf.reduce_mean(
         normalized_mutual_information[0, :] - normalized_mutual_information[1, :]

@@ -1,9 +1,10 @@
 import disentangled.dataset
 import disentangled.model
 import disentangled.utils
+import disentangled.metric.utils
+import numpy as np
 import gin
 import tensorflow as tf
-from disentangled.metric.utils import intact_dimensions_kld
 
 
 def _gini_index_representation(representation):
@@ -34,27 +35,29 @@ def _gini_index_representation(representation):
 
 
 @gin.configurable(module="disentangled.metric")
-def gini_index(model, dataset, prior_dist, tolerance, subset, progress_bar=True):
-    if subset is not None:
-        dataset = dataset.take(subset)
+def gini_index(model, dataset, samples, batch_size, tolerance, progress_bar=True):
+    empirical_var = disentangled.metric.utils.representation_variance(
+        model, dataset)
+    intact_idx = np.where(empirical_var > tolerance)[0]
 
-    intact_idx = intact_dimensions_kld(model, dataset, tolerance, prior_dist, subset=None)
-
+    dataset = dataset.batch(batch_size).take(samples)
     if progress_bar:
-        progress = disentangled.utils.TrainingProgress(dataset, total=subset)
+        progress = disentangled.utils.TrainingProgress(dataset, total=samples)
         progress.write('Calculating Gini Index')
     else:
         progress = dataset
 
-    gini = []
-
+    all_index = None
     for batch in progress:
-        representation = model.encode(batch)[0]
+        representation = model.encode(batch['image'])[0]
         index = _gini_index_representation(
             tf.gather(representation, intact_idx, axis=1)
         )
-        gini.append(index)
+        index = tf.expand_dims(index, axis=0)
 
-    gini = tf.stack(gini, axis=0)
+        if all_index is None:
+            all_index = index
+        else:
+            all_index = tf.concat([all_index, index], axis=0)
 
-    return tf.reduce_mean(gini, axis=0)
+    return tf.reduce_mean(all_index, axis=0)

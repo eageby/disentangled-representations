@@ -6,6 +6,42 @@ import functools
 import disentangled.utils
 from decorator import decorator
 
+@gin.configurable(module="disentangled.metric", blacklist=['model', 'data'])
+def representation_variance(model, data, samples, batch_size, progress_bar=True):
+
+    data = data.take(samples).batch(batch_size)
+
+    if progress_bar:
+        data = disentangled.utils.TrainingProgress(data, total=int(tf.math.ceil(samples/batch_size)))
+        data.write("Calculating Empirical Variance")
+
+    all_var = None
+    for batch in data:
+        var = tf.math.reduce_variance(model.encode(batch["image"]), axis=0)
+        if all_var is None:
+            all_var = var
+        else:
+            all_var = tf.concat([all_var, var], axis=0)
+
+    return tf.math.reduce_mean(all_var, axis=0)
+
+
+@gin.configurable(module="disentangled.metric", blacklist=['dataset'])
+def fixed_factor_dataset(dataset, batch_size, num_values_per_factor, num_parallel_calls=tf.data.experimental.AUTOTUNE):
+    n_factors = dataset.element_spec['label'].shape[0]
+    factor_set = tf.data.Dataset.range(n_factors).shuffle(n_factors).repeat()
+    
+    def map_to_batch(fixed_factor):
+        fixed_factor_value = tf.cast(tf.random.uniform(shape=(), maxval=tf.gather(num_values_per_factor,fixed_factor), dtype=tf.int32), tf.uint8)
+
+        def add_factor_data(element):
+            element['factor'] = tf.cast(fixed_factor, dtype=tf.uint8)
+            element['factor_value'] = fixed_factor_value
+            return element
+
+        return dataset.filter(lambda x: tf.equal(tf.gather(x['label'], fixed_factor), fixed_factor_value)).batch(batch_size).map(add_factor_data).take(1)
+
+    return factor_set.interleave(map_to_batch, num_parallel_calls=num_parallel_calls)
 
 @gin.configurable
 class MetricCallback(tf.keras.callbacks.Callback):
@@ -40,43 +76,13 @@ class MetricCallback(tf.keras.callbacks.Callback):
 
 @gin.configurable
 def log_metric(metric, metric_name, name=None, print_=False):
-    result = metric()
     if print_:
-        print("Metric {}: {:.2f}".format(metric_name, result))
+        print("Metric {}: {:.2f}".format(metric_name, metric))
   
     if name is not None:
         path = disentangled.utils.get_data_path() / 'metric' / metric_name / (name + '.data')
         path.parent.mkdir(exist_ok=True, parents=True)
         path.touch(exist_ok=True)
         with open(path, 'w') as file:
-            file.write("{}".format(result))
-
-    return result
-
-def intact_dimensions_kld(model, data, tolerance, prior_dist, subset=None, progress_bar=True):
-    kld = []
-
-    if subset is not None:
-        data = data.take(subset)
-
-    if progress_bar:
-        progress = disentangled.utils.TrainingProgress(data, total=subset)
-        progress.write("Calculating Collapsed Latent Dimensions")
-    else:
-        progress = data
-
-    for batch in progress:
-        mean, log_var = model.encode(batch)
-
-        kld.append(
-            tf.reduce_mean(
-                prior_dist.kld(mean, log_var), axis=0
-            )
-        )
-
-    kld = tf.reduce_mean(tf.stack(kld, axis=0), axis=0)
-    idx = np.where(kld > tolerance)[0]
-    if progress_bar:
-        progress.write("{} collapsed dimensions".format(kld.shape[-1] - len(idx)))
-
-    return idx
+            file.write("{}".format(metric))
+    
