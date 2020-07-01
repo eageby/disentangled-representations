@@ -23,6 +23,7 @@ class Shapes3d(Dataset):
     ]
     num_values_per_factor = [10, 10, 10, 8, 4, 15]
 
+    
     @staticmethod
     @gin.configurable(module="Shapes3d")
     def pipeline(batch_size=64, prefetch_batches=1, num_parallel_calls=tf.data.experimental.AUTOTUNE, shuffle=None):
@@ -75,3 +76,4 @@ class Shapes3d(Dataset):
             return shuffle(dataset)
 
 
+gin.constant('Shapes3d.num_values_per_factor', Shapes3d.num_values_per_factor)

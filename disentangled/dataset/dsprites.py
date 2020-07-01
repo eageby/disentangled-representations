@@ -75,3 +75,4 @@ class DSprites(Dataset):
 
             return dataset
 
+gin.constant('DSprites.num_values_per_factor', DSprites.num_values_per_factor)
