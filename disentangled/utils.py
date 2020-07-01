@@ -4,10 +4,10 @@ from pathlib import Path
 
 import click
 import gin
+import numpy
 import tensorflow as tf
 import tqdm
 from decouple import config
-import numpy.random
 
 
 @gin.configurable
@@ -103,10 +103,6 @@ class OperativeConfigCallback(tf.keras.callbacks.Callback):
             config = markdownify_operative_config_str(gin.operative_config_str())
             tf.summary.text("operative_config", config, step=batch)
 
-@gin.configurable
-def get_numpy_random_state(seed):
-    return numpy.random.RandomState(seed)
-
 class TrainingProgress(tqdm.tqdm):
     def __init__(self, iterable, **kwargs):
 
@@ -132,6 +128,25 @@ class TrainingProgress(tqdm.tqdm):
                 key + ": " + "{:.2f}".format(logs[key]) for key in logs.keys()
             )
             self.refresh()
+
+@gin.configurable
+def dataset(get, dataset, supervised=None):
+    if get == 'dataset':
+        return dataset
+    elif get == 'supervised':
+        return supervised
+
+@gin.configurable
+def model(model):
+    return model
+
+@gin.configurable
+def run(run_fn):
+    run_fn()
+
+@gin.configurable
+def get_numpy_random_state(seed):
+    return numpy.random.RandomState(seed)
 
 """https://stackoverflow.com/questions/54073767/command-line-interface-with-multiple-commands-using-click-add-unspecified-optio"""
 
