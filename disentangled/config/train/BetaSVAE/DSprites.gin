@@ -1,48 +1,10 @@
 include 'train/BetaSVAE/BetaSVAE.gin'
 
-LATENTS = 10
 FILENAME = 'BetaSVAE/DSprites'
-# Training Parameters 
-# ==============================================================================
-run_training.iterations = 3e5
+
 objectives.betavae.beta = @hyperparameter()
 hyperparameter.default = 6
 
-# Dataset
-# ==============================================================================
 run_training.dataset=@DSprites.pipeline()
-DSprites.pipeline.batch_size = 64
-DSprites.pipeline.prefetch_batches = 10
-DSprites.pipeline.num_parallel_calls = %PARALLEL_CALLS
-
-# Model
-# ==============================================================================
-VAE.latents=%LATENTS
-
-# Encoder
-# ==============================================================================
-VAE.f_phi = %disentangled.model.networks.conv_4
-
-VAE.f_phi_mean=@mean/tf.keras.layers.Dense()
-VAE.f_phi_log_var=@log_var/tf.keras.layers.Dense()
-
-Dense.units=%LATENTS
-Dense.activation=None
-
-# Decoder
-# ==============================================================================
-VAE.f_theta = %disentangled.model.networks.conv_4_transpose
-VAE.f_theta_mean=@mean/tf.keras.layers.Conv2DTranspose()
-VAE.f_theta_log_var=@log_var/tf.keras.layers.Conv2DTranspose()
 
 Conv2DTranspose.filters=1
-Conv2DTranspose.kernel_size=(3,3)
-Conv2DTranspose.strides=(1,1)
-
-mean/Conv2DTranspose.activation="sigmoid"
-log_var/Conv2DTranspose.activation=None
-
-# Optimizer 
-# ==============================================================================
-VAE.train.optimizer = @tf.keras.optimizers.Adam()
-Adam.learning_rate = 1e-4

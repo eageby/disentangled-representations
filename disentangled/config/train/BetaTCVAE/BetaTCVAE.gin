@@ -1,5 +1,5 @@
-include 'config.gin'
-include 'train/training.gin'
+include 'config.gin' 
+include 'train/training.gin' 
 
 import disentangled.model.objectives
 import gin.tf.external_configurables
@@ -8,10 +8,37 @@ import gin.tf.external_configurables
 # ==============================================================================
 run_training.model=@VAE()
 VAE.name = "BetaTCVAE"
+
 # Objective
 # ==============================================================================
 VAE.objective = @Objective()
 Objective.objective_fn = @objective/betatcvae
+
+# Model
+# ==============================================================================
+VAE.latents=%LATENTS
+
+# Encoder
+# ==============================================================================
+VAE.f_phi = %disentangled.model.networks.conv_4
+
+VAE.f_phi_mean=@mean/tf.keras.layers.Dense()
+VAE.f_phi_log_var=@log_var/tf.keras.layers.Dense()
+
+Dense.units=%LATENTS
+Dense.activation=None
+
+# Decoder
+# ==============================================================================
+VAE.f_theta = %disentangled.model.networks.conv_4_transpose
+VAE.f_theta_mean=@mean/tf.keras.layers.Conv2DTranspose()
+VAE.f_theta_log_var=@log_var/tf.keras.layers.Conv2DTranspose()
+
+Conv2DTranspose.kernel_size=(3,3)
+Conv2DTranspose.strides=(2,2)
+
+mean/Conv2DTranspose.activation="sigmoid"
+log_var/Conv2DTranspose.activation=None
 
 # Distributions
 # ==============================================================================
@@ -20,6 +47,10 @@ objectives.betatcvae.output_dist = @Bernoulli()
 
 Gaussian.mean = 0.0
 Gaussian.log_var = 0.0
+
+# Optimizer 
+# ==============================================================================
+VAE.train.optimizer = @tf.keras.optimizers.Adam()
 
 # Hyperparameter Sweep
 # ==============================================================================

@@ -1,14 +1,36 @@
 import disentangled.training
+import gin.tf.external_configurables
+
+# Random seed
+# ==============================================================================
+run_training.seed = %RANDOM_SEED
+
+# Common Hyperparameters 
+# (Following `Challenging Common Assumptions in the Unsupervised Learning of Disentangled Representations')
+# ==============================================================================
+LATENTS = 10
+
+Adam.learning_rate = 1e-4
+Adam.beta_1 = 0.9
+Adam.beta_2 = 0.999
+Adam.epsilon = 1e-8
+run_training.iterations = 3e5
+
+DSprites.pipeline.batch_size = 64
+DSprites.pipeline.prefetch_batches = 10
+DSprites.pipeline.num_parallel_calls = %PARALLEL_CALLS
+DSprites.pipeline.shuffle = @tf.data.Dataset.shuffle
+
+Shapes3d.pipeline.batch_size = 64
+Shapes3d.pipeline.prefetch_batches = 10
+Shapes3d.pipeline.num_parallel_calls = %PARALLEL_CALLS
+Shapes3d.pipeline.shuffle = @tf.data.Dataset.shuffle
 
 # Dataset Shuffling
 # ==============================================================================
 shuffle.buffer_size = 100
 shuffle.seed = %RANDOM_SHUFFLE_SEED
 shuffle.reshuffle_each_iteration = True
-
-# Random seed
-# ==============================================================================
-run_training.seed = %RANDOM_SEED
 
 # Callbacks
 # ==============================================================================

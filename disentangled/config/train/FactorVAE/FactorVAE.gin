@@ -15,6 +15,40 @@ FactorVAE.objective = @Objective()
 Objective.objective_fn = @objectives.factorvae
 objectives.factorvae.tolerance = %TOLERANCE
 
+# Model
+# ==============================================================================
+FactorVAE.latents=%LATENTS
+
+# Encoder
+# ==============================================================================
+FactorVAE.f_phi = %networks.conv_4
+FactorVAE.f_phi_mean=@mean/tf.keras.layers.Dense()
+FactorVAE.f_phi_log_var=@log_var/tf.keras.layers.Dense()
+Dense.units=%LATENTS
+Dense.activation=None
+
+# Decoder
+# ==============================================================================
+FactorVAE.f_theta = %networks.conv_4_transpose
+FactorVAE.f_theta_mean=@mean/tf.keras.layers.Conv2DTranspose()
+FactorVAE.f_theta_log_var=@log_var/tf.keras.layers.Conv2DTranspose()
+
+Conv2DTranspose.kernel_size=(3,3)
+Conv2DTranspose.strides=(2,2)
+
+mean/Conv2DTranspose.activation="sigmoid"
+log_var/Conv2DTranspose.activation=None
+
+# Optimizer 
+# ==============================================================================
+FactorVAE.train.optimizer = @tf.keras.optimizers.Adam()
+FactorVAE.train.optimizer_discriminator = @discriminator/tf.keras.optimizers.Adam()
+
+discriminator/Adam.learning_rate = 1e-4
+discriminator/Adam.beta_1 = 0.5
+discriminator/Adam.beta_2 = 0.9
+discriminator/Adam.epsilon = 1e-8
+
 # Discriminator 
 # ==============================================================================
 model.FactorVAE.discriminator = @disentangled.model.networks.discriminator()
