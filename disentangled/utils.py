@@ -17,11 +17,19 @@ def get_data_path(data_path=None):
 
 
 @gin.configurable
-def get_logs_path(suffix=None):
-    base = Path(config("DISENTANGLED_REPRESENTATIONS_DIRECTORY")) / "logs"
+def get_logs_path(prefix=None, name=None, suffix=None, hyperparameter_index=None, random_seed=None):
+    base = get_data_path() / "logs"
 
-    if suffix is not None:
-        base /= suffix
+    for i in [prefix, name, suffix]:
+        if i is not None:
+            base /= i
+
+    if hyperparameter_index is not None:
+        base /= 'HP{}'.format(hyperparameter_index)
+
+    if random_seed is not None:
+        base /= 'RS{}'.format(random_seed)
+
 
     base.mkdir(exist_ok=True, parents=True)
 
@@ -140,42 +148,10 @@ def model(model):
     return model
 
 @gin.configurable
-def run(run_fn):
-    run_fn()
-
-"""https://stackoverflow.com/questions/54073767/command-line-interface-with-multiple-commands-using-click-add-unspecified-optio"""
-
-
-class AcceptAllCommand(click.Command):
-    def make_parser(self, ctx):
-        """Hook 'make_parser' and allow the opt dict to find any option"""
-        parser = super(AcceptAllCommand, self).make_parser(ctx)
-        command = self
-
-        class AcceptAllLongOptsDict(dict):
-            def __contains__(self, item):
-                """If the parser does no know this option, add it"""
-
-                if not super(AcceptAllLongOptsDict, self).__contains__(item):
-                    # create an option name
-
-                    if item[:2] != "--":
-                        return False
-
-                    name = item.lstrip("-")
-
-                    # add the option to our command
-                    click.option(item)(command)
-
-                    # get the option instance from the command
-                    option = command.params[-1]
-
-                    # add the option instance to the parser
-                    parser.add_option([item], name.replace("-", "_"), obj=option)
-
-                return True
-
-        # set the parser options to our dict
-        parser._long_opt = AcceptAllLongOptsDict(parser._long_opt)
-
-        return parser
+def hyperparameter(default, values, index=None, get_index=False):
+    if get_index:
+        return index
+    elif index is None:
+        return default
+    else:
+        return values[index]

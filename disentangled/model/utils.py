@@ -8,15 +8,21 @@ import disentangled.utils
 
 
 @gin.configurable(module="disentangled.model.utils")
-def save(model, filename, suffix=None, overwrite=False):
+def save(model, filename, prefix=None, suffix=None, hyperparameter_index=None, random_seed=None, overwrite=False):
     path = disentangled.utils.get_data_path() / "models"
-    path.mkdir(exist_ok=True)
-    if suffix is not None:
-        filename += '_' + str(suffix)
 
-    path = path / filename
+    for i in [prefix, filename, suffix]:
+        if i is not None:
+            path /= i
+
+    if hyperparameter_index is not None:
+        path /= 'HP{}'.format(hyperparameter_index)
+
+    if random_seed is not None:
+        path /= 'RS{}'.format(random_seed)
+
+    path.mkdir(exist_ok=True, parents=True)
     model.save(str(path), overwrite=overwrite)
-
 
 @gin.configurable(module="disentangled.model.utils")
 def load(filename):

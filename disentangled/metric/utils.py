@@ -41,7 +41,7 @@ def fixed_factor_dataset(dataset, batch_size, num_values_per_factor, num_paralle
 
         return dataset.filter(lambda x: tf.equal(tf.gather(x['label'], fixed_factor), fixed_factor_value)).batch(batch_size).map(add_factor_data).take(1)
 
-    return factor_set.interleave(map_to_batch, num_parallel_calls=num_parallel_calls)
+    return factor_set.interleave(map_to_batch, num_parallel_calls=num_parallel_calls), batch_size
 
 @gin.configurable
 class MetricCallback(tf.keras.callbacks.Callback):
