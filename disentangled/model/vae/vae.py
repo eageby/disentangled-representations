@@ -51,8 +51,10 @@ class VAE(tf.keras.Model):
 
     @tf.function
     def sample(self, mean, log_var, training=False):
-        noise = tf.random.normal(tf.shape(mean), mean=0.0, stddev=1.0)
+        if not training:
+            return mean
 
+        noise = tf.random.normal(tf.shape(mean), mean=0.0, stddev=1.0)
         return mean + tf.exp(0.5 * log_var) * noise
 
     @tf.function
