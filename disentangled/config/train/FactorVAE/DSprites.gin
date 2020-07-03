@@ -6,7 +6,9 @@ FILENAME = 'FactorVAE/DSprites'
 # Training Parameters 
 # ==============================================================================
 run_training.iterations = 5e5
-objectives.factorvae.gamma = 7
+
+objectives.factorvae.gamma = @hyperparameter()
+hyperparameter.default = 7
 
 # Dataset
 # ==============================================================================

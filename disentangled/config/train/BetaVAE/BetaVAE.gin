@@ -8,6 +8,7 @@ import gin.tf.external_configurables
 # ==============================================================================
 run_training.model=@VAE()
 VAE.name = "BetaVAE"
+objectives.betavae.beta = @hyperparameter
 
 # Objective
 # ==============================================================================
@@ -22,4 +23,7 @@ betavae.output_dist = @Bernoulli()
 Gaussian.mean = 0.0
 Gaussian.log_var = 0.0
 
+# Hyperparameter Sweep
+# ==============================================================================
+hyperparameter.values = [1, 2, 4, 6, 8, 16]
 

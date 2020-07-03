@@ -8,8 +8,10 @@ disentangled.metric.utils.log_metric.metric_name = 'factorvae_score'
 disentangled.metric.factorvae_score.dataset = @dataset()
 dataset.get = 'supervised'
 
-factorvae_score.training_votes=50
-factorvae_score.test_votes=50
+# factorvae_score.training_votes=10
+# factorvae_score.test_votes=5
+factorvae_score.training_points=10000
+factorvae_score.test_points=5000
 factorvae_score.tolerance=5e-2
 
 disentangled.metric.fixed_factor_dataset.batch_size = 64

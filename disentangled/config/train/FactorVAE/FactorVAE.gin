@@ -31,3 +31,7 @@ objectives.factorvae.output_dist = @Bernoulli()
 
 Gaussian.mean = 0.0
 Gaussian.log_var = 0.0
+
+# Hyperparameter Sweep
+# ==============================================================================
+hyperparameter.values = [10, 20, 30, 40, 50, 100]

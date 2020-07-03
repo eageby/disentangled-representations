@@ -10,5 +10,6 @@ disentangled.metric.gini_index.dataset = @dataset()
 dataset.get = 'supervised'
 
 disentangled.metric.gini_index.tolerance = 5e-2
+# disentangled.metric.gini_index.samples = 10
 disentangled.metric.gini_index.samples = 1000
 disentangled.metric.gini_index.batch_size = 64

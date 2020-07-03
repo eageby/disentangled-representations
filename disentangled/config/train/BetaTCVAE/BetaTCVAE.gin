@@ -20,3 +20,7 @@ objectives.betatcvae.output_dist = @Bernoulli()
 
 Gaussian.mean = 0.0
 Gaussian.log_var = 0.0
+
+# Hyperparameter Sweep
+# ==============================================================================
+hyperparameter.values = [1, 2, 4, 6, 8, 10]

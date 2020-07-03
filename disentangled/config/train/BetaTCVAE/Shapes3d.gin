@@ -6,7 +6,10 @@ FILENAME = 'BetaTCVAE/Shapes3d'
 # Training Parameters 
 # ==============================================================================
 run_training.iterations = 5e5
-objectives.betatcvae.beta = 4
+
+objectives.betatcvae.beta = @hyperparameter()
+hyperparameter.default = 4
+
 objectives.betatcvae.dataset_size = 5e5
 
 # Dataset

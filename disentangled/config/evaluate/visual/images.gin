@@ -1,9 +1,0 @@
-include 'config.gin'
-
-import disentangled.visualize
-import bins.disentangled_template
-
-run.run_fn = @disentangled.visualize.reconstructed
-disentangled.visualize.reconstructed.model = @model()
-disentangled.visualize.reconstructed.dataset = @dataset()
-dataset.get = 'dataset'

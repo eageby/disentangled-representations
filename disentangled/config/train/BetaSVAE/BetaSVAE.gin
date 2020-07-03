@@ -21,3 +21,7 @@ objectives.betavae.output_dist = @Bernoulli()
 
 Laplacian.location = 0.0
 Laplacian.log_scale = 0.0
+
+# Hyperparameter Sweep
+# ==============================================================================
+hyperparameter.values = [1, 2, 4, 6, 8, 10]

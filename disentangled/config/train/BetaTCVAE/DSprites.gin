@@ -6,8 +6,11 @@ FILENAME = 'BetaTCVAE/DSprites'
 # Training Parameters 
 # ==============================================================================
 run_training.iterations = 3e5
-objectives.betavae.beta = 6
 
+objectives.betacvae.beta = @hyperparameter()
+hyperparameter.default = 4
+
+objectives.betatcvae.dataset_size = 737280
 # Dataset
 # ==============================================================================
 run_training.dataset=@DSprites.pipeline()

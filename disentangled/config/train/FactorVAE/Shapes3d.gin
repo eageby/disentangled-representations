@@ -6,7 +6,9 @@ FILENAME = 'FactorVAE/Shapes3d'
 # Training Parameters 
 # ==============================================================================
 run_training.iterations = 1e5
-objectives.factorvae.gamma = 35
+
+objectives.factorvae.gamma = @hyperparameter()
+hyperparameter.default = 35
 
 # Dataset
 # ==============================================================================
