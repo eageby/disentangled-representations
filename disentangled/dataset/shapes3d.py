@@ -42,7 +42,7 @@ class Shapes3d(Dataset):
 
     @staticmethod
     @gin.configurable(module="Shapes3d")
-    def supervised(num_parallel_calls, shuffle=None):
+    def supervised(num_parallel_calls=tf.data.experimental.AUTOTUNE, shuffle=None):
         dataset = (
             Shapes3d.load()
             .map(Shapes3d.label_map, num_parallel_calls=num_parallel_calls)
