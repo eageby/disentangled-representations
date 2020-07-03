@@ -1,0 +1,18 @@
+run_training.save = True
+disentangled.utils.get_logs_path.prefix = 'experiment'
+
+hyperparameter.index = %HP_INDEX
+
+hyperparameter_sweep.n_values = 5
+random_seed_sweep.random_seed_list = [10, 12, 33]
+#88 25 # 42 8 0 99 19
+
+disentangled.model.utils.save.prefix = 'experiment'
+disentangled.model.utils.save.hyperparameter_index = %HP_INDEX
+disentangled.model.utils.save.random_seed = %RANDOM_SEED
+
+disentangled.utils.get_logs_path.prefix = 'experiment'
+disentangled.utils.get_logs_path.hyperparameter_index = %HP_INDEX
+disentangled.utils.get_logs_path.random_seed = %RANDOM_SEED
+
+disentangled.model.utils.save.overwrite=True

@@ -1,0 +1,8 @@
+import disentangled.config.externals
+
+disentangled.visualize.traversal2d.shuffle_fn=@tf.data.Dataset.shuffle
+
+disentangled.visualize.traversal2d.sample = 0
+disentangled.visualize.traversal2d.steps=31
+disentangled.visualize.traversal2d.offset=0
+disentangled.visualize.traversal2d.skip_batches=0
