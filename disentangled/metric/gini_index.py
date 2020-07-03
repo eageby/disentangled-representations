@@ -35,16 +35,30 @@ def _gini_index_representation(representation):
 
 
 @gin.configurable(module="disentangled.metric")
-def gini_index(model, dataset, samples, batch_size, tolerance, progress_bar=True):
+def gini_index(model, dataset, points, batch_size, tolerance, progress_bar=True):
     empirical_var = disentangled.metric.utils.representation_variance(
         model, dataset)
     intact_idx = np.where(empirical_var > tolerance)[0]
     if intact_idx.size == 0:
         return 0.0
 
-    dataset = dataset.batch(batch_size).take(samples)
+    dataset = dataset.take(points).batch(batch_size, drop_remainder=True)
     if progress_bar:
-        progress = disentangled.utils.TrainingProgress(dataset, total=samples)
+        progress = disentangled.utils.TrainingProgress(dataset, total=points//batch_size)
         progress.write('Calculating Gini Index')
     else:
+        progress = dataset
+
+    all_index = None
+    for batch in progress:
+        representation = model.encode(batch['image'])[0]
+        index = _gini_index_representation(
+            tf.gather(representation, intact_idx, axis=1)
+        )
+        index = tf.expand_dims(index, axis=0)
+
+        if all_index is None:
+            all_index = index
+        else:
+            all_index = tf.concat([all_index, index], axis=0)
 
