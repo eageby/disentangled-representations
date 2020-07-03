@@ -7,70 +7,25 @@ import numpy as np
 import tensorflow as tf
 import gin
 
-def estimator(dataset):
-    factor_possibilities = tf.cast(
-        np.array([10.0, 10.0, 10.0, 8.0, 4.0, 15.0]), dtype=tf.float32
-    )
+def discrete_entropy(data):
+    tolerance = 1e-7
+    n_factors = data.shape[1]
+    entropy = np.zeros((n_factors,))
 
-    input_shape = tuple(dataset.element_spec["image"].shape[1:])
+    for i in range(n_factors):
+        occurences = np.bincount(data[:, i])
+        prob = occurences / np.sum(occurences)
 
-    inputs = tf.keras.Input(shape=input_shape)
+        breakpoint()
+        entropy[i] = np.sum(prob * np.log(prob + tolerance))
 
-    mobilenet = tf.keras.applications.MobileNetV2(
-        input_shape=input_shape, include_top=False, weights=None
-    )
-    mobilenet.trainable = True
-
-    flatten = tf.keras.layers.Flatten()
-
-    output_layers = [
-        tf.keras.layers.Dense(int(n), activation="softmax", name=str(i))
-        for i, n in enumerate(factor_possibilities)
-    ]
-
-    x = mobilenet(inputs)
-    x = flatten(x)
-    outputs = [out(x) for out in output_layers]
-
-    estimator = tf.keras.Model(inputs=[inputs], outputs=outputs)
-
-    dataset = dataset.map(
-        lambda x: (
-            x["image"],
-            {str(i): l for i, l in enumerate(tf.unstack(x["label"], axis=-1))},
-        )
-    ).repeat()
-
-    estimator.compile(
-        optimizer=tf.keras.optimizers.Adam(learning_rate=1e-2),
-        loss=[tf.keras.losses.SparseCategoricalCrossentropy() for i in outputs],
-        metrics=tf.keras.metrics.SparseCategoricalAccuracy(),
-    )
-    estimator.fit(dataset, steps_per_epoch=50000)
-
-    disentangled.model.utils.save(estimator, "mig_shapes")
-
-
+    return entropy   
 
 @gin.configurable('mutual_information_gap', module='disentangled.metric')
-def mutual_information_gap(model, dataset, batches, batch_size, prior_dist, progress_bar=True):
+def mutual_information_gap(model, dataset, batches, batch_size, progress_bar=True):
     dataset = dataset.batch(batch_size).take(batches)
 
-    factor_possibilities = tf.cast(
-        np.array([10.0, 10.0, 10.0, 8.0, 4.0, 15.0]), dtype=tf.float32
-    )
-
-    factor_entropy = tf.math.log(factor_possibilities)
-    dataset_size = tf.reduce_prod(factor_possibilities)
-
-    log_prob_factors = -tf.math.log(factor_possibilities)
-    log_px_condk = tf.reshape(
-        tf.reduce_sum(log_prob_factors) - log_prob_factors, (1, 1, -1)
-    )
-    log_prob_factors = tf.reshape(log_prob_factors, (1, -1))
-
     mutual_information = []
-
     if progress_bar:
         progress = disentangled.utils.TrainingProgress(dataset, total=batches)
         progress.write("Calculating MIG")
@@ -78,12 +33,10 @@ def mutual_information_gap(model, dataset, batches, batch_size, prior_dist, prog
         progress = dataset
 
     for batch in progress:
-        mean, log_var = model.encode(batch)
-        noise = tf.random.normal(tf.shape(mean), mean=0.0, stddev=1.0)
-        samples = mean + tf.exp(0.5 * log_var) * noise
+        mean, log_var = model.encode(batch['image'])
+        samples = model.sample(mean, log_var, training=True)
 
-        batch_size = float(mean.shape[0])
-
+        factor_entropy = discrete_entropy(batch['label'])
         log_qzx_matrix = prior_dist.log_likelihood(
             samples,
             tf.expand_dims(mean, axis=1),
