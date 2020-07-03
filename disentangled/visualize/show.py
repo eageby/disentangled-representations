@@ -22,8 +22,8 @@ def batch_to_grid(images, rows, cols):
 
 def comparison(target, encoded, rows, cols, **kwargs):
     """Shows input and output, alternating by row, input first."""
-    target = batch_to_grid(target, int(rows / 2), cols)
-    encoded = batch_to_grid(encoded, int(rows / 2), cols)
+    target = batch_to_grid(target, int(np.ceil(rows / 2)), cols)
+    encoded = batch_to_grid(encoded, int(np.ceil(rows / 2)), cols)
 
     target_rows = np.split(target, target.shape[0], axis=0)
     encoded_rows = np.split(encoded, encoded.shape[0], axis=0)

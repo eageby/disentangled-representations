@@ -1,18 +1,18 @@
-import numpy as np
-import tensorflow as tf
-
 import disentangled.dataset as dataset
 import disentangled.model.utils
 import disentangled.visualize as vi
+import gin
+import numpy as np
+import tensorflow as tf
 
 
-def traversal_2d(model, data, sample=0, steps=20, offset=0, shuffle=False):
-    batch = data.pipeline().take(1)
+@gin.configurable(module="disentangled.visualize")
+def traversal2d(model, data, sample, skip_batches, steps, offset, shuffle_fn=None):
+    if shuffle_fn is not None:
+        data = shuffle_fn(data)
 
-    if shuffle:
-        batch = batch.shuffle(512)
-
-    batch = batch.as_numpy_iterator().next()
+    data = data.skip(skip_batches)
+    batch = data.as_numpy_iterator().next()
 
     representations = model.encode(batch)[0]
 
@@ -26,6 +26,7 @@ def traversal_2d(model, data, sample=0, steps=20, offset=0, shuffle=False):
 
     range_ = [
         np.linspace(min_values[d] - offset, max_values[d] + offset, num=steps)
+
         for d in dimensions
     ]
     grid = np.meshgrid(*range_)
@@ -42,17 +43,19 @@ def traversal_2d(model, data, sample=0, steps=20, offset=0, shuffle=False):
     )
 
 
-def traversal_1d(model, data, sample, dimensions=10, steps=31, offset=0, shuffle=False):
-    batch = data.pipeline().take(1)
+@gin.configurable(module="disentangled.visualize")
+def traversal1d(
+    model, data, skip_batches, sample, dimensions, steps, offset, shuffle_fn=None
+):
+    if shuffle_fn is not None:
+        data = shuffle_fn(data)
 
-    if shuffle:
-        batch = batch.shuffle(512)
-
-    batch = batch.as_numpy_iterator().next()
+    data = data.skip(skip_batches)
+    batch = data.as_numpy_iterator().next()
     representations = model.encode(batch)[0]
 
     variances = tf.math.reduce_variance(representations, axis=0)
-    dimensions = np.argsort(variances)[: -(dimensions + 1) : -1]
+    dimensions = np.argsort(variances)[: -(dimensions + 1): -1]
 
     min_values = tf.math.reduce_min(representations, axis=0)
     max_values = tf.math.reduce_max(representations, axis=0)
@@ -61,13 +64,16 @@ def traversal_1d(model, data, sample, dimensions=10, steps=31, offset=0, shuffle
 
     range_ = np.stack(
         [
-            np.linspace(min_values[d] - offset, max_values[d] + offset, num=steps)
+            np.linspace(min_values[d] - offset,
+                        max_values[d] + offset, num=steps)
+
             for d in dimensions
         ],
         axis=0,
     )
 
-    z_traversal = np.broadcast_to(z, (dimensions.size, steps, z.shape[-1])).copy()
+    z_traversal = np.broadcast_to(
+        z, (dimensions.size, steps, z.shape[-1])).copy()
     idx = np.arange(dimensions.size)
 
     z_traversal[idx, :, dimensions] = range_

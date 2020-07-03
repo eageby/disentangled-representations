@@ -8,45 +8,7 @@ import disentangled.model.utils
 import disentangled.training
 import disentangled.utils
 import gin
-
-import itertools
-_METHODS = ["FactorVAE", "BetaVAE", "BetaTCVAE", "BetaSVAE"]
-_DATASETS = ["DSprites", "Shapes3d"]
-_MODELS = ['/'.join(i) for i in itertools.product(_METHODS, _DATASETS)]
-
-
-def gin_options(func):
-    @functools.wraps(func)
-    @click.option("--config", "-c", multiple=True, callback=add_gin)
-    @click.option(
-        "--gin-param", "--gin-parameter", "-p", multiple=True, callback=add_gin
-    )
-    @click.option("--gin-file", "-f", multiple=True, callback=add_gin)
-    def _(*args, **kwargs):
-        return func(*args, **kwargs)
-
-    return _
-
-
-def add_gin(ctx, param, value):
-    ctx.ensure_object(dict)
-
-    if not isinstance(param, str):
-        param = param.name
-
-    if param not in ctx.obj.keys():
-        ctx.obj[param] = []
-
-    ctx.obj[param] += list(value)
-
-
-def parse(ctx):
-    for config in ctx.obj["config"]:
-        disentangled.utils.parse_config_file(config)
-
-    gin.parse_config_files_and_bindings(
-        ctx.obj["gin_file"], ctx.obj["gin_param"], finalize_config=True
-    )
+from disentangled.cli.utils import _MODELS, add_gin, gin_options, visual_options, parse
 
 
 @click.group()
@@ -57,6 +19,10 @@ def evaluate(ctx, model, **kwargs):
     ctx.obj["model"] = disentangled.model.utils.load(model)
     ctx.obj["model_str"] = model
     method, dataset = model.split("/")
+
+    ctx.obj["dataset"] = disentangled.dataset.get(dataset)
+    ctx.obj["method_str"] = method
+    ctx.obj["dataset_str"] = dataset
 
     add_gin(ctx, "config", ["evaluate/evaluate.gin"])
     add_gin(ctx, "config", ["evaluate/dataset/" + dataset + ".gin"])
@@ -109,10 +75,138 @@ def factorvae_score(ctx, **kwargs):
     metric = disentangled.metric.factorvae_score(
         ctx.obj["model"],
         dataset=gin.REQUIRED,
-        training_votes=gin.REQUIRED,
-        test_votes=gin.REQUIRED,
+        training_points=gin.REQUIRED,
+        test_points=gin.REQUIRED,
         tolerance=gin.REQUIRED,
     )
     disentangled.metric.log_metric(
         metric, name=ctx.obj["model_str"], metric_name=gin.REQUIRED
     )
+
+
+@evaluate.command()
+@visual_options
+@gin_options
+@click.pass_context
+def visual(ctx, rows, cols, plot, filename, **kwargs):
+    parse(ctx)
+
+    with gin.unlock_config():
+        gin.bind_parameter(
+            "disentangled.visualize.show.output.show_plot", plot)
+
+        if filename is not None:
+            gin.bind_parameter(
+                "disentangled.visualize.show.output.filename", filename)
+
+        if rows is not None:
+            gin.bind_parameter(
+                "disentangled.visualize.reconstructed.rows", rows)
+
+        if cols is not None:
+            gin.bind_parameter(
+                "disentangled.visualize.reconstructed.cols", cols)
+
+    dataset = ctx.obj["dataset"].pipeline()
+    disentangled.visualize.reconstructed(
+        ctx.obj["model"], dataset, rows=gin.REQUIRED, cols=gin.REQUIRED
+    )
+
+
+@evaluate.command()
+@visual_options
+@gin_options
+@click.pass_context
+def visual_compare(ctx, rows, cols, plot, filename, **kwargs):
+    parse(ctx)
+    with gin.unlock_config():
+        gin.bind_parameter(
+            "disentangled.visualize.show.output.show_plot", plot)
+
+        if filename is not None:
+            gin.bind_parameter(
+                "disentangled.visualize.show.output.filename", filename)
+
+        if rows is not None:
+            gin.bind_parameter("disentangled.visualize.comparison.rows", rows)
+
+        if cols is not None:
+            gin.bind_parameter("disentangled.visualize.comparison.cols", cols)
+
+    dataset = ctx.obj["dataset"].pipeline()
+    disentangled.visualize.comparison(
+        ctx.obj["model"], dataset, rows=gin.REQUIRED, cols=gin.REQUIRED
+    )
+
+
+@evaluate.command()
+@visual_options
+@gin_options
+@click.pass_context
+def latent1d(ctx, rows, cols, plot, filename, **kwargs):
+    """Latent space traversal in 1D"""
+    add_gin(ctx, "config", ["evaluate/visual/latent1d.gin"])
+    parse(ctx)
+
+    with gin.unlock_config():
+        gin.bind_parameter(
+            "disentangled.visualize.show.output.show_plot", plot)
+
+        if filename is not None:
+            gin.bind_parameter(
+                "disentangled.visualize.show.output.filename", filename)
+
+        if rows is not None:
+            gin.bind_parameter(
+                "disentangled.visualize.traversal1d.rows", rows)
+
+        if cols is not None:
+            gin.bind_parameter(
+                "disentangled.visualize.traversal1d.cols", cols)
+
+    dataset = ctx.obj["dataset"].pipeline()
+    disentangled.visualize.traversal1d(
+        ctx.obj["model"],
+        dataset,
+        dimensions=gin.REQUIRED,
+        offset=gin.REQUIRED,
+        skip_batches=gin.REQUIRED,
+        steps=gin.REQUIRED,
+    )
+
+
+@evaluate.command()
+@visual_options
+@gin_options
+@click.pass_context
+def latent2d(ctx, rows, cols, plot, filename, **kwargs):
+    """Latent space traversal in 2D"""
+    add_gin(ctx, "config", ["evaluate/visual/latent2d.gin"])
+    parse(ctx)
+
+    with gin.unlock_config():
+        gin.bind_parameter(
+            "disentangled.visualize.show.output.show_plot", plot)
+        gin.bind_parameter(
+            "disentangled.visualize.show.output.filename", filename)
+
+        if rows is not None:
+            gin.bind_parameter(
+                "disentangled.visualize.traversal2d.rows", rows)
+
+        if cols is not None:
+            gin.bind_parameter(
+                "disentangled.visualize.traversal2d.cols", cols)
+
+    dataset = ctx.obj["dataset"].pipeline()
+    disentangled.visualize.traversal2d(ctx.obj["model"], dataset)
+
+
+@evaluate.command()
+@gin_options
+@click.pass_context
+def gui(ctx, **kwargs):
+    parse(ctx)
+    dataset = ctx.obj["dataset"].pipeline()
+
+    disentangled.visualize.gui(ctx.obj["model"], dataset)
