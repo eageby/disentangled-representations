@@ -62,3 +62,4 @@ def gini_index(model, dataset, points, batch_size, tolerance, progress_bar=True)
         else:
             all_index = tf.concat([all_index, index], axis=0)
 
+    return tf.reduce_mean(all_index)

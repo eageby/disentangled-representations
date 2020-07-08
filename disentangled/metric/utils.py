@@ -27,7 +27,7 @@ def representation_variance(model, data, samples, batch_size, progress_bar=True)
 
 
 @gin.configurable(module="disentangled.metric", blacklist=['dataset'])
-def fixed_factor_dataset(dataset, batch_size, num_values_per_factor, num_parallel_calls=tf.data.experimental.AUTOTUNE):
+def fixed_factor_dataset(dataset, batch_size, num_values_per_factor, prefetch_batches, num_parallel_calls=tf.data.experimental.AUTOTUNE):
     n_factors = dataset.element_spec['label'].shape[0]
     factor_set = tf.data.Dataset.range(n_factors).shuffle(n_factors).repeat()
     
@@ -41,7 +41,8 @@ def fixed_factor_dataset(dataset, batch_size, num_values_per_factor, num_paralle
 
         return dataset.filter(lambda x: tf.equal(tf.gather(x['label'], fixed_factor), fixed_factor_value)).batch(batch_size).map(add_factor_data).take(1)
 
-    return factor_set.interleave(map_to_batch, num_parallel_calls=num_parallel_calls), batch_size
+    dataset = factor_set.interleave(map_to_batch, num_parallel_calls=num_parallel_calls).prefetch(prefetch_batches)
+    return dataset, batch_size
 
 @gin.configurable
 class MetricCallback(tf.keras.callbacks.Callback):

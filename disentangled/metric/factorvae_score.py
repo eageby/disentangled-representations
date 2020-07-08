@@ -30,6 +30,7 @@ def factorvae_score(
     fixed_factor_set, batch_size = disentangled.metric.utils.fixed_factor_dataset(
         dataset, batch_size=gin.REQUIRED, num_values_per_factor=gin.REQUIRED,
     )
+
     n_batches = int(tf.math.ceil((training_points + test_points) / batch_size))
     fixed_factor_set = fixed_factor_set.take(n_batches)
     n_factors = fixed_factor_set.element_spec['label'].shape[1]

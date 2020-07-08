@@ -42,41 +42,30 @@ def discretize(target, bins):
 
     return discretized
 
+# TODO add hist bins to gin config
 
 @gin.configurable('mutual_information_gap', module='disentangled.metric')
-def mutual_information_gap(model, dataset, batches, batch_size, progress_bar=True):
-    dataset = dataset.batch(batch_size).take(batches)
+def mutual_information_gap(model, dataset, points, batch_size, progress_bar=True):
+    dataset = dataset.take(points).batch(batch_size, drop_remainder=True)
     mig = []
 
     if progress_bar:
-        progress = disentangled.utils.TrainingProgress(dataset, total=batches)
+        progress = disentangled.utils.TrainingProgress(dataset, total=points//batch_size)
         progress.write("Calculating MIG")
     else:
         progress = dataset
 
     for batch in progress:
-        mean, _ = model.encode(batch["image"])
+        mean, log_var = model.encode(batch["image"])
+        mean = model.sample(mean, log_var)
 
         discrete_mean = discretize(mean, 20)
         mutual_information = discrete_mutual_info(discrete_mean, batch["label"])
 
         factor_entropy = discrete_entropy(batch["label"])
-        mutual_information_sorted = np.sort(mutual_information, axis=0)[::-1]
+        mutual_information_sorted = tf.sort(mutual_information, axis=0, direction="DESCENDING")
+        current_mig_score = (mutual_information_sorted[0, :] - mutual_information_sorted[1, :]) / factor_entropy
 
-        mig.append(
-            (mutual_information_sorted[0, :] - mutual_information_sorted[1, :])
-            / factor_entropy
-        )
+        mig.append(current_mig_score)
 
     return tf.reduce_mean(tf.stack(mig))
-
-if __name__ == "__main__":
-    disentangled.utils.parse_config_file("mig.gin")
-    print(
-        mutual_information_gap(
-            model=gin.REQUIRED,
-            dataset=gin.REQUIRED,
-            batches=gin.REQUIRED,
-            batch_size=gin.REQUIRED,
-        )
-    )
