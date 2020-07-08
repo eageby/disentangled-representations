@@ -166,6 +166,7 @@ class LatentVariables(QtWidgets.QWidget):
             v.set(self.initial[self.indices[i]])
 
 
+@gin.configurable(module='disentangled.visualize.gui')
 class Options(QtWidgets.QWidget):
     def __init__(self, model, dataset, latents, batch_size, *args, **kwargs):
         super(Options, self).__init__(*args, **kwargs)
@@ -395,7 +396,7 @@ class MainWindow(QtWidgets.QWidget):
 
         layout = QtWidgets.QVBoxLayout(self)
 
-        self.options = Options(model_name, dataset_name, 32, 128)
+        self.options = Options(model_name, dataset_name, latents=gin.REQUIRED, batch_size=gin.REQUIRED)
         layout.addWidget(self.options)
 
         representation = np.asarray(self.model.encode(self.data)[0])

@@ -10,7 +10,6 @@ def reconstructed(model, dataset, rows, cols):
 @gin.configurable(module='disentangled.visualize')
 def data(dataset, rows, cols):
     target = dataset.as_numpy_iterator().next()
-    breakpoint()
     show.grid(target, rows, cols)
 
 @gin.configurable(module='disentangled.visualize')
