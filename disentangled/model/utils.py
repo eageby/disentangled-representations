@@ -23,6 +23,8 @@ def save(model, filename, prefix=None, suffix=None, hyperparameter_index=None, r
 
     path.mkdir(exist_ok=True, parents=True)
     model.save(str(path), overwrite=overwrite)
+    print('Saved model to {}'.format(str(path.resolve())))
+
 
 @gin.configurable(module="disentangled.model.utils")
 def load(filename):

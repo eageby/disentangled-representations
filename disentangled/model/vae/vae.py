@@ -58,7 +58,7 @@ class VAE(tf.keras.Model):
         return mean + tf.exp(0.5 * log_var) * noise
 
     @tf.function
-    def encode(self, x, training=False):
+    def encode(self, x):
         x = self.f_phi(x)
         x = self.flatten(x)
         z_mean = self.f_phi_mean(x)
