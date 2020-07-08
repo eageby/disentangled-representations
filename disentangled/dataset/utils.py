@@ -6,7 +6,7 @@ import tensorflow as tf
 
 def binary(element):
     """Binarizes the element in the dataset.
-    
+
     Requires that the dataset is populated with only one element.
     Recommended usage is to call get_image first, as dataset.map(get_image).map(binary).
 
@@ -28,6 +28,13 @@ def get_image(element):
     return tf.cast(element["image"], tf.float32)
 
 
+def image_float32(element):
+    """Casts image to float32."""
+    element["image"] = tf.cast(element["image"], tf.float32)
+
+    return element
+
+
 def numpy(dataset):
     """Converts a dataset to a numpy array.
 
@@ -46,8 +53,10 @@ def numpy(dataset):
 
 def normalize_uint8(x):
     """Normalizes data in uint8 range [0,255] to [0,1]"""
+
     if isinstance(x, dict):
         x["image"] /= 255
+
         return x
 
     return x / 255

@@ -14,18 +14,22 @@ class CelebA(Dataset):
     _builder = tfds.builder("{}:{}".format(_name, __version__))
 
     factors = [
-        "label_floor_hue",
-        "label_wall_hue",
-        "label_object_hue",
-        "label_scale",
-        "label_shape",
-        "label_orientation",
+        'lefteye_x',
+        'lefteye_y',
+        'leftmouth_x',
+        'leftmouth_y',
+        'nose_x',
+        'nose_y',
+        'righteye_x',
+        'righteye_y',
+        'rightmouth_x',
+        'rightmouth_y'
     ]
     num_values_per_factor = [10, 10, 10, 8, 4, 15]
 
     @staticmethod
     @gin.configurable(module="CelebA")
-    def pipeline(batch_size, prefetch_batches, num_parallel_calls, shuffle=None):
+    def pipeline(batch_size, prefetch_batches=1, num_parallel_calls=tf.data.experimental.AUTOTUNE, shuffle=None):
         dataset = (
             CelebA.load()
             .map(utils.get_image, num_parallel_calls=num_parallel_calls)
@@ -55,18 +59,10 @@ class CelebA(Dataset):
 
     @staticmethod
     def label_map(element):
-        raise NotImplementedError
         labels = tf.convert_to_tensor(
             [element[f] for f in CelebA.factors], dtype=tf.uint8
         )
 
         return {"image": element["image"], "label": labels}
 
-    class ordered:
-        @staticmethod
-        @gin.configurable(module='CelebA.ordered')
-        def load(num_parallel_calls):
-            raise NotImplementedError
-            return serialize.read(
-                serialize.raw_datasets.CelebA, num_parallel_calls
-            ).map(utils.normalize_uint8, num_parallel_calls=num_parallel_calls)
+gin.constant('CelebA.num_values_per_factor', CelebA.num_values_per_factor)

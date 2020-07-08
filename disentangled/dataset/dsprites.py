@@ -24,12 +24,11 @@ class DSprites(Dataset):
 
     @staticmethod
     @gin.configurable(module="DSprites")
-    def pipeline(batch_size, prefetch_batches, num_parallel_calls, shuffle=None):
+    def pipeline(batch_size, prefetch_batches=1, num_parallel_calls=tf.data.experimental.AUTOTUNE, shuffle=None):
         dataset = (
             DSprites.load()
             .map(utils.get_image, num_parallel_calls=num_parallel_calls)
             .batch(batch_size)
-            .map(utils.normalize_uint8, num_parallel_calls=num_parallel_calls)
             .prefetch(prefetch_batches)
         )
 
@@ -40,11 +39,11 @@ class DSprites(Dataset):
 
     @staticmethod
     @gin.configurable(module="DSprites")
-    def supervised(num_parallel_calls, shuffle=None):
+    def supervised(num_parallel_calls=tf.data.experimental.AUTOTUNE, shuffle=None):
         dataset = (
             DSprites.load()
+            .map(utils.image_float32, num_parallel_calls=num_parallel_calls)
             .map(DSprites.label_map, num_parallel_calls=num_parallel_calls)
-            .map(utils.normalize_uint8, num_parallel_calls=num_parallel_calls)
         )
 
         if shuffle is None:
@@ -60,19 +59,5 @@ class DSprites(Dataset):
         )
 
         return {"image": element["image"], "label": labels}
-
-    class ordered:
-        @staticmethod
-        @gin.configurable(module='DSprites.ordered')
-        def load(num_parallel_calls, shuffle=None):
-
-            dataset = serialize.read(
-                serialize.raw_datasets.DSprites, num_parallel_calls
-            ).map(utils.normalize_uint8, num_parallel_calls=num_parallel_calls)
-
-            if shuffle is not None:
-                return shuffle(dataset)
-
-            return dataset
 
 gin.constant('DSprites.num_values_per_factor', DSprites.num_values_per_factor)
