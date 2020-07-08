@@ -26,6 +26,7 @@ def evaluate(ctx, model, **kwargs):
 
     add_gin(ctx, "config", ["evaluate/evaluate.gin"])
     add_gin(ctx, "config", ["evaluate/dataset/" + dataset + ".gin"])
+    add_gin(ctx, "config", ["evaluate/model/" + method + ".gin"])
 
 
 @evaluate.command()
@@ -33,7 +34,7 @@ def evaluate(ctx, model, **kwargs):
 @click.pass_context
 def gini_index(ctx, **kwargs):
     add_gin(ctx, "config", ["metric/gini.gin"])
-    parse(ctx)
+    parse(ctx, set_seed=True)
 
     metric = disentangled.metric.gini_index(
         ctx.obj["model"],
@@ -52,13 +53,13 @@ def gini_index(ctx, **kwargs):
 @click.pass_context
 def mig(ctx, **kwargs):
     add_gin(ctx, "config", ["metric/mig.gin"])
-    parse(ctx)
+    parse(ctx, set_seed=True)
 
     metric = disentangled.metric.mutual_information_gap(
         ctx.obj["model"],
         dataset=gin.REQUIRED,
-        batches=gin.REQUIRED,
-        batch_size=gin.REQUIRED,
+        encoding_dist=gin.REQUIRED,
+        points=gin.REQUIRED
     )
     disentangled.metric.log_metric(
         metric, metric_name=gin.REQUIRED, name=ctx.obj["model_str"]
@@ -70,7 +71,7 @@ def mig(ctx, **kwargs):
 @click.pass_context
 def factorvae_score(ctx, **kwargs):
     add_gin(ctx, "config", ["metric/factorvae_score.gin"])
-    parse(ctx)
+    parse(ctx, set_seed=True)
 
     metric = disentangled.metric.factorvae_score(
         ctx.obj["model"],
@@ -85,11 +86,11 @@ def factorvae_score(ctx, **kwargs):
 
 
 @evaluate.command()
-@visual_options
 @gin_options
+@visual_options
 @click.pass_context
 def visual(ctx, rows, cols, plot, filename, **kwargs):
-    parse(ctx)
+    parse(ctx, set_seed=True)
 
     with gin.unlock_config():
         gin.bind_parameter(
@@ -114,11 +115,11 @@ def visual(ctx, rows, cols, plot, filename, **kwargs):
 
 
 @evaluate.command()
-@visual_options
 @gin_options
+@visual_options
 @click.pass_context
 def visual_compare(ctx, rows, cols, plot, filename, **kwargs):
-    parse(ctx)
+    parse(ctx, set_seed=True)
     with gin.unlock_config():
         gin.bind_parameter(
             "disentangled.visualize.show.output.show_plot", plot)
@@ -146,7 +147,7 @@ def visual_compare(ctx, rows, cols, plot, filename, **kwargs):
 def latent1d(ctx, rows, cols, plot, filename, **kwargs):
     """Latent space traversal in 1D"""
     add_gin(ctx, "config", ["evaluate/visual/latent1d.gin"])
-    parse(ctx)
+    parse(ctx, set_seed=True)
 
     with gin.unlock_config():
         gin.bind_parameter(
@@ -182,7 +183,7 @@ def latent1d(ctx, rows, cols, plot, filename, **kwargs):
 def latent2d(ctx, rows, cols, plot, filename, **kwargs):
     """Latent space traversal in 2D"""
     add_gin(ctx, "config", ["evaluate/visual/latent2d.gin"])
-    parse(ctx)
+    parse(ctx, set_seed=True)
 
     with gin.unlock_config():
         gin.bind_parameter(
@@ -206,7 +207,8 @@ def latent2d(ctx, rows, cols, plot, filename, **kwargs):
 @gin_options
 @click.pass_context
 def gui(ctx, **kwargs):
-    parse(ctx)
+    add_gin(ctx, "config", ["evaluate/visual/gui.gin"])
+    parse(ctx, set_seed=True)
     dataset = ctx.obj["dataset"].pipeline()
 
     disentangled.visualize.gui(ctx.obj["model"], dataset)

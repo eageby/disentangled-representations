@@ -7,15 +7,26 @@ import disentangled.metric.utils
 import disentangled.training
 import disentangled.visualize
 
-from disentangled.cli.utils import parse, gin_options, visual_options, add_gin, _MODELS, _DATASETS
+from disentangled.cli.utils import parse, gin_options, visual_options, add_gin, _MODELS, _DATASETS, DatasetGroup
 
-@click.group()
+@click.group(cls=DatasetGroup)
 @gin_options
-@click.argument('dataset', type=click.Choice(_DATASETS))
+@click.argument('dataset', type=click.Choice(_DATASETS.copy()))
 @click.pass_context
 def dataset(ctx, dataset, **kwargs):
     ctx.ensure_object(dict)
     ctx.obj['dataset'] = dataset
+
+@dataset.command()
+@click.pass_context
+def prepare(ctx):
+    if ctx.obj['dataset'] == 'all':
+        prepare_datasets = _DATASETS
+    else:
+        prepare_datasets = [ctx.obj['dataset']]
+        
+    for dataset in prepare_datasets:
+        disentangled.dataset.get(dataset).load()
 
 @dataset.command()
 @click.option('plot', '--plot/--no-plot', is_flag=True, default=True)

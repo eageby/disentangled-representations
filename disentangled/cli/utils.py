@@ -3,9 +3,10 @@ import functools
 import itertools
 import disentangled.utils
 import gin
+import tensorflow as tf
 
 _METHODS = ["FactorVAE", "BetaVAE", "BetaTCVAE", "BetaSVAE"]
-_DATASETS = ["DSprites", "Shapes3d"]
+_DATASETS = ["DSprites", "Shapes3d", "CelebA"]
 _MODELS = ["/".join(i) for i in itertools.product(_METHODS, _DATASETS)]
 
 
@@ -49,10 +50,23 @@ def add_gin(ctx, param, value, insert=False):
         ctx.obj[param] += list(value)
 
 
-def parse(ctx):
+def parse(ctx, set_seed=False):
     for config in ctx.obj["config"]:
         disentangled.utils.parse_config_file(config)
 
     gin.parse_config_files_and_bindings(
         ctx.obj["gin_file"], ctx.obj["gin_param"], finalize_config=True
     )
+    
+    if set_seed:
+        tf.random.set_seed(gin.query_parameter('%RANDOM_SEED'))
+
+class DatasetGroup(click.Group):
+    def parse_args(self, ctx, args):
+        if len(args) > 0 and args[0] == 'prepare':
+            self.params[0].required = False
+            self.params[0].type.choices.append('all')
+            args.insert(0, 'all')
+        super(DatasetGroup, self).parse_args(ctx, args)
+
+
