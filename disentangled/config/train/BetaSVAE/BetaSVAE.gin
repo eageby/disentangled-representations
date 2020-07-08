@@ -35,7 +35,7 @@ VAE.f_theta_mean=@mean/tf.keras.layers.Conv2DTranspose()
 VAE.f_theta_log_var=@log_var/tf.keras.layers.Conv2DTranspose()
 
 Conv2DTranspose.kernel_size=(3,3)
-Conv2DTranspose.strides=(2,2)
+Conv2DTranspose.strides=(1,1)
 
 mean/Conv2DTranspose.activation="sigmoid"
 log_var/Conv2DTranspose.activation=None
@@ -54,4 +54,8 @@ Laplacian.log_scale = 0.0
 
 # Hyperparameter Sweep
 # ==============================================================================
-hyperparameter.values = [1, 2, 4, 6, 8, 10]
+HP_SWEEP_VALUES = [1, 2, 4, 6, 8, 10]
+
+# Metric
+# ==============================================================================
+mutual_information_gap

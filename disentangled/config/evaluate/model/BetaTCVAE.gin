@@ -1,0 +1,7 @@
+import disentangled.metric
+
+mutual_information_gap.encoding_dist =  @Gaussian()
+Gaussian.mean = 0.0
+Gaussian.log_var = 0.0
+
+

@@ -10,3 +10,5 @@ disentangled.metric.utils.log_metric.print_=True
 
 disentangled.metric.representation_variance.samples = 10000
 disentangled.metric.representation_variance.batch_size = 256
+
+HP_SWEEP_VALUES = None

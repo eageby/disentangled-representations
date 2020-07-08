@@ -3,6 +3,8 @@ disentangled.utils.get_logs_path.prefix = 'experiment'
 
 hyperparameter.index = %HP_INDEX
 
+run_training.iterations = 3e5
+
 hyperparameter_sweep.n_values = 5
 random_seed_sweep.random_seed_list = [10, 12, 33]
 #88 25 # 42 8 0 99 19
@@ -16,3 +18,5 @@ disentangled.utils.get_logs_path.hyperparameter_index = %HP_INDEX
 disentangled.utils.get_logs_path.random_seed = %RANDOM_SEED
 
 disentangled.model.utils.save.overwrite=True
+
+hyperparameter.values = %HP_SWEEP_VALUES

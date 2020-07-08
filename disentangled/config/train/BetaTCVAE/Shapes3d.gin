@@ -2,10 +2,10 @@ include 'train/BetaTCVAE/BetaTCVAE.gin'
 
 FILENAME = 'BetaTCVAE/Shapes3d'
 
-objectives.betatcvae.beta = @hyperparameter()
+objective/betatcvae.beta = @hyperparameter()
 hyperparameter.default = 4
 
-objectives.betatcvae.dataset_size = 480000
+objective/betatcvae.dataset_size = 480000
 
 run_training.dataset=@Shapes3d.pipeline()
 

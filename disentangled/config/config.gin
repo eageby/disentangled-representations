@@ -7,7 +7,7 @@ RANDOM_SEED = 10
 RANDOM_SHUFFLE_SEED = 6
 PARALLEL_CALLS = %tf.data.experimental.AUTOTUNE
 
-# disentangled.model.utils.save.overwrite=False 	# False: Enables overwrite prompt
+disentangled.model.utils.save.overwrite=True 	# False: Enables overwrite prompt
 												# True: Disables overwrite prompt, forces overwrite
 
 # Distributions
@@ -29,7 +29,7 @@ VISUALIZE_ROWS = 1
 VISUALIZE_COLS = 10
 disentangled.visualize.reconstructed.rows = %VISUALIZE_ROWS
 disentangled.visualize.reconstructed.cols = %VISUALIZE_COLS
-disentangled.visualize.fixed_factor_data.rows = %VISUALIZE_ROWS
+disentangled.visualize.fixed_factor_data.rows = 10
 disentangled.visualize.fixed_factor_data.cols = %VISUALIZE_COLS
 disentangled.visualize.data.rows = %VISUALIZE_ROWS
 disentangled.visualize.data.cols = %VISUALIZE_COLS
@@ -66,3 +66,4 @@ shuffle.seed = %RANDOM_SHUFFLE_SEED
 shuffle.reshuffle_each_iteration = True
 
 HP_INDEX = None
+HP_SWEEP_VALUES = None

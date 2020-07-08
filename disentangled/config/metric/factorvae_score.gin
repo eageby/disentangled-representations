@@ -16,3 +16,4 @@ factorvae_score.tolerance=5e-2
 
 disentangled.metric.fixed_factor_dataset.batch_size = 64
 disentangled.metric.fixed_factor_dataset.num_values_per_factor = %NUM_VALUES_PER_FACTOR
+disentangled.metric.fixed_factor_dataset.prefetch_batches = 10

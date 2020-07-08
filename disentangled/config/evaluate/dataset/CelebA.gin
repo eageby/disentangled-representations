@@ -1,0 +1,8 @@
+import disentangled.dataset
+
+dataset.dataset = @CelebA.pipeline()
+dataset.supervised = @CelebA.supervised()
+CelebA.pipeline.shuffle = @tf.data.Dataset.shuffle
+CelebA.supervised.shuffle = @tf.data.Dataset.shuffle
+
+NUM_VALUES_PER_FACTOR = %CelebA.num_values_per_factor

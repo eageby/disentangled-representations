@@ -34,7 +34,7 @@ FactorVAE.f_theta_mean=@mean/tf.keras.layers.Conv2DTranspose()
 FactorVAE.f_theta_log_var=@log_var/tf.keras.layers.Conv2DTranspose()
 
 Conv2DTranspose.kernel_size=(3,3)
-Conv2DTranspose.strides=(2,2)
+Conv2DTranspose.strides=(1,1)
 
 mean/Conv2DTranspose.activation="sigmoid"
 log_var/Conv2DTranspose.activation=None
@@ -68,4 +68,4 @@ Gaussian.log_var = 0.0
 
 # Hyperparameter Sweep
 # ==============================================================================
-hyperparameter.values = [10, 20, 30, 40, 50, 100]
+HP_SWEEP_VALUES = [10, 20, 30, 40, 50, 100]
