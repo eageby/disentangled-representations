@@ -8,16 +8,14 @@ import numpy as np
 import tensorflow as tf
 
 # TODO GIN CONFIGURABLE
-
-
 def occurences(data):
     """Counts occurences of values in data
 
     Args:
-        data: ∊ ℝ (N , K) = (batch_size, factors) 
+        data: ∊ ℝ (N , K) = (batch_size, factors)
 
     Returns:
-        (tf.RaggedTensor) ∊ ℝ (K, (values)) 
+        (tf.RaggedTensor) ∊ ℝ (K, (A))
      """
     data = tf.cast(data, tf.int32)
     _, K = data.shape
@@ -63,30 +61,27 @@ def estimate_marginal_entropy(samples, encoding_dist, *encoding_parameters):
         (N, N, D),
     )
 
-    # return -tf.reduce_mean(
-    #     tf.reduce_logsumexp(log_qzx_matrix - tf.math.log(N), axis=0), axis=0
-    # )
-
     # H(z) = sum_z( 1/N sum_x (q(z|x)) log ( 1/N sum_x(q(z|x)) ) ) ∊ ℝ [D]
     log_qz = tf.reduce_logsumexp(log_qzx_matrix - tf.math.log(N), axis=0)
+
+    return -tf.reduce_mean(log_qz, axis=0)
+
     return -tf.reduce_sum(tf.math.exp(log_qz) * log_qz, axis=0)
 
-def ragged_logsumexp(values, axis=None):
-    """Numerically stable logsumexp with support for tf.RaggedTensor"""
-    max_value = tf.reduce_max(values)
-    return tf.math.log(tf.reduce_sum(tf.math.exp(values), axis=axis))
+def ragged_logsumexp(values, **kwargs):
+    """logsumexp with support for tf.RaggedTensor"""
+    return tf.math.log(tf.reduce_sum(tf.math.exp(values), **kwargs)) 
 
 # @tf.function
 def estimate_conditional_entropy(
-        samples, log_pv, log_pxv, encoding_dist, *encoding_parameters
-        ):
+        samples, log_pv, log_pxv, encoding_dist, *encoding_parameters):
     """Calculates conditional entropy
     H(z| v) = - sum(p(z,v) log p(z|v)) ∊ ℝ [D, K]
 
     Args:
-        samples: z ∼ q(z|x) ∊ ℝ (N, D)
-        log_pv: log p(v) ∊ ℝ (K, (values) )
-        log_pxv: log p(x|v) ∊ ℝ [K, (values)]
+        samples: z ∼ q(z|x) ∊ ℝ [N, D]
+        log_pv: log p(v) ∊ ℝ [K, (A) ]
+        log_pxv: log p(x|v) ∊ ℝ [K, (A)]
         encoding_dist: q(z|x)
         *encoding_parameters: list of parameters ∊ ℝ [N]
     Returns: 
@@ -101,27 +96,29 @@ def estimate_conditional_entropy(
             (N, D, 1, 1)
     )
 
-    # p(z,v) = sum_x (q(z|x) p(x|v) p(v)) ∊ ℝ [N, D, K, (values)]
-    log_pzv = ragged_logsumexp(log_pxv + log_pv + log_qzx, axis=0)
+   # log_pzv = log_pxv + log_pv + tf.reduce_logsumexp(log_qzx, axis=0)
 
-    # p(z|v) = sum_x(q(z|x)p(x|v)) ∊ ℝ [N, D, K, (values)]
+    # p(z|v) = sum_x(q(z|x)p(x|v)) ∊ ℝ [D, K, (A)]
     log_pzv_cond = ragged_logsumexp(log_pxv + log_qzx, axis=0)
 
-    # return -tf.reduce_mean(log_pzv_cond, axis=[0,2])
+    # p(z,v) = sum_x (q(z|x) p(x|v) p(v)) = p(z|v)p(v) ∊ ℝ [D, K, (A)]
+    log_pzv = log_pzv_cond + tf.expand_dims(log_pv, 0)
 
-    # H(z| v) = - sum(p(z,v) log p(z|v)) ∊ ℝ [D, K]
-    return -tf.reduce_sum(tf.math.exp(log_pzv) * log_pzv_cond, axis=[0, 2])
+    return -tf.reduce_mean(log_pzv_cond, axis=2).to_tensor()
+
+    # H(z|v) = - sum(p(z,v) log p(z|v)) ∊ ℝ [D, K]
+    return -tf.reduce_sum(tf.math.exp(log_pzv) * log_pzv_cond, axis=2).to_tensor()
 
 
 # @tf.function
 def estimate_factor_statistics(labels):
     """Estimates entropy and prior and conditioned prob
     Args:
-        labels: Factor values for samples ∊ ℝ (N, D)
+        labels: Factor values for samples ∊ ℝ [N, D]
 
     Returns:
-        (tf.RaggedTensor) p(v) ∊ ℝ (K, (values) )
-        (tf.RaggedTensor) p(x|v) ∊ ℝ [K, (values)]
+        (tf.RaggedTensor) p(v) ∊ ℝ [K, (A) ]
+        (tf.RaggedTensor) p(x|v) ∊ ℝ [K, (A)]
         (tf.Tensor) H(v_k) ∊ ℝ [K]
     """
     N, K = tf.unstack(tf.cast(labels.shape, tf.float32))  # Batch size, Factors
@@ -130,12 +127,17 @@ def estimate_factor_statistics(labels):
     factor_occurences = occurences(labels)
 
     # p(v_k = a) = #{v_k = a} / N
-    # p(v) ∊ ℝ (K, (values) )
-    log_pv = tf.math.log(factor_occurences) - tf.math.log(N)
+    # p(v) ∊ ℝ (K, (A) ) 
+    log_pv = tf.math.log(factor_occurences) - tf.math.log(N) 
 
     # p(v=a|x=b) = 1
-    # p(x|v=a) = p(v|x) / #{v=a} ∊ ℝ [K, (values)]
+    # p(x|v=a) = p(v|x) / #{v=a} ∊ ℝ [K, (A)]
     log_pxv = -tf.math.log(factor_occurences)
+
+    # factor_possibilites = tf.cast(factor_occurences.row_lengths(axis=1), tf.float32)
+    # log_pxv = -tf.math.log(factor_occurences) - tf.expand_dims(tf.math.log(factor_possibilites), 1)
+
+    p_x = tf.reduce_sum(tf.math.exp(log_pxv+ log_pv))
 
     # H(v_k) = - sum_a(p(v_k=a) log(p(v_k=a)) ∊ ℝ [K]
     entropy = -tf.reduce_sum(tf.math.exp(log_pv) * log_pv, axis=1)
@@ -166,22 +168,43 @@ def normalized_mutual_information(labels, samples, encoding_dist, *encoding_para
     marginal_entropy = estimate_marginal_entropy(
         samples, encoding_dist, *encoding_parameters
     )
-    breakpoint()
     # I(z_j; v_k) = H(z_j) - H(z_j | v_k) ∊ ℝ [D, K]
     mutual_information = tf.expand_dims(
         marginal_entropy, 1) - conditional_entropy
     return mutual_information / factor_entropy
 
+# @tf.function
+def mutual_information_gap_batch(labels, samples, encoding_dist, *encoding_parameters):
+    """Estimates mutual information gap (MIG)
+    1/K sum_{k=1}^K 1/H(v_k) (I(z_j[k]; v_k) - max_{j !=j[k]} I(z_j;v_k))
+
+    Args:
+        labels: Factor values for samples ∊ ℝ (N, D)
+        samples: z ∼ q(z|x) ∊ ℝ (N, D)
+        encoding_dist: q(z|x)
+        *encoding_parameters: list of parameters ∊ ℝ [N]
+
+    Returns:
+        (tf.Tensor) ∊ ℝ []
+    """
+    # I_n(z_j; v_k) = (H(z_j) - H(z_j | v_k)) / H(v_k) ∊ ℝ [D, K]
+    nmi = normalized_mutual_information(
+        labels, samples, encoding_dist, *encoding_parameters
+    )
+    nmi = tf.sort(nmi, axis=0, direction="DESCENDING")
+    # ∊ ℝ [K]
+    mig = nmi[0, :] - nmi[1, :]
+    return tf.reduce_mean(mig)
 
 @gin.configurable("mutual_information_gap", module="disentangled.metric")
 def mutual_information_gap(
-    model,
-    dataset,
-    points,
-    batch_size,
-    encoding_dist,
-    num_values_per_factor,
-    progress_bar=True,
+        model,
+        dataset,
+        points,
+        batch_size,
+        encoding_dist,
+        num_values_per_factor,
+        progress_bar=True,
 ):
     dataset = dataset.take(points).batch(batch_size, drop_remainder=True)
     n_batches = points // batch_size
@@ -193,7 +216,7 @@ def mutual_information_gap(
     else:
         progress = dataset
 
-    nmi = tf.TensorArray(dtype=tf.float32, size=n_batches)
+    mig = tf.TensorArray(dtype=tf.float32, size=n_batches)
 
     for i, batch in enumerate(progress):
         labels = tf.cast(batch["label"], tf.int32)
@@ -202,15 +225,12 @@ def mutual_information_gap(
         encoding_parameters = model.encode(batch["image"])
         samples = model.sample(*encoding_parameters, training=True)
 
-        nmi_batch = normalized_mutual_information(
+        mig_batch = mutual_information_gap_batch(
             labels, samples, encoding_dist, *encoding_parameters
         )
-        nmi = nmi.write(i, nmi_batch)
 
-    # I_n(z_j; v_k) = (H(z_j) - H(z_j | v_k)) / H(v_k) ∊ ℝ [D, K]
-    nmi = tf.reduce_mean(nmi.stack(), axis=0)
-    nmi = tf.sort(nmi, axis=0, direction="DESCENDING")
+        mig = mig.write(i, mig_batch)
 
-    mig = nmi[0, :] - nmi[1, :]
     breakpoint()
-    return tf.reduce_mean(mig)
+
+    return tf.reduce_mean(mig.stack())
