@@ -65,6 +65,23 @@ def mig(ctx, **kwargs):
         metric, metric_name=gin.REQUIRED, name=ctx.obj["model_str"]
     )
 
+@evaluate.command()
+@gin_options
+@click.pass_context
+def dmig(ctx, **kwargs):
+    add_gin(ctx, "config", ["metric/dmig.gin"])
+    parse(ctx, set_seed=True)
+
+    metric = disentangled.metric.discrete_mutual_information_gap(
+        ctx.obj["model"],
+        dataset=gin.REQUIRED,
+        points=gin.REQUIRED,
+        batch_size=gin.REQUIRED
+    )
+    disentangled.metric.log_metric(
+        metric, metric_name=gin.REQUIRED, name=ctx.obj["model_str"]
+    )
+
 
 @evaluate.command()
 @gin_options

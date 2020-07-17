@@ -31,6 +31,7 @@ def discrete_entropy(ys):
     return h
 
 
+@gin.configurable('discretize', module='disentangled.metric.discrete_mutual_information_gap', blacklist=['target'])
 def discretize(target, bins):
     """Discretization based on histograms."""
     discretized = np.zeros_like(target)
@@ -42,22 +43,20 @@ def discretize(target, bins):
 
     return discretized
 
-# TODO add hist bins to gin config
 
-@gin.configurable('mutual_information_gap', module='disentangled.metric')
-def mutual_information_gap(model, dataset, points, batch_size, progress_bar=True):
+@gin.configurable('discrete_mutual_information_gap', module='disentangled.metric')
+def discrete_mutual_information_gap(model, dataset, points, batch_size, progress_bar=True):
     dataset = dataset.take(points).batch(batch_size, drop_remainder=True)
     mig = []
 
     if progress_bar:
         progress = disentangled.utils.TrainingProgress(dataset, total=points//batch_size)
-        progress.write("Calculating MIG")
+        progress.write("Calculating Discrete MIG")
     else:
         progress = dataset
 
     for batch in progress:
         mean, log_var = model.encode(batch["image"])
-        mean = model.sample(mean, log_var)
 
         discrete_mean = discretize(mean, 20)
         mutual_information = discrete_mutual_info(discrete_mean, batch["label"])

@@ -1,0 +1,12 @@
+import disentangled.metric.dmig
+
+disentangled.metric.utils.log_metric.metric = @disentangled.metric.discrete_mutual_information_gap
+disentangled.metric.utils.log_metric.metric_name = 'DMIG'
+
+disentangled.metric.discrete_mutual_information_gap.dataset = @dataset()
+dataset.get = 'supervised'
+
+discrete_mutual_information_gap.points=10000
+discrete_mutual_information_gap.batch_size=512
+
+discrete_mutual_information_gap.discretize.bins = 20
