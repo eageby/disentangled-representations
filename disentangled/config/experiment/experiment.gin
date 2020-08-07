@@ -6,8 +6,8 @@ hyperparameter.index = %HP_INDEX
 run_training.iterations = 3e5
 
 hyperparameter_sweep.n_values = 5
-random_seed_sweep.random_seed_list = [10, 12, 33]
-#88 25 # 42 8 0 99 19
+random_seed_sweep.random_seed_list = [10, 12, 33, 88, 25]
+# 42 8 0 99 19
 
 disentangled.model.utils.save.prefix = 'experiment'
 disentangled.model.utils.save.hyperparameter_index = %HP_INDEX

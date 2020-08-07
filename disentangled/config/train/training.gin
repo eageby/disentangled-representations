@@ -1,5 +1,6 @@
 import disentangled.training
 import gin.tf.external_configurables
+import disentangled.config.externals
 
 # Random seed
 # ==============================================================================

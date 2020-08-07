@@ -1,7 +1,5 @@
-include 'config.gin'
-
 import disentangled.metric.utils
-import disentangled.metric.mig2
+import disentangled.metric.dmig
 
 disentangled.metric.utils.log_metric.metric = @disentangled.metric.gini_index
 disentangled.metric.utils.log_metric.metric_name = 'gini_index'

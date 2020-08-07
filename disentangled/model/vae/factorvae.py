@@ -91,7 +91,7 @@ class FactorVAE(VAE):
             )
 
             logs = {m.name: m.result() for m in self.metrics}
-            logs["loss"] = loss_psi
+            logs["loss"] = loss_theta
 
             return logs
 

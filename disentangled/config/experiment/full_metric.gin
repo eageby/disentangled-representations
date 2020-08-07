@@ -1,13 +1,14 @@
 include 'metric/factorvae_score.gin'
 include 'metric/gini.gin'
 include 'metric/mig.gin'
+include 'metric/dmig.gin'
 include 'evaluate/evaluate.gin'
 
 import disentangled.metric
 import disentangled.utils
 import disentangled.model.utils
 
-run_training.callbacks = [@GINI/MetricCallback(),@MIG/MetricCallback(), @FactorVAE_Score/MetricCallback(), @OperativeConfigCallback(), @tf.keras.callbacks.TensorBoard()]
+run_training.callbacks = [@GINI/MetricCallback(),@DMIG/MetricCallback(), @FactorVAE_Score/MetricCallback(), @OperativeConfigCallback(), @tf.keras.callbacks.TensorBoard()]
 
 OperativeConfigCallback.log_dir =%LOGS_PATH
 
@@ -25,13 +26,13 @@ GINI/MetricCallback.log_dir = %LOGS_PATH
 GINI/MetricCallback.metric_fn= @gini_index
 GINI/MetricCallback.metric_name = 'Gini_Index' 
 
-# Mutual Information Gap
+# Discrete Mutual Information Gap
 # ==============================================================================
-MIG/MetricCallback.log_dir = %LOGS_PATH
-MIG/MetricCallback.metric_fn= @mutual_information_gap
-MIG/MetricCallback.metric_name = 'MIG' 
+DMIG/MetricCallback.log_dir = %LOGS_PATH
+DMIG/MetricCallback.metric_fn= @discrete_mutual_information_gap
+DMIG/MetricCallback.metric_name = 'DMIG' 
 
 representation_variance.progress_bar=False
 factorvae_score.progress_bar=False
 gini_index.progress_bar=False
-mutual_information_gap.progress_bar=False
+discrete_mutual_information_gap.progress_bar=False

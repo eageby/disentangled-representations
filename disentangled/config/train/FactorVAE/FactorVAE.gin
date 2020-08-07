@@ -1,7 +1,7 @@
-include 'config.gin'
 include 'train/training.gin'
 
 import disentangled.model.objectives
+import disentangled.config.externals
 import disentangled.model
 import gin.tf.external_configurables
 

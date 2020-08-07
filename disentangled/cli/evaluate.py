@@ -24,6 +24,7 @@ def evaluate(ctx, model, **kwargs):
     ctx.obj["method_str"] = method
     ctx.obj["dataset_str"] = dataset
 
+    add_gin(ctx, "gin_param", ["HP_SWEEP_VALUES=None"])
     add_gin(ctx, "config", ["evaluate/evaluate.gin"])
     add_gin(ctx, "config", ["evaluate/dataset/" + dataset + ".gin"])
     add_gin(ctx, "config", ["evaluate/model/" + method + ".gin"])
@@ -60,6 +61,23 @@ def mig(ctx, **kwargs):
         dataset=gin.REQUIRED,
         encoding_dist=gin.REQUIRED,
         points=gin.REQUIRED
+    )
+    disentangled.metric.log_metric(
+        metric, metric_name=gin.REQUIRED, name=ctx.obj["model_str"]
+    )
+
+@evaluate.command()
+@gin_options
+@click.pass_context
+def dmig(ctx, **kwargs):
+    add_gin(ctx, "config", ["metric/dmig.gin"])
+    parse(ctx, set_seed=True)
+
+    metric = disentangled.metric.discrete_mutual_information_gap(
+        ctx.obj["model"],
+        dataset=gin.REQUIRED,
+        points=gin.REQUIRED,
+        batch_size=gin.REQUIRED
     )
     disentangled.metric.log_metric(
         metric, metric_name=gin.REQUIRED, name=ctx.obj["model_str"]

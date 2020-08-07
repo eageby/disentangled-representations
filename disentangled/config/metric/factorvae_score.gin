@@ -1,5 +1,3 @@
-include 'config.gin'
-
 import disentangled.metric.factorvae_score
 
 disentangled.metric.utils.log_metric.metric = @disentangled.metric.factorvae_score

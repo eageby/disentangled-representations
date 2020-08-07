@@ -2,7 +2,8 @@ include 'train/BetaSVAE/BetaSVAE.gin'
 
 FILENAME = 'BetaSVAE/Shapes3d'
 
-objectives.betavae.beta = @hyperparameter()
 hyperparameter.default = 4
 
 Conv2DTranspose.filters=3
+
+run_training.dataset=@Shapes3d.pipeline()
