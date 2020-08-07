@@ -2,7 +2,6 @@ include 'train/BetaSVAE/BetaSVAE.gin'
 
 FILENAME = 'BetaSVAE/DSprites'
 
-objectives.betavae.beta = @hyperparameter()
 hyperparameter.default = 6
 
 run_training.dataset=@DSprites.pipeline()

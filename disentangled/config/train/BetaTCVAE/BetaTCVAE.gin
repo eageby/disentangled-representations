@@ -1,4 +1,4 @@
-include 'config.gin' 
+import disentangled.config.externals
 include 'train/training.gin' 
 
 import disentangled.model.objectives

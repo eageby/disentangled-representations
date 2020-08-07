@@ -1,4 +1,4 @@
-include 'config.gin'
+import disentangled.config.externals
 include 'train/training.gin'
 
 import disentangled.model.objectives
@@ -52,6 +52,7 @@ Gaussian.log_var = 0.0
 # Hyperparameter Sweep
 # ==============================================================================
 HP_SWEEP_VALUES = [1, 2, 4, 6, 8, 16]
+TESTER = "TEST"
 
 # Optimizer 
 # ==============================================================================

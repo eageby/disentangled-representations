@@ -1,5 +1,3 @@
-include 'config.gin'
-
 import disentangled.metric.mig
 
 disentangled.metric.utils.log_metric.metric = @disentangled.metric.mutual_information_gap
@@ -9,5 +7,4 @@ disentangled.metric.mutual_information_gap.dataset = @dataset()
 dataset.get = 'supervised'
 
 mutual_information_gap.points=10000
-mutual_information_gap.batch_size=512
-mutual_information_gap.num_values_per_factor = %NUM_VALUES_PER_FACTOR
+mutual_information_gap.batch_size=4096

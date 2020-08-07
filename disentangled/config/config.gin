@@ -66,4 +66,3 @@ shuffle.seed = %RANDOM_SHUFFLE_SEED
 shuffle.reshuffle_each_iteration = True
 
 HP_INDEX = None
-HP_SWEEP_VALUES = None
