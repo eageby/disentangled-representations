@@ -6,8 +6,8 @@ METHOD = BetaVAE BetaTCVAE FactorVAE BetaSVAE
 MODELS := $(foreach p,$(DATASETS),$(patsubst %,%/$p,$(METHOD)))
 METRICS := mig gini_index factorvae_score
 
-HYPERPARAMETERS_INDEX = $$(seq 0 4)
-RANDOM_SEED_INDEX = $$(seq 0 4)
+HYPERPARAMETERS_INDEX := 0 1 2 3 4
+RANDOM_SEED_INDEX := 0 1 2 3 4
 
 .PHONY: evaluate images metrics train reconstructed examples fixed_factor latents
 .PHONY: latent1d latent2d examples fixed_factor concatenate_images metrics experiment
