@@ -74,7 +74,7 @@ def ragged_logsumexp(values, **kwargs):
 
 # @tf.function
 def estimate_conditional_entropy(
-        samples, log_pv, log_pxv, encoding_dist, *encoding_parameters):
+        samples, log_pvk, log_pxvk, encoding_dist, *encoding_parameters):
     """Calculates conditional entropy
     H(z| v) = - sum(p(z,v) log p(z|v)) ∊ ℝ [D, K]
 
@@ -88,7 +88,7 @@ def estimate_conditional_entropy(
         (tf.Tensor) H(z| v) ∊ ℝ [D, K]
     """
     N, D = tf.unstack(tf.cast(samples.shape, tf.float32))  # Batch size, latent_dims
-    K = tf.cast(log_pv.shape[0], tf.float32)  # Factors
+    K = tf.cast(log_pvk.shape[0], tf.float32)  # Factors
 
     # q(z|x) ∊ ℝ [N, D]
     log_qzx = tf.reshape(
@@ -96,18 +96,21 @@ def estimate_conditional_entropy(
             (N, D, 1, 1)
     )
 
-   # log_pzv = log_pxv + log_pv + tf.reduce_logsumexp(log_qzx, axis=0)
+   # log_pzv = log_pxvk + log_pvk + tf.reduce_logsumexp(log_qzx, axis=0)
 
     # p(z|v) = sum_x(q(z|x)p(x|v)) ∊ ℝ [D, K, (A)]
-    log_pzv_cond = ragged_logsumexp(log_pxv + log_qzx, axis=0)
+    log_pzv_cond = ragged_logsumexp(log_pxvk + log_qzx, axis=0)
 
-    # p(z,v) = sum_x (q(z|x) p(x|v) p(v)) = p(z|v)p(v) ∊ ℝ [D, K, (A)]
-    log_pzv = log_pzv_cond + tf.expand_dims(log_pv, 0)
-
-    return -tf.reduce_mean(log_pzv_cond, axis=2).to_tensor()
-
+    log_pzv = tf.expand_dims(log_pvk, 0) + log_pzv_cond
+    # return -tf.reduce_mean(log_pzv_cond, axis=2)
+    pzv = tf.math.exp(log_pzv) / tf.reduce_sum(tf.math.exp(log_pzv))
     # H(z|v) = - sum(p(z,v) log p(z|v)) ∊ ℝ [D, K]
-    return -tf.reduce_sum(tf.math.exp(log_pzv) * log_pzv_cond, axis=2).to_tensor()
+    # conditional_entropy = -tf.reduce_mean(log_pzv_cond, axis=2).to_tensor()
+    breakpoint()
+    conditional_entropy = -tf.reduce_sum(pzv * log_pzv_cond, axis=2).to_tensor()
+
+    breakpoint()
+    return conditional_entropy
 
 
 # @tf.function
@@ -128,22 +131,18 @@ def estimate_factor_statistics(labels):
 
     # p(v_k = a) = #{v_k = a} / N
     # p(v) ∊ ℝ (K, (A) ) 
-    log_pv = tf.math.log(factor_occurences) - tf.math.log(N) 
-
-    # p(v=a|x=b) = 1
-    # p(x|v=a) = p(v|x) / #{v=a} ∊ ℝ [K, (A)]
-    log_pxv = -tf.math.log(factor_occurences)
-
+    log_pvk = tf.math.log(factor_occurences) - tf.math.log(N)
+    # p(v_k=a|x=b) = 1
+    # p(x|v=a) = p(v|x) / #{v=a} ∊ ℝ [K, 1]
+    log_pxvk = -tf.math.log(factor_occurences)
+            
     # factor_possibilites = tf.cast(factor_occurences.row_lengths(axis=1), tf.float32)
-    # log_pxv = -tf.math.log(factor_occurences) - tf.expand_dims(tf.math.log(factor_possibilites), 1)
-
-    p_x = tf.reduce_sum(tf.math.exp(log_pxv+ log_pv))
+    # log_pxvk = -tf.math.log(factor_occurences) - tf.expand_dims(tf.math.log(factor_possibilites), 1)
 
     # H(v_k) = - sum_a(p(v_k=a) log(p(v_k=a)) ∊ ℝ [K]
-    entropy = -tf.reduce_sum(tf.math.exp(log_pv) * log_pv, axis=1)
+    entropy = -tf.reduce_sum(tf.math.exp(log_pvk) * log_pvk, axis=1)
 
-    return entropy, log_pv, log_pxv
-
+    return entropy, log_pvk, log_pxvk
 
 # @tf.function
 def normalized_mutual_information(labels, samples, encoding_dist, *encoding_parameters):
@@ -160,9 +159,9 @@ def normalized_mutual_information(labels, samples, encoding_dist, *encoding_para
         (tf.Tensor) I_n(z_j; v_k)∊ ℝ [D, K]
     """
     N, K = tf.unstack(tf.cast(labels.shape, tf.float32))  # Batch size, number factors
-    factor_entropy, log_pv, log_pxv = estimate_factor_statistics(labels)
+    factor_entropy, log_pvk, log_pxvk = estimate_factor_statistics(labels)
     conditional_entropy = estimate_conditional_entropy(
-        samples, log_pv, log_pxv, encoding_dist, *encoding_parameters
+        samples, log_pvk, log_pxvk, encoding_dist, *encoding_parameters
     )
     # H(z_j) = ∊ ℝ [D, ]
     marginal_entropy = estimate_marginal_entropy(
@@ -171,7 +170,10 @@ def normalized_mutual_information(labels, samples, encoding_dist, *encoding_para
     # I(z_j; v_k) = H(z_j) - H(z_j | v_k) ∊ ℝ [D, K]
     mutual_information = tf.expand_dims(
         marginal_entropy, 1) - conditional_entropy
-    return mutual_information / factor_entropy
+
+    nmi = mutual_information / factor_entropy
+    breakpoint()
+    return nmi
 
 # @tf.function
 def mutual_information_gap_batch(labels, samples, encoding_dist, *encoding_parameters):
@@ -203,7 +205,6 @@ def mutual_information_gap(
         points,
         batch_size,
         encoding_dist,
-        num_values_per_factor,
         progress_bar=True,
 ):
     dataset = dataset.take(points).batch(batch_size, drop_remainder=True)
