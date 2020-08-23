@@ -1,0 +1,12 @@
+include 'train/BetaTCVAE/BetaTCVAE.gin'
+
+FILENAME = 'BetaTCVAE/CelebA'
+
+objective/betatcvae.beta = @hyperparameter()
+hyperparameter.default = 4
+
+objective/betatcvae.dataset_size = 162770
+
+run_training.dataset=@CelebA.pipeline()
+
+Conv2DTranspose.filters=3

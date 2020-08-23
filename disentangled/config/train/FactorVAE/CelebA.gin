@@ -1,0 +1,10 @@
+include 'train/FactorVAE/FactorVAE.gin'
+
+FILENAME = 'FactorVAE/CelebA'
+
+objectives.factorvae.gamma = @hyperparameter()
+hyperparameter.default = 7
+
+run_training.dataset=@CelebA.pipeline()
+
+Conv2DTranspose.filters=3
