@@ -1,0 +1,10 @@
+include 'train/BetaVAE/BetaVAE.gin'
+
+FILENAME = 'BetaVAE/CelebA'
+
+objectives.betavae.beta = @hyperparameter()
+hyperparameter.default = 4
+
+run_training.dataset=@CelebA.pipeline()
+
+Conv2DTranspose.filters=3

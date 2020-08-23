@@ -16,6 +16,7 @@ from disentangled.cli.utils import parse, gin_options, visual_options, add_gin, 
 def dataset(ctx, dataset, **kwargs):
     ctx.ensure_object(dict)
     ctx.obj['dataset'] = dataset
+    gin.bind_parameter('%HP_SWEEP_VALUES', None)
 
 @dataset.command()
 @click.pass_context
