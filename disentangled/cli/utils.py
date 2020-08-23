@@ -1,9 +1,10 @@
 import click
 import functools
 import itertools
-import disentangled.utils
+import disentangled.utils 
 import gin
 import tensorflow as tf
+from pathlib import Path
 
 _METHODS = ["FactorVAE", "BetaVAE", "BetaTCVAE", "BetaSVAE"]
 _DATASETS = ["DSprites", "Shapes3d", "CelebA"]
@@ -69,4 +70,6 @@ class DatasetGroup(click.Group):
             args.insert(0, 'all')
         super(DatasetGroup, self).parse_args(ctx, args)
 
-
+def path_callback(ctx, param, value): 
+    if value is not None:
+        return Path(value)

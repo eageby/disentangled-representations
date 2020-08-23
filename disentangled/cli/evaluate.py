@@ -13,10 +13,11 @@ from disentangled.cli.utils import _MODELS, add_gin, gin_options, visual_options
 
 @click.group()
 @click.argument("model", type=click.Choice(_MODELS))
+@click.option('--path', type=click.Path(exists=True, readable=True), default=None)
 @gin_options
 @click.pass_context
-def evaluate(ctx, model, **kwargs):
-    ctx.obj["model"] = disentangled.model.utils.load(model)
+def evaluate(ctx, model, path, **kwargs):
+    ctx.obj["model"] = disentangled.model.utils.load(model, path)
     ctx.obj["model_str"] = model
     method, dataset = model.split("/")
 
@@ -60,7 +61,6 @@ def mig(ctx, **kwargs):
         ctx.obj["model"],
         dataset=gin.REQUIRED,
         encoding_dist=gin.REQUIRED,
-        points=gin.REQUIRED
     )
     disentangled.metric.log_metric(
         metric, metric_name=gin.REQUIRED, name=ctx.obj["model_str"]
@@ -159,7 +159,11 @@ def visual_compare(ctx, rows, cols, plot, filename, **kwargs):
 
 
 @evaluate.command()
-@visual_options
+# @visual_options
+@click.option("--filename")
+@click.option("--rows", type=int)
+@click.option("--cols", type=int)
+@click.option("plot", "--plot/--no-plot", is_flag=True, default=True)
 @gin_options
 @click.pass_context
 def latent1d(ctx, rows, cols, plot, filename, **kwargs):
@@ -177,11 +181,11 @@ def latent1d(ctx, rows, cols, plot, filename, **kwargs):
 
         if rows is not None:
             gin.bind_parameter(
-                "disentangled.visualize.traversal1d.rows", rows)
+                "disentangled.visualize.traversal1d.dimensions", rows)
 
         if cols is not None:
             gin.bind_parameter(
-                "disentangled.visualize.traversal1d.cols", cols)
+                "disentangled.visualize.traversal1d.steps", cols)
 
     dataset = ctx.obj["dataset"].pipeline()
     disentangled.visualize.traversal1d(
