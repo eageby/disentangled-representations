@@ -6,16 +6,16 @@ import tensorflow as tf
 @gin.configurable
 class VAE(tf.keras.Model):
     def __init__(
-        self,
-        f_phi,
-        f_phi_mean,
-        f_phi_log_var,
-        f_theta,
-        f_theta_mean,
-        f_theta_log_var,
-        objective,
-        latents,
-        **kwargs
+            self,
+            f_phi,
+            f_phi_mean,
+            f_phi_log_var,
+            f_theta,
+            f_theta_mean,
+            f_theta_log_var,
+            objective,
+            latents,
+            **kwargs
     ):
         super(VAE, self).__init__(**kwargs)
         self.flatten = tf.keras.layers.Flatten()
@@ -69,11 +69,11 @@ class VAE(tf.keras.Model):
     @tf.function
     def decode(self, x):
         x = self.f_theta_dense(x)
+
         x = self.reshape_theta(x)
         x = self.f_theta(x)
         x_mean = self.f_theta_mean(x)
         x_log_var = self.f_theta_log_var(x)
-
         return self.reshape_output(x_mean), x_log_var
 
     @tf.function
@@ -116,6 +116,6 @@ class VAE(tf.keras.Model):
             [cb.on_train_batch_begin(progress.n) for cb in callbacks]
             logs = step(batch)
             [cb.on_train_batch_end(progress.n, logs) for cb in callbacks]
-            progress.update(logs.copy(), interval=1)
+            progress.update(logs, interval=1)
 
         [cb.on_train_end(progress.n) for cb in callbacks]

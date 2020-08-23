@@ -128,11 +128,9 @@ class TrainingProgress(tqdm.tqdm):
         )
 
     def update(self, logs, interval=10):
-        loss = logs.pop("loss")
-
         if self.n % interval == 0:
-            self.postfix = "Loss: {loss:.2f}, ".format(loss=loss) + ", ".join(
-                key + ": " + "{:.2f}".format(logs[key]) for key in logs.keys()
+            self.postfix = "Loss: {loss:.2f}, ".format(loss=logs['loss']) + ", ".join(
+                key + ": " + "{:.2f}".format(logs[key]) for key in logs.keys() if key is not 'loss'
             )
             self.refresh()
 

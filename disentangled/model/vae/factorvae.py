@@ -100,6 +100,6 @@ class FactorVAE(VAE):
             logs = step(*batches)
             [cb.on_train_batch_end(progress.n, logs) for cb in callbacks]
 
-            progress.update(logs.copy(), interval=1)
+            progress.update(logs, interval=1)
 
         [cb.on_train_end(progress.n) for cb in callbacks]
