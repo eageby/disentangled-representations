@@ -2,11 +2,11 @@ SHELL := /bin/bash
 VPATH := $(DISENTANGLED_REPRESENTATIONS_DIRECTORY)
 
 DATASETS = DSprites Shapes3d 
-METHOD = BetaVAE BetaTCVAE FactorVAE BetaSVAE
+METHOD = BetaVAE BetaTCVAE BetaSVAE FactorVAE 
 MODELS := $(foreach p,$(DATASETS),$(patsubst %,%/$p,$(METHOD)))
 METRICS := mig gini_index factorvae_score
 
-HYPERPARAMETERS_INDEX := 0 1 2 3 4
+HYPERPARAMETERS_INDEX := 0 1 2 3 4 5
 RANDOM_SEED_INDEX := 0 1 2 3 4
 
 .PHONY: evaluate images metrics train reconstructed examples fixed_factor latents
@@ -73,7 +73,7 @@ metric/factorvae_score/%.data: models/%/saved_model.pb
 experiments: $(foreach h, $(HYPERPARAMETERS_INDEX), $(foreach r, $(RANDOM_SEED_INDEX), $(patsubst %, experiment/%/HP$h/RS$r/experiment.complete, $(MODELS))))
 
 experiment/%/experiment.complete:
-	echo $* | sed -En 's/(.*)\/HP([0-9]+)\/RS([0-9]+)/\1 -h \2 -r \3 --log/p' |  \
+	@echo $* | sed -En 's/(.*)\/HP([0-9]+)\/RS([0-9]+)/\1 -h \2 -r \3 --log/p' |  \
 		xargs -n6 disentangled experiment
 
 # Other
