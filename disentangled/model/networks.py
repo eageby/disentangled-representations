@@ -35,6 +35,24 @@ conv_4_transpose = tf.keras.Sequential(
     ]
 )
 
+conv_4_transpose_padded = tf.keras.Sequential(
+    [
+        tf.keras.layers.Conv2DTranspose(
+            64, kernel_size=(4, 4), strides=(2, 2), activation="relu", output_padding=(1,0)
+        ),
+        tf.keras.layers.Conv2DTranspose(
+            64, kernel_size=(4, 4), strides=(2, 2), activation="relu"
+        ),
+        tf.keras.layers.Conv2DTranspose(
+            32, kernel_size=(4, 4), strides=(2, 2), activation="relu", output_padding=(1,1)
+        ),
+        tf.keras.layers.Conv2DTranspose(
+            32, kernel_size=(4, 4), strides=(2, 2), activation="relu"
+        ),
+    ]
+)
+
+
 conv_2 = tf.keras.Sequential(
     [
         tf.keras.layers.Conv2D(

@@ -7,4 +7,5 @@ hyperparameter.default = 4
 
 run_training.dataset=@CelebA.pipeline()
 
+VAE.f_theta = %disentangled.model.networks.conv_4_transpose_padded
 Conv2DTranspose.filters=3
