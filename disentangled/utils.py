@@ -137,11 +137,13 @@ class TrainingProgress(tqdm.tqdm):
             self.refresh()
 
 @gin.configurable
-def dataset(get, dataset, supervised=None):
+def dataset(get, dataset, supervised=None, ordered=None):
     if get == 'dataset':
         return dataset
     elif get == 'supervised':
         return supervised
+    elif get == 'ordered':
+        return ordered
 
 @gin.configurable
 def model(model):
