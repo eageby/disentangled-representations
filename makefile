@@ -5,6 +5,7 @@ DATASETS = DSprites Shapes3d
 METHOD = BetaVAE BetaTCVAE BetaSVAE FactorVAE 
 MODELS := $(foreach p,$(DATASETS),$(patsubst %,%/$p,$(METHOD)))
 METRICS := mig gini_index factorvae_score
+DATASETS += CelebA 
 
 HYPERPARAMETERS_INDEX := 0 1 2 3 4 5
 RANDOM_SEED_INDEX := 0 1 2 3 4
@@ -25,9 +26,11 @@ models/%/saved_model.pb:
 # ==============================================================================
 images: examples fixed_factor reconstructed concatenated
 
-reconstructed: $(patsubst %, images/reconstructed/%.png, $(MODELS))
+reconstructed: $(patsubst %, images/reconstructed/%.png, $(MODELS)) $(foreach p,CelebA,$(patsubst %,%/$p,$(METHOD)))
+
 images/reconstructed/%.png: models/%/saved_model.pb
 	disentangled evaluate $* visual $(FLAGS) --no-plot --filename reconstructed/$*
+	disentangled evaluate $* visual-compare $(FLAGS) --no-plot --filename reconstructed/compare_$*
 
 examples: $(patsubst %, images/dataset/%.png, $(DATASETS))
 images/dataset/%.png:
@@ -40,8 +43,8 @@ images/dataset/fixed_%.png:
 
 #LATENT TRAVERSAL
 latents: latent1d latent2d
-latent1d: $(patsubst %, images/latents/%_1d.png, $(MODELS))
-latent2d: $(patsubst %, images/latents/%_2d.png, $(MODELS))
+latent1d: $(patsubst %, images/latents/%_1d.png, $(MODELS)) $(foreach p,CelebA,$(patsubst %,%/$p,$(METHOD)))
+latent2d: $(patsubst %, images/latents/%_2d.png, $(MODELS)) $(foreach p,CelebA,$(patsubst %,%/$p,$(METHOD)))
 
 images/latents/%_1d.png: models/%/saved_model.pb
 	disentangled evaluate $* latent1d $(FLAGS) --no-plot --filename latents/$*_1d

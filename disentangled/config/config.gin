@@ -58,8 +58,6 @@ CelebA.pipeline.batch_size = 64
 CelebA.pipeline.prefetch_batches = 10
 CelebA.pipeline.num_parallel_calls = %PARALLEL_CALLS
 CelebA.pipeline.shuffle = @tf.data.Dataset.shuffle
-CelebA.supervised.num_parallel_calls = %PARALLEL_CALLS
-CelebA.supervised.shuffle = @tf.data.Dataset.shuffle
 
 shuffle.buffer_size = 100
 shuffle.seed = %RANDOM_SHUFFLE_SEED
