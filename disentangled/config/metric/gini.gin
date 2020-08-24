@@ -2,7 +2,7 @@ import disentangled.metric.utils
 import disentangled.metric.dmig
 
 disentangled.metric.utils.log_metric.metric = @disentangled.metric.gini_index
-disentangled.metric.utils.log_metric.metric_name = 'gini_index'
+disentangled.metric.utils.log_metric.metric_name = 'Gini_Index'
 
 disentangled.metric.gini_index.dataset = @dataset()
 dataset.get = 'supervised'

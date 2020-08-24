@@ -13,11 +13,11 @@ from disentangled.cli.utils import _MODELS, add_gin, gin_options, visual_options
 
 @click.group()
 @click.argument("model", type=click.Choice(_MODELS))
-@click.option('--path', type=click.Path(exists=True, readable=True), default=None)
+@click.option('--path', type=click.Path(exists=True, readable=True, dir_okay=True), default=None)
 @gin_options
 @click.pass_context
 def evaluate(ctx, model, path, **kwargs):
-    ctx.obj["model"] = disentangled.model.utils.load(model, path)
+    ctx.obj["model"] = disentangled.model.utils.load(path, model)
     ctx.obj["model_str"] = model
     method, dataset = model.split("/")
 
@@ -26,6 +26,7 @@ def evaluate(ctx, model, path, **kwargs):
     ctx.obj["dataset_str"] = dataset
 
     add_gin(ctx, "gin_param", ["HP_SWEEP_VALUES=None"])
+    add_gin(ctx, "gin_param", ["log_metric.path='{}'".format(path)])
     add_gin(ctx, "config", ["evaluate/evaluate.gin"])
     add_gin(ctx, "config", ["evaluate/dataset/" + dataset + ".gin"])
     add_gin(ctx, "config", ["evaluate/model/" + method + ".gin"])
@@ -41,7 +42,7 @@ def gini_index(ctx, **kwargs):
     metric = disentangled.metric.gini_index(
         ctx.obj["model"],
         dataset=gin.REQUIRED,
-        samples=gin.REQUIRED,
+        points=gin.REQUIRED,
         batch_size=gin.REQUIRED,
         tolerance=gin.REQUIRED,
     )

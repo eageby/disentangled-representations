@@ -29,9 +29,15 @@ def save(model, filename, prefix=None, suffix=None, hyperparameter_index=None, r
 
 
 @gin.configurable(module="disentangled.model.utils")
-def load(filename, path):
+def load(path, filename=None):
     if path is None:
         path = disentangled.utils.get_data_path() / "models"
         path = path / filename
 
     return tf.keras.models.load_model(str(path), compile=False)
+
+@gin.configurable(module="disentangled.model.utils")
+def copy_saved(model, path, filename=None):
+    loaded = load(path, filename)
+    model.set_weights(loaded.get_weights())
+    return model

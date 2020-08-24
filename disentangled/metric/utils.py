@@ -5,6 +5,7 @@ import tensorflow as tf
 import functools
 import disentangled.utils
 from decorator import decorator
+from pathlib import Path
 
 @gin.configurable(module="disentangled.metric", blacklist=['model', 'data'])
 def representation_variance(model, data, samples, batch_size, progress_bar=True):
@@ -60,7 +61,7 @@ class MetricCallback(tf.keras.callbacks.Callback):
         self.interval = interval
         self.metric_name = metric_name
         self.writer = tf.summary.create_file_writer(
-            logdir=str(log_dir / "train"))
+            logdir=str(log_dir / "train" ))
         self.last_batch_write = 0
 
     def _write(self, batch):
@@ -85,14 +86,24 @@ class MetricCallback(tf.keras.callbacks.Callback):
         self._write(tf.summary.experimental.get_step())
 
 @gin.configurable
-def log_metric(metric, metric_name, name=None, print_=False):
+def log_metric(metric, metric_name, name, print_=False, path=None, overwrite=True):
+    if path is None:
+        log_dir = disentangled.utils.get_data_path() / "logs" / name / "1"/"eval"
+    else:
+        path = Path(path)
+        parts = list(path.parts)
+        parts[parts.index('models')] = 'logs'
+        log_dir = Path(*parts)/'1'/'eval'/ metric_name
+
+    if overwrite:
+        for i in log_dir.glob('*'):
+            i.unlink()
+
     if print_:
         print("Metric {}: {:.2f}".format(metric_name, metric))
-  
-    if name is not None:
-        path = disentangled.utils.get_data_path() / 'metric' / metric_name / (name + '.data')
-        path.parent.mkdir(exist_ok=True, parents=True)
-        path.touch(exist_ok=True)
-        with open(path, 'w') as file:
-            file.write("{}".format(metric))
-    
+
+        writer = tf.summary.create_file_writer(
+            logdir=str(log_dir))
+ 
+        with writer.as_default():
+            tf.summary.scalar(metric_name, metric, step=-1)

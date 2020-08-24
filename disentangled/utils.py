@@ -46,7 +46,6 @@ def get_logs_path(prefix=None, name=None, suffix=None, hyperparameter_index=None
 def get_config_path():
     return Path(__file__).resolve().parent / "config"
 
-
 @contextmanager
 def config_path():
     old = Path(".")
@@ -130,7 +129,7 @@ class TrainingProgress(tqdm.tqdm):
     def update(self, logs, interval=10):
         if self.n % interval == 0:
             self.postfix = "Loss: {loss:.2f}, ".format(loss=logs['loss']) + ", ".join(
-                key + ": " + "{:.2f}".format(logs[key]) for key in logs.keys() if key is not 'loss'
+                key + ": " + "{:.2f}".format(logs[key]) for key in logs.keys() if key != 'loss'
             )
             self.refresh()
 

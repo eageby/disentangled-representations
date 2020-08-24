@@ -12,10 +12,14 @@ from decouple import config
 
 @gin.configurable
 def run_training(
-    model, dataset, iterations, save=False, callbacks=[], seed=None, path=None
+    model, dataset, iterations, save=False, callbacks=[], seed=None, path=None, checkpoint=None
 ) -> tf.keras.Model:
     tf.random.set_seed(seed)
     model.predict(dataset, steps=1)  # Instantiating model
+    
+    if checkpoint is not None:
+        model = disentangled.model.utils.copy_saved(model, checkpoint)
+
     model.train(dataset.repeat(), callbacks=callbacks, iterations=iterations)
 
     if save:
