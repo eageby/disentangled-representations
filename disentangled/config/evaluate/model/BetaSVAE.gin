@@ -1,5 +1,6 @@
 import disentangled.metric
 
+mutual_information_gap_batch.encoding_dist =  @Laplacian()
 mutual_information_gap.encoding_dist =  @Laplacian()
 Laplacian.location = 0.0
 Laplacian.log_scale = 0.0

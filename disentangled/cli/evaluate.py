@@ -69,6 +69,22 @@ def mig(ctx, **kwargs):
 @evaluate.command()
 @gin_options
 @click.pass_context
+def mig_batch(ctx, **kwargs):
+    add_gin(ctx, "config", ["metric/mig_batch.gin"])
+    parse(ctx, set_seed=True)
+
+    metric = disentangled.metric.mutual_information_gap_batch(
+        ctx.obj["model"],
+        dataset=gin.REQUIRED,
+        encoding_dist=gin.REQUIRED,
+    )
+    disentangled.metric.log_metric(
+        metric, metric_name=gin.REQUIRED, name=ctx.obj["model_str"]
+    )
+
+@evaluate.command()
+@gin_options
+@click.pass_context
 def dmig(ctx, **kwargs):
     add_gin(ctx, "config", ["metric/dmig.gin"])
     parse(ctx, set_seed=True)

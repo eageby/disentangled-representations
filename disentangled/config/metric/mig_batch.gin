@@ -1,0 +1,11 @@
+import disentangled.metric.mig_batch
+
+disentangled.metric.utils.log_metric.metric = @disentangled.metric.mutual_information_gap_batch
+
+disentangled.metric.utils.log_metric.metric_name = 'MIG_batch'
+
+disentangled.metric.mutual_information_gap_batch.dataset = @dataset()
+dataset.get = 'supervised'
+
+mutual_information_gap_batch.points = 10000
+mutual_information_gap_batch.batch_size = 512

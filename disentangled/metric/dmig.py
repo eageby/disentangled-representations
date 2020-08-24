@@ -46,6 +46,7 @@ def discretize(target, bins):
 
 @gin.configurable('discrete_mutual_information_gap', module='disentangled.metric')
 def discrete_mutual_information_gap(model, dataset, points, batch_size, progress_bar=True):
+    print("Discrete MIG")
     dataset = dataset.take(points).batch(batch_size, drop_remainder=True)
     mig = []
 

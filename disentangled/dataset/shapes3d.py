@@ -1,7 +1,10 @@
 import gin
 import tensorflow as tf
 import tensorflow_datasets as tfds
+import h5py
+import numpy as np
 
+import disentangled.utils
 from . import utils
 from ._dataset import Dataset
 
@@ -62,18 +65,25 @@ class Shapes3d(Dataset):
 
         return {"image": element["image"], "label": labels}
 
-    class ordered:
-        @staticmethod
-        @gin.configurable(module='Shapes3d.ordered')
-        def load(num_parallel_calls, shuffle=None):
-            dataset = serialize.read(
-                serialize.raw_datasets.Shapes3d, num_parallel_calls
-            ).map(utils.normalize_uint8, num_parallel_calls=num_parallel_calls)
-            
-            if shuffle is None:
-                return dataset
+    @staticmethod
+    @gin.configurable(module="Shapes3d")
+    def ordered(chunk_size=1000, prefetch_batches=1, num_parallel_calls=tf.data.experimental.AUTOTUNE):
+        fname = 'shapes3d.h5'
+        file = disentangled.utils.get_data_path()/ 'downloads' / fname
+        # file = tf.keras.utils.get_file(str(path), 'https://storage.cloud.google.com/3d-shapes/3dshapes.h5')
+        
+        def generator():
+            with h5py.File(file, 'r') as data:
+                chunk_idx = np.arange(0, len(data['images']), chunk_size)
+                for i in range(len(chunk_idx)-1):
+                    start = chunk_idx[i]
+                    end = chunk_idx[i+1]
+                    for im in data["images"][start:end]:
+                        yield im   
 
-            return shuffle(dataset)
-
-
+        return tf.data.Dataset.from_generator(
+                generator,
+                tf.uint8,
+                tf.TensorShape([64,64,3])
+                ).map(utils.normalize_uint8, num_parallel_calls=num_parallel_calls).prefetch(prefetch_batches)
 gin.constant('Shapes3d.num_values_per_factor', Shapes3d.num_values_per_factor)
