@@ -199,7 +199,11 @@ def latent1d(ctx, rows, cols, plot, filename, **kwargs):
 
 
 @evaluate.command()
-@visual_options
+# @visual_options
+@click.option("--filename")
+@click.option("--rows", type=int)
+@click.option("--cols", type=int)
+@click.option("plot", "--plot/--no-plot", is_flag=True, default=True)
 @gin_options
 @click.pass_context
 def latent2d(ctx, rows, cols, plot, filename, **kwargs):
