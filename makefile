@@ -4,11 +4,14 @@ VPATH := $(DISENTANGLED_REPRESENTATIONS_DIRECTORY)
 DATASETS = DSprites Shapes3d 
 METHOD = BetaVAE BetaTCVAE BetaSVAE FactorVAE 
 MODELS := $(foreach p,$(DATASETS),$(patsubst %,%/$p,$(METHOD)))
-METRICS := mig gini_index factorvae_score
-DATASETS += CelebA 
+METRICS := MIG Gini_Index Factorvae_Score DMIG MIG_batch
+
+UNSUPERVISED_DATASETS = DSprites Shapes3d CelebA
+UNSUPERVISED_MODELS = $(foreach p,$(UNSUPERVISED_DATASETS),$(patsubst %,%/$p,$(METHOD)))
 
 HYPERPARAMETERS_INDEX := 0 1 2 3 4 5
 RANDOM_SEED_INDEX := 0 1 2 3 4
+RANDOM_SEEDS:= 10 12 25 33 88
 
 .PHONY: evaluate images metrics train reconstructed examples fixed_factor latents
 .PHONY: latent1d latent2d examples fixed_factor concatenate_images metrics experiment
@@ -36,15 +39,15 @@ examples: $(patsubst %, images/dataset/%.png, $(DATASETS))
 images/dataset/%.png:
 	disentangled dataset $* examples  $(FLAGS) --no-plot --filename dataset/$*
 
-fixed_factor: $(patsubst %, images/dataset/fixed_%.png, $(DATASETS))
+fixed_factor: $(patsubst %, images/dataset/fixed_%.png, $(UNSUPERVISED_DATASETS))
 images/dataset/fixed_%.png:
 	disentangled dataset $* fixed $(FLAGS) --no-plot --filename dataset/fixed_$* --verbose \
 		> $(DISENTANGLED_REPRESENTATIONS_DIRECTORY)images/dataset/fixed_$*.values
 
 #LATENT TRAVERSAL
 latents: latent1d latent2d
-latent1d: $(patsubst %, images/latents/%_1d.png, $(MODELS)) $(foreach p,CelebA,$(patsubst %,%/$p,$(METHOD)))
-latent2d: $(patsubst %, images/latents/%_2d.png, $(MODELS)) $(foreach p,CelebA,$(patsubst %,%/$p,$(METHOD)))
+latent1d: $(patsubst %, images/latents/%_1d.png, $(UNSUPERVISED_MODELS)) 
+latent2d: $(patsubst %, images/latents/%_2d.png, $(UNSUPERVISED_MODELS)) 
 
 images/latents/%_1d.png: models/%/saved_model.pb
 	disentangled evaluate $* latent1d $(FLAGS) --no-plot --filename latents/$*_1d
@@ -52,28 +55,44 @@ images/latents/%_1d.png: models/%/saved_model.pb
 images/latents/%_2d.png: models/%/saved_model.pb
 	disentangled evaluate $* latent2d $(FLAGS) --no-plot --filename latents/$*_2d
 		
-concatenate_images: $(patsubst %, concatenate_images/%, $(DATASETS))
-concatenate_images/%: reconstructed
-	find $(DISENTANGLED_REPRESENTATIONS_DIRECTORY)images/ -type f -name '*.png' -a -name '*$**' ! -wholename '*reconstructed/$*.png' \
+# concatenate_images: $(patsubst %, concatenate_images/%, $(DATASETS))
+# concatenate_images/%: reconstructed
+# 	find $(DISENTANGLED_REPRESENTATIONS_DIRECTORY)images/ -type f -name '*.png' -a -name '*$**' ! -wholename '*reconstructed/$*.png' \
 	-exec sh -c 'convert -append $$0 $$@ $(DISENTANGLED_REPRESENTATIONS_DIRECTORY)reconstructed/$*.png' {} + \
 	-exec sh -c 'echo $$0 $$@ >  $(DISENTANGLED_REPRESENTATIONS_DIRECTORY)reconstructed/$*.order' {} +  
 
 # Metric
 # ==============================================================================
-metrics: $(foreach p,$(METRICS),$(patsubst %,metric/$p/%.data,$(MODELS)))
+metrics: metrics/gini metrics/mig metrics/mig_batch metrics/dmig metrics/factorvae_score
+metrics/gini: $(foreach h, $(HYPERPARAMETERS_INDEX), $(foreach r, $(RANDOM_SEEDS), $(patsubst %, logs/experiment/%/HP$h/RS$r/1/eval/Gini_Index/, $(UNSUPERVISED_MODELS))))
+metrics/mig: $(foreach h, $(HYPERPARAMETERS_INDEX), $(foreach r, $(RANDOM_SEEDS), $(patsubst %, logs/experiment/%/HP$h/RS$r/1/eval/MIG/, $(MODELS))))
+metrics/dmig: $(foreach h, $(HYPERPARAMETERS_INDEX), $(foreach r, $(RANDOM_SEEDS), $(patsubst %, logs/experiment/%/HP$h/RS$r/1/eval/DMIG/, $(MODELS))))
+metrics/mig_batch: $(foreach h, $(HYPERPARAMETERS_INDEX), $(foreach r, $(RANDOM_SEEDS), $(patsubst %, logs/experiment/%/HP$h/RS$r/1/eval/MIG_batch/, $(MODELS))))
+metrics/factorvae_score: $(foreach h, $(HYPERPARAMETERS_INDEX), $(foreach r, $(RANDOM_SEEDS), $(patsubst %, logs/experiment/%/HP$h/RS$r/1/eval/factorvae_Score/, $(MODELS))))
 
-metric/gini_index/%.data: models/%/saved_model.pb
-	disentangled evaluate $* gini-index $(FLAGS)
+logs/experiment/%/1/eval/Gini_Index/: 
+	echo $* | sed -En 's/(\w*\/\w*)\/HP[0-9]+\/RS[0-9]+/\1/p' |  \
+	xargs -I {} disentangled evaluate --path $(DISENTANGLED_REPRESENTATIONS_DIRECTORY)/models/experiment/$*/ {} gini-index
 
-metric/mig/%.data: models/%/saved_model.pb
-	disentangled evaluate $* mig $(FLAGS)
+logs/experiment/%/1/eval/MIG/: 
+	echo $* | sed -En 's/(\w*\/\w*)\/HP[0-9]+\/RS[0-9]+/\1/p' |  \
+	xargs -I {} disentangled evaluate --path $(DISENTANGLED_REPRESENTATIONS_DIRECTORY)/models/experiment/$*/ {} mig
 
-metric/factorvae_score/%.data: models/%/saved_model.pb
-	disentangled evaluate $* factorvae-score $(FLAGS)
+logs/experiment/%/1/eval/MIG_batch/: 
+	echo $* | sed -En 's/(\w*\/\w*)\/HP[0-9]+\/RS[0-9]+/\1/p' |  \
+	xargs -I {} disentangled evaluate --path $(DISENTANGLED_REPRESENTATIONS_DIRECTORY)/models/experiment/$*/ {} mig-batch
+
+logs/experiment/%/1/eval/DMIG/: 
+	echo $* | sed -En 's/(\w*\/\w*)\/HP[0-9]+\/RS[0-9]+/\1/p' |  \
+	xargs -I {} disentangled evaluate --path $(DISENTANGLED_REPRESENTATIONS_DIRECTORY)/models/experiment/$*/ {} dmig
+
+logs/experiment/%/1/eval/factorvae_Score/: 
+	echo $* | sed -En 's/(\w*\/\w*)\/HP[0-9]+\/RS[0-9]+/\1/p' |  \
+	xargs -I {} disentangled evaluate --path $(DISENTANGLED_REPRESENTATIONS_DIRECTORY)/models/experiment/$*/ {} factorvae-score
 
 # Metric
 # ==============================================================================
-experiments: $(foreach h, $(HYPERPARAMETERS_INDEX), $(foreach r, $(RANDOM_SEED_INDEX), $(patsubst %, experiment/%/HP$h/RS$r/experiment.complete, $(MODELS))))
+# experiments: $(foreach h, $(HYPERPARAMETERS_INDEX), $(foreach r, $(RANDOM_SEED_INDEX)), $(patsubst %, experiment/%/HP$h/RS$r/experiment.complete, $(MODELS)))
 
 experiment/%/experiment.complete:
 	@echo $* | sed -En 's/(.*)\/HP([0-9]+)\/RS([0-9]+)/\1 -h \2 -r \3 --log/p' |  \

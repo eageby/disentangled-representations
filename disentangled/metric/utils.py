@@ -93,7 +93,7 @@ def log_metric(metric, metric_name, name, print_=False, path=None, overwrite=Tru
         path = Path(path)
         parts = list(path.parts)
         parts[parts.index('models')] = 'logs'
-        log_dir = Path(*parts)/'1'/'eval'/ metric_name
+        log_dir = Path(*parts)/'1'/'eval'/ metric_name.replace(' ', '_')
 
     if overwrite:
         for i in log_dir.glob('*'):
@@ -106,4 +106,4 @@ def log_metric(metric, metric_name, name, print_=False, path=None, overwrite=Tru
             logdir=str(log_dir))
  
         with writer.as_default():
-            tf.summary.scalar(metric_name, metric, step=-1)
+            tf.summary.scalar(metric_name.replace(' ','_'), metric, step=-1)

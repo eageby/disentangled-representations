@@ -2,7 +2,7 @@ import disentangled.metric.mig_batch
 
 disentangled.metric.utils.log_metric.metric = @disentangled.metric.mutual_information_gap_batch
 
-disentangled.metric.utils.log_metric.metric_name = 'MIG_batch'
+disentangled.metric.utils.log_metric.metric_name = 'MIG batch'
 
 disentangled.metric.mutual_information_gap_batch.dataset = @dataset()
 dataset.get = 'supervised'
