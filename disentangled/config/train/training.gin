@@ -29,7 +29,7 @@ Shapes3d.pipeline.prefetch_batches = 10
 Shapes3d.pipeline.num_parallel_calls = %PARALLEL_CALLS
 Shapes3d.pipeline.shuffle = @tf.data.Dataset.shuffle
 
-CelebA.pipeline.batch_size = 64
+CelebA.pipeline.batch_size = 32
 CelebA.pipeline.prefetch_batches = 1
 CelebA.pipeline.num_parallel_calls = %PARALLEL_CALLS
 CelebA.pipeline.shuffle = @tf.data.Dataset.shuffle

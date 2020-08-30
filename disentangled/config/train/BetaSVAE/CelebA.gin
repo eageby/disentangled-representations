@@ -2,9 +2,10 @@ include 'train/BetaSVAE/BetaSVAE.gin'
 
 FILENAME = 'BetaSVAE/CelebA'
 
-hyperparameter.default = 4
+hyperparameter.default = 2
 
 run_training.dataset=@CelebA.pipeline()
+run_training.iterations=6e5
 
 Conv2DTranspose.filters=3
 VAE.f_theta = %disentangled.model.networks.conv_4_transpose_padded

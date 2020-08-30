@@ -2,6 +2,7 @@ import disentangled.dataset
 
 dataset.dataset = @Shapes3d.pipeline()
 dataset.supervised = @Shapes3d.supervised()
+dataset.ordered = @Shapes3d.ordered()
 Shapes3d.pipeline.shuffle = @tf.data.Dataset.shuffle
 Shapes3d.supervised.shuffle = @tf.data.Dataset.shuffle
 

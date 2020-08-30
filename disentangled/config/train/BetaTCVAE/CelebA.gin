@@ -5,9 +5,10 @@ FILENAME = 'BetaTCVAE/CelebA'
 objective/betatcvae.beta = @hyperparameter()
 hyperparameter.default = 4
 
-objective/betatcvae.dataset_size = 162770
+objective/betatcvae.dataset_size = 202599
 
 run_training.dataset=@CelebA.pipeline()
+run_training.iterations=6e5
 
 VAE.f_theta = %disentangled.model.networks.conv_4_transpose_padded
 Conv2DTranspose.filters=3

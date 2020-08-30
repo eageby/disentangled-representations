@@ -1,12 +1,12 @@
 SHELL := /bin/bash
 VPATH := $(DISENTANGLED_REPRESENTATIONS_DIRECTORY)
 
-DATASETS = DSprites Shapes3d 
+DATASETS = Shapes3d DSprites 
 METHOD = BetaVAE BetaTCVAE BetaSVAE FactorVAE 
 MODELS := $(foreach p,$(DATASETS),$(patsubst %,%/$p,$(METHOD)))
 METRICS := MIG Gini_Index Factorvae_Score DMIG MIG_batch
 
-UNSUPERVISED_DATASETS = DSprites Shapes3d CelebA
+UNSUPERVISED_DATASETS = CelebA
 UNSUPERVISED_MODELS = $(foreach p,$(UNSUPERVISED_DATASETS),$(patsubst %,%/$p,$(METHOD)))
 
 HYPERPARAMETERS_INDEX := 0 1 2 3 4 5
@@ -21,7 +21,7 @@ evaluate: images metrics
 
 # Training
 # ==============================================================================
-train: $(patsubst %, models/%/saved_model.pb, $(MODELS))
+train/celeba: $(foreach m, $(METHOD), models/$m/CelebA/saved_model.pb)
 models/%/saved_model.pb:
 	disentangled train $* $(FLAGS)
 
@@ -29,7 +29,7 @@ models/%/saved_model.pb:
 # ==============================================================================
 images: examples fixed_factor reconstructed concatenated
 
-reconstructed: $(patsubst %, images/reconstructed/%.png, $(MODELS)) $(foreach p,CelebA,$(patsubst %,%/$p,$(METHOD)))
+reconstructed: $(patsubst %, images/reconstructed/%.png, $(UNSUPERVISED_MODELS)) 
 
 images/reconstructed/%.png: models/%/saved_model.pb
 	disentangled evaluate $* visual $(FLAGS) --no-plot --filename reconstructed/$*
