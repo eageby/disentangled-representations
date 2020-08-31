@@ -73,6 +73,16 @@ class Laplacian:
     #     return tf.math.exp(x_log_scale) - x_log_scale - 1
 
     @tf.function
+    def log_likelihood(self, sample=0.0, location=None, log_scale=None):
+        if location is None:
+            location = self.location
+
+        if log_scale is None:
+            log_scale = self.log_scale
+
+        return -log_scale - tf.math.log(2.0) - tf.math.abs(sample - location) / (tf.math.exp(log_scale) + self.tolerance)
+
+    @tf.function
     def kld(self, x_location, x_log_scale, y_location=None, y_log_scale=None):
         """ Analytical Lower Bound"""
 

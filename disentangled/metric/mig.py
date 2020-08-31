@@ -103,6 +103,5 @@ def mutual_information_gap(
 
     # ∊ ℝ [K]
     mig = normalized_mutual_information[0, :] - normalized_mutual_information[1, :]
-    breakpoint()
     return tf.reduce_mean(mig)
 

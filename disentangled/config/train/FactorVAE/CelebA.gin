@@ -3,9 +3,10 @@ include 'train/FactorVAE/FactorVAE.gin'
 FILENAME = 'FactorVAE/CelebA'
 
 objectives.factorvae.gamma = @hyperparameter()
-hyperparameter.default = 7
+hyperparameter.default = 20
 
 run_training.dataset=@CelebA.pipeline()
+run_training.iterations=6e5
 
-VAE.f_theta = %disentangled.model.networks.conv_4_transpose_padded
+FactorVAE.f_theta = %disentangled.model.networks.conv_4_transpose_padded
 Conv2DTranspose.filters=3
