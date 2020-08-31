@@ -70,25 +70,28 @@ metrics/dmig: $(foreach h, $(HYPERPARAMETERS_INDEX), $(foreach r, $(RANDOM_SEEDS
 metrics/mig_batch: $(foreach h, $(HYPERPARAMETERS_INDEX), $(foreach r, $(RANDOM_SEEDS), $(patsubst %, logs/experiment/%/HP$h/RS$r/1/eval/MIG_batch/, $(MODELS))))
 metrics/factorvae_score: $(foreach h, $(HYPERPARAMETERS_INDEX), $(foreach r, $(RANDOM_SEEDS), $(patsubst %, logs/experiment/%/HP$h/RS$r/1/eval/factorvae_Score/, $(MODELS))))
 
-logs/experiment/%/1/eval/Gini_Index/: 
+logs/experiment/%/1/eval/Gini_Index/: clean/metric/logs/experiment/%/1/eval/Gini_Index/
 	echo $* | sed -En 's/(\w*\/\w*)\/HP[0-9]+\/RS[0-9]+/\1/p' |  \
 	xargs -I {} disentangled evaluate --path $(DISENTANGLED_REPRESENTATIONS_DIRECTORY)/models/experiment/$*/ {} gini-index
 
-logs/experiment/%/1/eval/MIG/: 
+logs/experiment/%/1/eval/MIG/: |clean/metric/logs/experiment/%/1/eval/MIG/
 	echo $* | sed -En 's/(\w*\/\w*)\/HP[0-9]+\/RS[0-9]+/\1/p' |  \
 	xargs -I {} disentangled evaluate --path $(DISENTANGLED_REPRESENTATIONS_DIRECTORY)/models/experiment/$*/ {} mig
 
-logs/experiment/%/1/eval/MIG_batch/: 
+logs/experiment/%/1/eval/MIG_batch/: |clean/metric/logs/experiment/%/1/eval/MIG_batch/
 	echo $* | sed -En 's/(\w*\/\w*)\/HP[0-9]+\/RS[0-9]+/\1/p' |  \
 	xargs -I {} disentangled evaluate --path $(DISENTANGLED_REPRESENTATIONS_DIRECTORY)/models/experiment/$*/ {} mig-batch
 
-logs/experiment/%/1/eval/DMIG/: 
+logs/experiment/%/1/eval/DMIG/: |clean/metric/logs/experiment/%/1/eval/DMIG/
 	echo $* | sed -En 's/(\w*\/\w*)\/HP[0-9]+\/RS[0-9]+/\1/p' |  \
 	xargs -I {} disentangled evaluate --path $(DISENTANGLED_REPRESENTATIONS_DIRECTORY)/models/experiment/$*/ {} dmig
 
-logs/experiment/%/1/eval/factorvae_Score/: 
+logs/experiment/%/1/eval/factorvae_score/:  |clean/metric/logs/experiment/%/1/eval/factorvae_score/
 	echo $* | sed -En 's/(\w*\/\w*)\/HP[0-9]+\/RS[0-9]+/\1/p' |  \
 	xargs -I {} disentangled evaluate --path $(DISENTANGLED_REPRESENTATIONS_DIRECTORY)/models/experiment/$*/ {} factorvae-score
+
+clean/metric/%:
+	if [ -d "$(DISENTANGLED_REPRESENTATIONS_DIRECTORY)/$*" ]; then rm -r $(DISENTANGLED_REPRESENTATIONS_DIRECTORY)/$*; fi
 
 # Metric
 # ==============================================================================
