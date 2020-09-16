@@ -77,3 +77,7 @@ def fixed(ctx, batch_size, filename, rows, cols, plot, verbose, **kwargs):
     fixed, _ = disentangled.metric.utils.fixed_factor_dataset(dataset, batch_size, num_values_per_factor)
 
     disentangled.visualize.fixed_factor_data(fixed, rows=gin.REQUIRED, cols=gin.REQUIRED, verbose=verbose)
+
+@dataset.command()
+def labels():
+    disentangled.dataset.CelebA.attribute_distribution()
