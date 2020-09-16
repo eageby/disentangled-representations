@@ -63,12 +63,17 @@ images/latents/%_2d.png: models/%/saved_model.pb
 
 # Metric
 # ==============================================================================
-metrics: metrics/gini metrics/mig metrics/mig_batch metrics/dmig metrics/factorvae_score
+metrics: metrics/gini metrics/mig metrics/mig_batch metrics/dmig metrics/factorvae_score metrics/collapsed
 metrics/gini: $(foreach h, $(HYPERPARAMETERS_INDEX), $(foreach r, $(RANDOM_SEEDS), $(patsubst %, logs/experiment/%/HP$h/RS$r/1/eval/Gini_Index/, $(UNSUPERVISED_MODELS))))
+metrics/collapsed: $(foreach h, $(HYPERPARAMETERS_INDEX), $(foreach r, $(RANDOM_SEEDS), $(patsubst %, logs/experiment/%/HP$h/RS$r/1/eval/Collapsed/, $(MODELS))))
 metrics/mig: $(foreach h, $(HYPERPARAMETERS_INDEX), $(foreach r, $(RANDOM_SEEDS), $(patsubst %, logs/experiment/%/HP$h/RS$r/1/eval/MIG/, $(MODELS))))
 metrics/dmig: $(foreach h, $(HYPERPARAMETERS_INDEX), $(foreach r, $(RANDOM_SEEDS), $(patsubst %, logs/experiment/%/HP$h/RS$r/1/eval/DMIG/, $(MODELS))))
 metrics/mig_batch: $(foreach h, $(HYPERPARAMETERS_INDEX), $(foreach r, $(RANDOM_SEEDS), $(patsubst %, logs/experiment/%/HP$h/RS$r/1/eval/MIG_batch/, $(MODELS))))
 metrics/factorvae_score: $(foreach h, $(HYPERPARAMETERS_INDEX), $(foreach r, $(RANDOM_SEEDS), $(patsubst %, logs/experiment/%/HP$h/RS$r/1/eval/factorvae_Score/, $(MODELS))))
+
+logs/experiment/%/1/eval/Collapsed/: clean/metric/logs/experiment/%/1/eval/Collapsed/
+	echo $* | sed -En 's/(\w*\/\w*)\/HP[0-9]+\/RS[0-9]+/\1/p' |  \
+	xargs -I {} disentangled evaluate --path $(DISENTANGLED_REPRESENTATIONS_DIRECTORY)/models/experiment/$*/ {} collapsed
 
 logs/experiment/%/1/eval/Gini_Index/: clean/metric/logs/experiment/%/1/eval/Gini_Index/
 	echo $* | sed -En 's/(\w*\/\w*)\/HP[0-9]+\/RS[0-9]+/\1/p' |  \

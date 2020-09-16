@@ -74,16 +74,18 @@ class Shapes3d(Dataset):
         
         def generator():
             with h5py.File(file, 'r') as data:
-                chunk_idx = np.arange(0, len(data['images']), chunk_size)
+                chunk_idx = np.arange(0, len(data['images'])+1, chunk_size)
+                chunk_idx = np.concatenate([chunk_idx, [len(data['images'])]])
                 for i in range(len(chunk_idx)-1):
                     start = chunk_idx[i]
                     end = chunk_idx[i+1]
                     for im in data["images"][start:end]:
-                        yield im   
+                        yield im
 
         return tf.data.Dataset.from_generator(
                 generator,
                 tf.uint8,
-                tf.TensorShape([64,64,3])
+                tf.TensorShape([64,64,3]),
                 ).map(utils.normalize_uint8, num_parallel_calls=num_parallel_calls).prefetch(prefetch_batches)
+
 gin.constant('Shapes3d.num_values_per_factor', Shapes3d.num_values_per_factor)

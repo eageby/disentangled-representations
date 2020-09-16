@@ -32,6 +32,20 @@ class CelebA(Dataset):
         return shuffle(dataset)
 
     @staticmethod
+    @gin.configurable(module="CelebA")
+    def supervised(num_parallel_calls=tf.data.experimental.AUTOTUNE, shuffle=None):
+        dataset = (
+            CelebA.load()
+            .map(utils.normalize_uint8, num_parallel_calls=num_parallel_calls)
+        )
+
+        if shuffle is None:
+            return dataset
+
+        return shuffle(dataset)
+
+
+    @staticmethod
     def attribute_distribution():
         def get_attribute(elem):
             return elem['attributes']

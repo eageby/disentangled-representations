@@ -1,0 +1,10 @@
+import disentangled.metric.utils
+import disentangled.metric.dmig
+
+disentangled.metric.utils.log_metric.metric = @disentangled.metric.collapsed
+disentangled.metric.utils.log_metric.metric_name = 'Collapsed'
+
+disentangled.metric.collapsed.dataset = @dataset()
+dataset.get = 'supervised'
+
+disentangled.metric.collapsed.tolerance = 5e-2

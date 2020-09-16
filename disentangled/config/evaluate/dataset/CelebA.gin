@@ -1,4 +1,5 @@
 import disentangled.dataset
 
 dataset.dataset = @CelebA.pipeline()
+dataset.supervised = @CelebA.supervised()
 CelebA.pipeline.shuffle = @tf.data.Dataset.shuffle

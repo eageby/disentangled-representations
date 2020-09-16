@@ -8,21 +8,20 @@ import numpy as np
 import tensorflow as tf
 
 # @tf.function
-def estimate_entropy_batch(samples, encoding_dist, *encoding_parameters):
+def estimate_entropy_batch(samples, encoding_dist, encoding_parameters):
     """Estimates marginal entropy
     H(z) = sum_z( 1/N sum_x (q(z|x)) log ( 1/N sum_x(q(z|x)) ) ) ∊ ℝ [D]
 
     Args:
         samples: z ∼ q(z|x) ∊ ℝ (N, D)
         encoding_dist: q(z|x)
-        *encoding_parameters: list of parameters ∊ ℝ [N,]
+        encoding_parameters: e.g. mean, log_var ∊ ℝ [N,n_params]
     Returns:
         (tf.Tensor)  ∊ ℝ [D]
     """
     N, D = tf.unstack(tf.cast(samples.shape, tf.float32))  # Number of latent dims
     samples = tf.transpose(samples)  # ∊ ℝ [D, N]
 
-    encoding_parameters = tf.stack(encoding_parameters, axis=2)
     n_params = encoding_parameters.shape[2]
 
     # log q(z_j|x_n) ∊ ℝ [N, N, D]
@@ -51,12 +50,14 @@ def estimate_entropy(dataset, encoding_dist, total=None, progress_bar=True):
         dataset = utils.TrainingProgress(dataset, total=total)
 
     for i, batch in enumerate(dataset):
-        samples, params = batch
-        entropy_batch = estimate_entropy_batch(samples, encoding_dist, *params)
+        samples, params = tf.split(batch, [1,-1], axis=2)
+        samples = tf.squeeze(samples)
+        entropy_batch = estimate_entropy_batch(samples, encoding_dist, params)
         entropy = entropy.write(i, entropy_batch)
     
-    return tf.reduce_mean(entropy.stack(), axis=0)
-        
+    estimated_entropy = tf.reduce_mean(entropy.stack(), axis=0)
+    entropy.mark_used()
+    return estimated_entropy
 
 @gin.configurable("mutual_information_gap", module="disentangled.metric")
 def mutual_information_gap(
@@ -72,26 +73,31 @@ def mutual_information_gap(
 
     dataset = dataset.batch(batch_size)
     encoded = disentangled.metric.utils.encode_dataset(model, dataset).cache()
-
     # H(z_j) = ∊ ℝ [D, ]
     marginal_entropy = estimate_entropy(encoded, encoding_dist, total=int(N//batch_size), progress_bar=progress_bar)
 
-    taken = 0
-    conditional_entropy = tf.TensorArray(tf.float32, size=len(num_values_per_factor))
-    for i, num_values in enumerate(num_values_per_factor):
-        n_samples = int(N / num_values)
-        factor_set = encoded.unbatch().skip(taken).take(n_samples).batch(batch_size)
-        taken += n_samples
-        conditional_entropy_factor = estimate_entropy(factor_set, encoding_dist, total=int(n_samples//batch_size), progress_bar=progress_bar) / num_values 
+    D = encoded.element_spec.shape[1] 
 
-        conditional_entropy.write(i, conditional_entropy_factor)
+    params = encoded.reduce(tf.zeros((0, *encoded.element_spec.shape[1:])), lambda x,y: tf.concat([x,y], axis=0))
+    params = tf.reshape(params, [*num_values_per_factor,D , -1])
+    # params = tf.zeros((*num_values_per_factor, 10, 3))
 
+    conditional_entropy_array = tf.TensorArray(tf.float32, size=len(num_values_per_factor))
+    for factor, num_values in enumerate(num_values_per_factor):
+        conditional_entropy_factor = tf.TensorArray(tf.float32, size=num_values)
+        for j in range(num_values):
+            params_factor = tf.reshape(tf.gather(params, j, axis=factor), (N // num_values, D, -1))
+            factor_set = tf.data.Dataset.from_tensor_slices(params_factor).batch(batch_size)
+            conditional_entropy_factor.write(j, estimate_entropy(factor_set, encoding_dist, total=int(N // num_values //batch_size), progress_bar=progress_bar))
+
+        
+        conditional_entropy_array.write(factor, tf.reduce_mean(conditional_entropy_factor.stack(), axis=0))
 
     # H(z|v) ∊ ℝ [D, K]
-    conditional_entropy = tf.transpose(conditional_entropy.stack())
+    conditional_entropy = tf.transpose(conditional_entropy_array.stack())
 
     # H(v_k) ∊ ℝ [K]
-    factor_entropy = tf.math.log(tf.cast(num_values_per_factor, tf.float32))
+    factor_entropy = tf.math.log(tf.cast(num_values_per_factor[-1], tf.float32))
 
     # I(z_j; v_k) = H(z_j) - H(z_j | v_k) ∊ ℝ [D, K]
     mutual_information = tf.expand_dims(
@@ -103,5 +109,5 @@ def mutual_information_gap(
 
     # ∊ ℝ [K]
     mig = normalized_mutual_information[0, :] - normalized_mutual_information[1, :]
+    breakpoint()
     return tf.reduce_mean(mig)
-

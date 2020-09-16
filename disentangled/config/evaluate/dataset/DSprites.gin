@@ -2,6 +2,7 @@ import disentangled.dataset
 
 dataset.dataset = @DSprites.pipeline()
 dataset.supervised = @DSprites.supervised()
+dataset.ordered = @DSprites.ordered()
 DSprites.pipeline.shuffle = @tf.data.Dataset.shuffle
 DSprites.supervised.shuffle = @tf.data.Dataset.shuffle
 

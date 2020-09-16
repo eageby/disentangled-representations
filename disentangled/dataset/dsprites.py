@@ -1,7 +1,10 @@
 import gin
 import tensorflow as tf
 import tensorflow_datasets as tfds
+import h5py
+import numpy as np
 
+import disentangled.utils
 from . import utils
 from ._dataset import Dataset
 
@@ -36,6 +39,29 @@ class DSprites(Dataset):
             return dataset
 
         return shuffle(dataset)
+
+    @staticmethod
+    @gin.configurable(module="DSprites")
+    def ordered(chunk_size=1000, prefetch_batches=1, num_parallel_calls=tf.data.experimental.AUTOTUNE):
+        fname = 'dsprites.hdf5'
+        file = disentangled.utils.get_data_path()/ 'downloads' / fname
+        # file = tf.keras.utils.get_file(str(path), 'https://storage.cloud.google.com/3d-shapes/3dshapes.h5')
+        
+        def generator():
+            with h5py.File(file, 'r') as data:
+                chunk_idx = np.arange(0, len(data['imgs'])+1, chunk_size)
+                chunk_idx = np.concatenate([chunk_idx, [len(data['imgs'])]])
+                for i in range(len(chunk_idx)-1):
+                    start = chunk_idx[i]
+                    end = chunk_idx[i+1]
+                    for im in data["imgs"][start:end]:
+                        yield np.expand_dims(im,axis=-1)
+
+        return tf.data.Dataset.from_generator(
+                generator,
+                tf.uint8,
+                tf.TensorShape([64,64,1]),
+                ).map(utils.normalize_uint8, num_parallel_calls=num_parallel_calls).prefetch(prefetch_batches)
 
     @staticmethod
     @gin.configurable(module="DSprites")

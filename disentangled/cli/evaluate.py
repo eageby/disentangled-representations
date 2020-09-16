@@ -50,6 +50,22 @@ def gini_index(ctx, **kwargs):
         metric, name=ctx.obj["model_str"], metric_name=gin.REQUIRED
     )
 
+@evaluate.command()
+@gin_options
+@click.pass_context
+def collapsed(ctx, **kwargs):
+    add_gin(ctx, "config", ["metric/collapsed.gin"])
+    parse(ctx, set_seed=True)
+
+    metric = disentangled.metric.collapsed(
+        ctx.obj["model"],
+        dataset=gin.REQUIRED,
+        tolerance=gin.REQUIRED,
+    )
+    disentangled.metric.log_metric(
+        metric, name=ctx.obj["model_str"], metric_name=gin.REQUIRED
+    )
+
 
 @evaluate.command()
 @gin_options

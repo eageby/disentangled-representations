@@ -2,7 +2,6 @@ import math
 import gin
 import tensorflow as tf
 
-
 @gin.configurable
 class Gaussian:
     def __init__(self, mean=0.0, log_var=0.0, tolerance=0.0):
@@ -17,7 +16,6 @@ class Gaussian:
 
         if log_var is None:
             log_var = self.log_var
-
         return -0.5 * (
             log_var
             + tf.square(sample - mean) / (tf.exp(log_var) + self.tolerance)
@@ -80,7 +78,7 @@ class Laplacian:
         if log_scale is None:
             log_scale = self.log_scale
 
-        return -log_scale - tf.math.log(2.0) - tf.math.abs(sample - location) / (tf.math.exp(log_scale) + self.tolerance)
+        return -log_scale - tf.math.log(2.0) - tf.math.abs(sample - location) / tf.math.exp(log_scale)
 
     @tf.function
     def kld(self, x_location, x_log_scale, y_location=None, y_log_scale=None):

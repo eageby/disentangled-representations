@@ -18,7 +18,10 @@ def representation_variance(model, data, samples, batch_size, progress_bar=True)
 
     all_var = None
     for batch in data:
-        var = tf.math.reduce_variance(model.encode(batch["image"]), axis=0)
+        if isinstance(batch, dict):
+            batch = batch['image']
+
+        var = tf.math.reduce_variance(model.encode(batch), axis=0)
         if all_var is None:
             all_var = var
         else:
@@ -30,10 +33,10 @@ def encode_dataset(model, dataset):
     def encode(x):
         params = model.encode(x)
         samples = model.sample(*params)
-        return samples, params
+        return tf.stack([samples, *params], axis=-1)
     
-    return dataset.map(encode)
-    # return dataset.map(encode, deterministic=True)
+    # return dataset.map(encode)
+    return dataset.map(encode, deterministic=True)
 
     
 @gin.configurable(module="disentangled.metric", blacklist=['dataset'])
@@ -87,7 +90,7 @@ class MetricCallback(tf.keras.callbacks.Callback):
 
 @gin.configurable
 def log_metric(metric, metric_name, name, print_=False, path=None, overwrite=True):
-    if path is None:
+    if str(path) == 'None': 
         log_dir = disentangled.utils.get_data_path() / "logs" / name / "1"/"eval"
     else:
         path = Path(path)

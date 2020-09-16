@@ -40,6 +40,7 @@ def estimate_marginal_entropy(samples, encoding_dist, *encoding_parameters):
     Returns:
         (tf.Tensor)  ∊ ℝ [D]
     """
+    breakpoint()
     N, D = tf.unstack(tf.cast(samples.shape, tf.float32))  # Number of latent dims
     samples = tf.transpose(samples)  # ∊ ℝ [D, N]
 
