@@ -59,16 +59,10 @@ class Bernoulli:
 
 @gin.configurable
 class Laplacian:
-    def __init__(self, location=0.0, log_scale=0.0, tolerance=0.0):
+    def __init__(self, location=0.0, log_b2=0.0, tolerance=0.0):
         self.location = location
-        self.log_scale = log_scale
+        self.log_b2 = log_b2
         self.tolerance = tolerance
-
-    # @tf.function
-    # def kld(self, x_location, x_log_scale, y_location=None, y_log_scale=None):
-    #     """ Analytical Lower Bound"""
-
-    #     return tf.math.exp(x_log_scale) - x_log_scale - 1
 
     @tf.function
     def log_likelihood(self, sample=0.0, location=None, log_scale=None):
@@ -81,28 +75,28 @@ class Laplacian:
         return -log_scale - tf.math.log(2.0) - tf.math.abs(sample - location) / tf.math.exp(log_scale)
 
     @tf.function
-    def kld(self, x_location, x_log_scale, y_location=None, y_log_scale=None):
+    def kld(self, x_location, x_log_b2, y_location=None, y_log_b2=None):
         """ Analytical Lower Bound"""
 
         if y_location is None:
             y_location = self.location
 
-        if y_log_scale is None:
-            y_log_scale = self.log_scale
+        if y_log_b2 is None:
+            y_log_b2 = self.log_b2
 
-        x_log_scale = tf.clip_by_value(
-            x_log_scale, tf.float32.min, tf.math.exp(tf.math.log(tf.float32.max)) - 1
+        x_log_b2 = tf.clip_by_value(
+            x_log_b2, tf.float32.min, tf.math.exp(tf.math.log(tf.float32.max)) - 1
         )
-        y_log_scale = tf.clip_by_value(
-            y_log_scale, tf.float32.min, tf.math.exp(tf.math.log(tf.float32.max)) - 1
+        y_log_b2 = tf.clip_by_value(
+            y_log_b2, tf.float32.min, tf.math.exp(tf.math.log(tf.float32.max)) - 1
         )
 
         return (
-            tf.math.exp(0.5 * x_log_scale)
-            / (tf.math.exp(0.5 * y_log_scale) - self.tolerance)
-            - 0.5 * x_log_scale
-            + 0.5 * y_log_scale
+            tf.math.exp(0.5 * x_log_b2)
+            / (tf.math.exp(0.5 * y_log_b2) - self.tolerance)
+            - 0.5 * x_log_b2
+            + 0.5 * y_log_b2
             - 1
             + tf.math.abs(x_location - y_location)
-            / (tf.math.exp(0.5 * y_log_scale) + self.tolerance)
+            / (tf.math.exp(0.5 * y_log_b2) + self.tolerance)
         )
