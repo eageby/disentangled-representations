@@ -72,4 +72,4 @@ class DatasetGroup(click.Group):
 
 def path_callback(ctx, param, value): 
     if value is not None:
-        return Path(value)
+        return Path(value).resolve()

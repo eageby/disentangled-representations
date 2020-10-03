@@ -12,7 +12,7 @@ from decouple import config
 @gin.configurable
 def get_data_path(data_path=None):
     if data_path is None:
-        return Path(config("DISENTANGLED_REPRESENTATIONS_DIRECTORY"))
+        return Path(config("DISENTANGLED_REPRESENTATIONS_DIRECTORY",default='./data'))
     return Path(data_path)
 
 
