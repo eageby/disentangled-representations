@@ -52,7 +52,7 @@ def fixed_factor_dataset(dataset, batch_size, num_values_per_factor, prefetch_ba
             element['factor_value'] = fixed_factor_value
             return element
 
-        return dataset.filter(lambda x: tf.equal(tf.gather(x['label'], fixed_factor), fixed_factor_value)).batch(batch_size)
+        return dataset.filter(lambda x: tf.equal(tf.gather(x['label'], fixed_factor), fixed_factor_value)).batch(batch_size).map(add_factor_data, num_parallel_calls=num_parallel_calls)
 
     dataset = factor_set.interleave(map_to_batch, num_parallel_calls=num_parallel_calls).prefetch(prefetch_batches)
     return dataset, batch_size
