@@ -66,6 +66,21 @@ def collapsed(ctx, **kwargs):
         metric, name=ctx.obj["model_str"], metric_name=gin.REQUIRED
     )
 
+@evaluate.command()
+@gin_options
+@click.pass_context
+def loglikelihood(ctx, **kwargs):
+    add_gin(ctx, "config", ["metric/loglikelihood.gin"])
+    parse(ctx, set_seed=True)
+
+    metric = disentangled.metric.loglikelihood(
+        ctx.obj["model"],
+        dataset=gin.REQUIRED,
+    )
+    breakpoint()
+    disentangled.metric.log_metric(
+        metric, name=ctx.obj["model_str"], metric_name=gin.REQUIRED
+    )
 
 @evaluate.command()
 @gin_options

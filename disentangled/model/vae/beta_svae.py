@@ -25,10 +25,10 @@ class BetaSVAE(VAE):
     @tf.function
     def sample(self, mean, log_b2, training=False):
         """sample
-        Sampling y from Y ~ Laplacian(μ,b) 
-        Z ~ N(0,1)
+        Sampling z from Z ~ Laplacian(μ,b) 
+        Y ~ N(0,1)
         V ~ Exponential(1) = Gamma(1,1)
-        y = μ + bz(2v)^1/2
+        z = μ + by(2v)^1/2
         """
         if not training:
             return mean

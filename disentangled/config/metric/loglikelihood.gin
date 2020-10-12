@@ -1,0 +1,7 @@
+import disentangled.metric.utils
+
+disentangled.metric.utils.log_metric.metric = @disentangled.metric.loglikelihood
+disentangled.metric.utils.log_metric.metric_name = 'loglikelihood'
+
+disentangled.metric.loglikelihood.dataset = @dataset()
+dataset.get = 'dataset'
