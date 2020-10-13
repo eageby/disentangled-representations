@@ -63,13 +63,12 @@ images/latents/%_2d.png: models/%/saved_model.pb
 
 # Metric
 # ==============================================================================
-metrics: metrics/gini metrics/mig metrics/mig_batch metrics/dmig metrics/factorvae_score metrics/collapsed
-metrics/gini: $(foreach h, $(HYPERPARAMETERS_INDEX), $(foreach r, $(RANDOM_SEEDS), $(patsubst %, logs/experiment/%/HP$h/RS$r/1/eval/Gini_Index/, $(UNSUPERVISED_MODELS))))
+metrics: metrics/gini metrics/dmig metrics/factorvae_score metrics/collapsed metrics/loglikelihood
+metrics/gini: $(foreach h, $(HYPERPARAMETERS_INDEX), $(foreach r, $(RANDOM_SEEDS), $(patsubst %, logs/experiment/%/HP$h/RS$r/1/eval/Gini_Index/, $(MODELS))))
 metrics/collapsed: $(foreach h, $(HYPERPARAMETERS_INDEX), $(foreach r, $(RANDOM_SEEDS), $(patsubst %, logs/experiment/%/HP$h/RS$r/1/eval/Collapsed/, $(MODELS))))
-metrics/mig: $(foreach h, $(HYPERPARAMETERS_INDEX), $(foreach r, $(RANDOM_SEEDS), $(patsubst %, logs/experiment/%/HP$h/RS$r/1/eval/MIG/, $(MODELS))))
 metrics/dmig: $(foreach h, $(HYPERPARAMETERS_INDEX), $(foreach r, $(RANDOM_SEEDS), $(patsubst %, logs/experiment/%/HP$h/RS$r/1/eval/DMIG/, $(MODELS))))
-metrics/mig_batch: $(foreach h, $(HYPERPARAMETERS_INDEX), $(foreach r, $(RANDOM_SEEDS), $(patsubst %, logs/experiment/%/HP$h/RS$r/1/eval/MIG_batch/, $(MODELS))))
-metrics/factorvae_score: $(foreach h, $(HYPERPARAMETERS_INDEX), $(foreach r, $(RANDOM_SEEDS), $(patsubst %, logs/experiment/%/HP$h/RS$r/1/eval/factorvae_Score/, $(MODELS))))
+metrics/factorvae_score: $(foreach h, $(HYPERPARAMETERS_INDEX), $(foreach r, $(RANDOM_SEEDS), $(patsubst %, logs/experiment/%/HP$h/RS$r/1/eval/factorvae_score/, $(MODELS))))
+metrics/loglikelihood: $(foreach h, $(HYPERPARAMETERS_INDEX), $(foreach r, $(RANDOM_SEEDS), $(patsubst %, logs/experiment/%/HP$h/RS$r/1/eval/loglikelihood/, $(MODELS))))
 
 logs/experiment/%/1/eval/Collapsed/: clean/metric/logs/experiment/%/1/eval/Collapsed/
 	echo $* | sed -En 's/(\w*\/\w*)\/HP[0-9]+\/RS[0-9]+/\1/p' |  \
@@ -79,17 +78,13 @@ logs/experiment/%/1/eval/Gini_Index/: clean/metric/logs/experiment/%/1/eval/Gini
 	echo $* | sed -En 's/(\w*\/\w*)\/HP[0-9]+\/RS[0-9]+/\1/p' |  \
 	xargs -I {} disentangled evaluate --path $(DISENTANGLED_REPRESENTATIONS_DIRECTORY)/models/experiment/$*/ {} gini-index
 
-logs/experiment/%/1/eval/MIG/: |clean/metric/logs/experiment/%/1/eval/MIG/
-	echo $* | sed -En 's/(\w*\/\w*)\/HP[0-9]+\/RS[0-9]+/\1/p' |  \
-	xargs -I {} disentangled evaluate --path $(DISENTANGLED_REPRESENTATIONS_DIRECTORY)/models/experiment/$*/ {} mig
-
-logs/experiment/%/1/eval/MIG_batch/: |clean/metric/logs/experiment/%/1/eval/MIG_batch/
-	echo $* | sed -En 's/(\w*\/\w*)\/HP[0-9]+\/RS[0-9]+/\1/p' |  \
-	xargs -I {} disentangled evaluate --path $(DISENTANGLED_REPRESENTATIONS_DIRECTORY)/models/experiment/$*/ {} mig-batch
-
 logs/experiment/%/1/eval/DMIG/: |clean/metric/logs/experiment/%/1/eval/DMIG/
 	echo $* | sed -En 's/(\w*\/\w*)\/HP[0-9]+\/RS[0-9]+/\1/p' |  \
 	xargs -I {} disentangled evaluate --path $(DISENTANGLED_REPRESENTATIONS_DIRECTORY)/models/experiment/$*/ {} dmig
+
+logs/experiment/%/1/eval/loglikelihood/: |clean/metric/logs/experiment/%/1/eval/loglikelihood/
+	echo $* | sed -En 's/(\w*\/\w*)\/HP[0-9]+\/RS[0-9]+/\1/p' |  \
+	xargs -I {} disentangled evaluate --path $(DISENTANGLED_REPRESENTATIONS_DIRECTORY)/models/experiment/$*/ {} loglikelihood
 
 logs/experiment/%/1/eval/factorvae_score/:  |clean/metric/logs/experiment/%/1/eval/factorvae_score/
 	echo $* | sed -En 's/(\w*\/\w*)\/HP[0-9]+\/RS[0-9]+/\1/p' |  \
@@ -100,8 +95,7 @@ clean/metric/%:
 
 # Metric
 # ==============================================================================
-# experiments: $(foreach h, $(HYPERPARAMETERS_INDEX), $(foreach r, $(RANDOM_SEED_INDEX)), $(patsubst %, experiment/%/HP$h/RS$r/experiment.complete, $(MODELS)))
-
+experiments: $(foreach h, $(HYPERPARAMETERS_INDEX), $(foreach r, $(RANDOM_SEED_INDEX), $(patsubst %, experiment/%/HP$h/RS$r/experiment.complete, $(MODELS))))
 experiment/%/experiment.complete:
 	@echo $* | sed -En 's/(.*)\/HP([0-9]+)\/RS([0-9]+)/\1 -h \2 -r \3 --log/p' |  \
 		xargs -n6 disentangled experiment
