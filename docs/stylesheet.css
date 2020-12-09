@@ -1,0 +1,21 @@
+.autoencoderContent {
+  display: grid;
+  grid-template-columns: 35% 30% 35%;
+  grid-template-rows: 1fr;
+  gap: 0px 0px;
+  grid-template-areas:
+    ". . .";
+}
+
+.header {
+	width: 100%;
+	margin: 0 auto;
+}
+
+.output {
+	margin:auto;
+}
+
+.interface{
+	display: block;
+}

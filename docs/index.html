@@ -1,1 +1,61 @@
-Testing
+<html>
+	<head>
+	<meta charset="utf-8">
+	<title>Sample</title>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/rangeslider.js/2.0.5/rangeslider.css">
+	<link rel="stylesheet" href="stylesheet.css">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/rangeslider.js/2.0.5/rangeslider.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.0.0/dist/tf.min.js"></script>
+	</head>
+	<body>
+	<div class="header">
+		<div class="interface">
+			<div class="option" id="model">
+				Model:
+				<select class='config' name="model" id="modelSelect">
+					<option selected value="BetaVAE">BetaVAE</option>
+					<option value="FactorVAE">FactorVAE</option>
+					<option value="BetaTCVAE">BetaTCVAE</option>
+					<option value="BetaSVAE">BetaSVAE</option>
+				</select>	
+			</div
+			<div class="option" id="data">
+				Dataset:
+				<select class='config' name="data" id="dataSelect">
+					<option value="DSprites">DSprites</option>
+					<option selected value="Shapes3d">Shapes3d</option>
+					<option value="CelebA">CelebA</option>
+				</select>	
+			</div
+			<div class="option" id="Sample">
+				Sample:
+				<input type="number" class='config' value=0 id='sampleSelect'>
+			</div>
+			<button id="reset">Reset</button>
+		</div>
+	</div>
+	<div class="autoencoderContent">
+		<div class="output"> 
+			<canvas id="inputCanvas" width=200 height=200></canvas>
+		</div>
+		<div class="representation"> 
+			<input type="range" id="0" min=-2 max=2 step=0.001 data-rangeslider>
+			<input type="range" id="1" min=-2 max=2 step=0.001 data-rangeslider>
+			<input type="range" id="2" min=-2 max=2 step=0.001 data-rangeslider>
+			<input type="range" id="3" min=-2 max=2 step=0.001 data-rangeslider>
+			<input type="range" id="4" min=-2 max=2 step=0.001 data-rangeslider>
+			<input type="range" id="5" min=-2 max=2 step=0.001 data-rangeslider>
+			<input type="range" id="6" min=-2 max=2 step=0.001 data-rangeslider>
+			<input type="range" id="7" min=-2 max=2 step=0.001 data-rangeslider>
+			<input type="range" id="8" min=-2 max=2 step=0.001 data-rangeslider>
+			<input type="range" id="9" min=-2 max=2 step=0.001 data-rangeslider>
+		</div>
+		<div class="output"> 
+			<canvas id="outputCanvas" width=200 height=200></canvas>
+		</div>
+	</div>
+	<script src="interface.js" type='text/javascript'></script>
+	<script src="index.js" type='text/javascript'></script>
+	</body>
+</html>
