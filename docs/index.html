@@ -9,50 +9,69 @@
 	<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.0.0/dist/tf.min.js"></script>
 	</head>
 	<body>
-	<div class="header">
-		<div class="interface">
-			<div class="option" id="model">
-				Model:
-				<select class='config' name="model" id="modelSelect">
-					<option selected value="BetaVAE">BetaVAE</option>
-					<option value="FactorVAE">FactorVAE</option>
-					<option value="BetaTCVAE">BetaTCVAE</option>
-					<option value="BetaSVAE">BetaSVAE</option>
-				</select>	
-			</div
-			<div class="option" id="data">
-				Dataset:
-				<select class='config' name="data" id="dataSelect">
-					<option value="DSprites">DSprites</option>
-					<option selected value="Shapes3d">Shapes3d</option>
-					<option value="CelebA">CelebA</option>
-				</select>	
-			</div
-			<div class="option" id="Sample">
-				Sample:
-				<input type="number" class='config' value=0 id='sampleSelect'>
+	<div class="container">
+		<div class="header">
+			<div class="interface">
+				<div class="option" id="model">
+					<div class="option-header">
+						Model:
+					</div>
+
+					<select class='config' name="model" id="modelSelect">
+						<option selected value="BetaVAE">BetaVAE</option>
+						<!-- <option selected value="FactorVAE">FactorVAE</option> -->
+						<!-- <option selected value="BetaTCVAE">BetaTCVAE</option> -->
+						<!-- <option selected value="BetaSVAE">BetaSVAE</option> -->
+					</select>	
+				</div>
+				<div class="option" id="data">
+					<div class="option-header">
+						Dataset:
+					</div>
+					<select class='config' name="data" id="dataSelect">
+						<!-- <option selected value="DSprites">DSprites</option> -->
+						<option selected value="Shapes3d">Shapes3d</option>
+						<!-- <option selected value="CelebA">CelebA</option> -->
+					</select>	
+				</div>
+				<div class="option" id="Sample">
+					<div class="option-header">
+						Sample:
+					</div>
+					<input type="number" class='config' value=0 id='sampleSelect'>
+				</div>
+				<div class="option" id="reset">
+					<button id="reset">Reset</button>
+				</div>
+		</div>
+		<div class="autoencoderContent">
+			<div class="output"> 
+				<div class="autencoderHeader">
+					Input
+				</div>
+					<canvas id="inputCanvas" width=200 height=200></canvas>
 			</div>
-			<button id="reset">Reset</button>
-		</div>
-	</div>
-	<div class="autoencoderContent">
-		<div class="output"> 
-			<canvas id="inputCanvas" width=200 height=200></canvas>
-		</div>
-		<div class="representation"> 
-			<input type="range" id="0" min=-2 max=2 step=0.001 data-rangeslider>
-			<input type="range" id="1" min=-2 max=2 step=0.001 data-rangeslider>
-			<input type="range" id="2" min=-2 max=2 step=0.001 data-rangeslider>
-			<input type="range" id="3" min=-2 max=2 step=0.001 data-rangeslider>
-			<input type="range" id="4" min=-2 max=2 step=0.001 data-rangeslider>
-			<input type="range" id="5" min=-2 max=2 step=0.001 data-rangeslider>
-			<input type="range" id="6" min=-2 max=2 step=0.001 data-rangeslider>
-			<input type="range" id="7" min=-2 max=2 step=0.001 data-rangeslider>
-			<input type="range" id="8" min=-2 max=2 step=0.001 data-rangeslider>
-			<input type="range" id="9" min=-2 max=2 step=0.001 data-rangeslider>
-		</div>
-		<div class="output"> 
-			<canvas id="outputCanvas" width=200 height=200></canvas>
+			<div class="representation"> 
+				<div class="autencoderHeader">
+					Representation
+				</div>
+				<input type="range" id="0" min=-2 max=2 step=0.01 data-rangeslider>
+				<input type="range" id="1" min=-2 max=2 step=0.01 data-rangeslider>
+				<input type="range" id="2" min=-2 max=2 step=0.01 data-rangeslider>
+				<input type="range" id="3" min=-2 max=2 step=0.01 data-rangeslider>
+				<input type="range" id="4" min=-2 max=2 step=0.01 data-rangeslider>
+				<input type="range" id="5" min=-2 max=2 step=0.01 data-rangeslider>
+				<input type="range" id="6" min=-2 max=2 step=0.01 data-rangeslider>
+				<input type="range" id="7" min=-2 max=2 step=0.01 data-rangeslider>
+				<input type="range" id="8" min=-2 max=2 step=0.01 data-rangeslider>
+				<input type="range" id="9" min=-2 max=2 step=0.01 data-rangeslider>
+			</div>
+			<div class="output"> 
+				<div class="autencoderHeader">
+					Output
+				</div>
+				<canvas id="outputCanvas" width=200 height=200></canvas>
+			</div>
 		</div>
 	</div>
 	<script src="interface.js" type='text/javascript'></script>

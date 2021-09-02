@@ -8,8 +8,17 @@
 }
 
 .header {
-	width: 100%;
 	margin: 0 auto;
+	align: center;
+}
+
+.option {
+	display: table-cell;
+	padding-right: 1%;
+}
+
+.option-header {
+	padding-bottom: 3px;
 }
 
 .output {
@@ -17,5 +26,25 @@
 }
 
 .interface{
-	display: block;
+	display: flex;
+	justify-content:center;
+	padding-bottom: 40px;
+	position:relative;
+}
+
+.option#reset{
+}
+
+button#reset {
+	height: 2.3em;
+	position: absolute;
+	bottom: 40px;
+}
+
+.container {
+	width: 80%
+}
+
+#sampleSelect{
+	width: 50%
 }
