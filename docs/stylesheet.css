@@ -1,13 +1,26 @@
 .autoencoderContent {
   display: grid;
   grid-template-columns: 35% 30% 35%;
-  grid-template-rows: 1fr;
+  grid-template-rows: 2fr;
   gap: 0px 0px;
   grid-template-areas:
     ". . .";
+	padding-bottom:20;
+ border-bottom: 2px solid #bfbfbf;
+}
+
+.autoencoderHeader {
+	text-align:center;
+	margin: 0 20px 10px 20px;
+	font-weight:bold;
+	font-size:18px;
+	padding-bottom: 2px;
+ 	border-bottom: 2px solid #bfbfbf;
 }
 
 .header {
+ border-top: 2px solid #bfbfbf;
+ padding-top: 20px;
 	margin: 0 auto;
 	align: center;
 }
@@ -25,14 +38,14 @@
 	margin:auto;
 }
 
+.representation {
+	margin: 0 20px;
+}
+
 .interface{
 	display: flex;
 	justify-content:center;
-	padding-bottom: 40px;
-	position:relative;
-}
-
-.option#reset{
+	padding-bottom: 40px; position:relative;
 }
 
 button#reset {
@@ -45,6 +58,14 @@ button#reset {
 	width: 80%
 }
 
+.option-header {
+	font-weight: bold;
+}
+
+.option#Sample{
+	width: 100px;
+}
+
 #sampleSelect{
-	width: 50%
+	width: 80%;
 }

@@ -10,11 +10,10 @@ $('input[type="range"]').rangeslider({
     rangeClass: 'rangeslider',
     disabledClass: 'rangeslider--disabled',
     horizontalClass: 'rangeslider--horizontal',
-    verticalClass: 'rangeslider--vertical',
     fillClass: 'rangeslider__fill',
     handleClass: 'rangeslider__handle',
     onInit : function() {
-        this.output = $( '<div class="range-output" />' ).insertBefore( this.$range ).html(this.$element.val() );
+        this.output = $( '<div class="range-output" />' ).insertAfter( this.$range ).html(this.$element.val() );
 		representation.push(parseFloat(this.$element.val()));
 		sliders.push(this);
     },
