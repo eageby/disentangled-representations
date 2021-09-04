@@ -1,7 +1,6 @@
 ---
-[layout](layout): default
+layout: default
 ---
-{% include head.html %}
 # Models
 {% include_relative models.md %}
 
