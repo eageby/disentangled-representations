@@ -21,7 +21,7 @@
 }
 
 .rangeslider__fill {
-  background: #4471ef;
+  background: #157B75;
   position: absolute;
 }
 .rangeslider--horizontal .rangeslider__fill {
@@ -62,17 +62,21 @@
 }
 .range-output  {
   color:#000000;
+  font-size: small;
   text-align:center;
   padding-left:10px;
   overflow:hidden;
   width:60px;
 }
-.range-input {
+.representation {
   background: #e6e6e6;
+  border-radius:10px;
+  margin-bottom: 10px;
+}
+.range-input {
   padding:10px 10px 10px 30px;
   align-items:center;
-  border-radius:10px;
-  margin-bottom: 3px;
+  margin-bottom: 0px;
   display:flex;
   text-align: center;
 }

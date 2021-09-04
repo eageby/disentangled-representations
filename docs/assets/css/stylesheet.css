@@ -6,20 +6,21 @@
   grid-template-areas:
     ". . .";
 	padding-bottom:20;
- border-bottom: 2px solid #bfbfbf;
+ border-bottom: 1px solid #eff0f1;
 }
 
 .autoencoderHeader {
 	text-align:center;
+	text-size:medium;
 	margin: 0 20px 10px 20px;
 	font-weight:bold;
 	font-size:18px;
 	padding-bottom: 2px;
- 	border-bottom: 2px solid #bfbfbf;
+ 	border-bottom: 1px solid #eff0f1;
 }
 
 .header {
- 	border-top: 2px solid #bfbfbf;
+ 	border-top: 1px solid #eff0f1;
  	padding-top: 20px;
 	margin: 0 auto;
 	align: center;
@@ -39,7 +40,7 @@
 }
 
 .representation {
-	margin: 0 20px;
+	margin: 0 0px;
 }
 
 .interface{
@@ -49,13 +50,14 @@
 }
 
 button#reset {
-	height: 2.3em;
+	height: 2em;
+	font-size:small;
 	position: absolute;
 	bottom: 40px;
 }
 
 .container {
-	width: 80%
+	width: 100%
 }
 
 .option-header {
@@ -68,4 +70,9 @@ button#reset {
 
 #sampleSelect{
 	width: 80%;
+}
+.option-header {
+	font-size:small;
+}.config {
+	font-size:small;
 }

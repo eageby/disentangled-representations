@@ -37,10 +37,10 @@ $('.config').change(function () {
 });
 
 function setConfig(){
-	inputSrc = 'img/DATASET/SAMPLE.jpg'.replace('SAMPLE', $('#sampleSelect').val()).replace('DATASET', $('#dataSelect').val());
+	inputSrc = 'assets/img/DATASET/SAMPLE.jpg'.replace('SAMPLE', $('#sampleSelect').val()).replace('DATASET', $('#dataSelect').val());
 
-	encoderSrc = 'models/MODEL/DATASET/encoder/model.json'.replace('MODEL', $('#modelSelect').val()).replace('DATASET', $('#dataSelect').val());
-	decoderSrc = 'models/MODEL/DATASET/decoder/model.json'.replace('MODEL', $('#modelSelect').val()).replace('DATASET', $('#dataSelect').val());
+	encoderSrc = 'assets/models/MODEL/DATASET/encoder/model.json'.replace('MODEL', $('#modelSelect').val()).replace('DATASET', $('#dataSelect').val());
+	decoderSrc = 'assets/models/MODEL/DATASET/decoder/model.json'.replace('MODEL', $('#modelSelect').val()).replace('DATASET', $('#dataSelect').val());
 };
 
 function getRep(){
