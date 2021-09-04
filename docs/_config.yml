@@ -13,9 +13,10 @@
 # you will see them accessed via {{ site.title }}, {{ site.email }}, and so on.
 # You can create any custom variable you would like, and they will be accessible
 # in the templates via {{ site.myvariable }}.
-title: Introducing Sparsity into the Current Landscape of Disentangled Representation Learning
+title: Disentangled Representation Learning
 email: eliasageby@hotmail.com
-description: Demo here
+description: This is a summary of the work presented in 'Introducing Sparsity into the Current Landscape of Disentangled Representation Learning'. I also provide a web-enabled demo of the results.
+
 github_username:  eageby
 # Build settings
 markdown: kramdown
