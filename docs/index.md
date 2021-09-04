@@ -1,6 +1,6 @@
 ---
 layout: default
 ---
-%% {% include_relative models.md %}
+## Demo
 {% include app.html %}
 
