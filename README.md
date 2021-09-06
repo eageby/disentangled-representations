@@ -1,7 +1,7 @@
 # Disentangled Representations 
 Full code for implementations and evaluations described in my thesis [Introducing Sparsity into the Current Landscape of Disentangled Representation Learning](http://urn.kb.se/resolve?urn=urn:nbn:se:kth:diva-292929).
 
-Web demo and summary can be accessed [here](https://eageby.github.io/disentangled-representations/).
+Web demo can [be](be) accessed [here](https://eageby.github.io/disentangled-representations/).
 ## Thesis
 Investigating the current landscape of disentangled representation learning in an image based setting.
 Implementation and benchmarking of current models:
