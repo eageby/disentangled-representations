@@ -84,7 +84,7 @@ class VAE(tf.keras.Model):
 
         return x_mean, z, target
 
-    @gin.configurable(module="VAE", blacklist=["iterations", "callbacks"])
+    @gin.configurable(module="VAE", denylist=["iterations", "callbacks"])
     def train(self, data, optimizer, iterations, callbacks):
         data = data.take(int(iterations))
         progress = disentangled.utils.TrainingProgress(data, total=int(iterations))

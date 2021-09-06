@@ -5,7 +5,7 @@ import gin
 import tensorflow as tf
 
 
-@gin.configurable(whitelist=["objective_fn"])
+@gin.configurable(allowlist=["objective_fn"])
 class Objective(tf.keras.layers.Layer):
     def __init__(self, objective_fn, **kwargs):
         super(Objective, self).__init__(**kwargs)
@@ -17,7 +17,7 @@ class Objective(tf.keras.layers.Layer):
         return self.objective_fn(self, *[self.flatten(i) for i in args])
 
 
-@gin.configurable(whitelist=["beta", "prior_dist", "output_dist"], module="objectives")
+@gin.configurable(allowlist=["beta", "prior_dist", "output_dist"], module="objectives")
 @tf.function
 def betavae(
     objective,
@@ -47,7 +47,7 @@ def betavae(
 
 
 @gin.configurable(
-    whitelist=["gamma", "prior_dist", "output_dist", "tolerance"], module="objectives"
+    allowlist=["gamma", "prior_dist", "output_dist", "tolerance"], module="objectives"
 )
 @tf.function
 def factorvae(
@@ -86,7 +86,7 @@ def factorvae(
     return -log_likelihood + kld + gamma * kld_discriminator
 
 
-@gin.configurable(module="objectives", whitelist=["tolerance"])
+@gin.configurable(module="objectives", allowlist=["tolerance"])
 def discriminator_loss(p_z, p_permuted, tolerance):
     return -tf.reduce_mean(
         tf.math.log(p_z + tolerance) + tf.math.log(p_permuted + tolerance)
@@ -95,7 +95,7 @@ def discriminator_loss(p_z, p_permuted, tolerance):
 
 @tf.function
 @gin.configurable(
-    whitelist=["beta", "dataset_size", "prior_dist", "output_dist"], module="objectives"
+    allowlist=["beta", "dataset_size", "prior_dist", "output_dist"], module="objectives"
 )
 def betatcvae(
     objective,

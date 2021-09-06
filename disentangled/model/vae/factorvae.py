@@ -32,7 +32,7 @@ class FactorVAE(VAE):
 
         return representation
 
-    @gin.configurable(module="model.FactorVAE", blacklist=["data"])
+    @gin.configurable(module="model.FactorVAE", denylist=["data"])
     def train(
         self,
         data,

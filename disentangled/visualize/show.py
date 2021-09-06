@@ -77,7 +77,7 @@ def show(image):
 
     output(plt, show_plot=gin.REQUIRED)
 
-@gin.configurable(whitelist=['show_plot', 'filename', 'format'])
+@gin.configurable(allowlist=['show_plot', 'filename', 'format'])
 def output(plot, show_plot, filename=None, format='png'):
     if filename is not None:
         save_dir = disentangled.utils.get_data_path().resolve() / 'images' / (filename + '.' + format)

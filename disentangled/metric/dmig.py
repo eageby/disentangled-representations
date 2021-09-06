@@ -31,7 +31,7 @@ def discrete_entropy(ys):
     return h
 
 
-@gin.configurable('discretize', module='disentangled.metric.discrete_mutual_information_gap', blacklist=['target'])
+@gin.configurable('discretize', module='disentangled.metric.discrete_mutual_information_gap', denylist=['target'])
 def discretize(target, bins):
     """Discretization based on histograms."""
     discretized = np.zeros_like(target)

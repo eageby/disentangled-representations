@@ -7,7 +7,7 @@ import disentangled.utils
 from decorator import decorator
 from pathlib import Path
 
-@gin.configurable(module="disentangled.metric", blacklist=['model', 'data'])
+@gin.configurable(module="disentangled.metric", denylist=['model', 'data'])
 def representation_variance(model, data, samples, batch_size, progress_bar=True):
 
     data = data.take(samples).batch(batch_size)
@@ -39,7 +39,7 @@ def encode_dataset(model, dataset):
     return dataset.map(encode, deterministic=True)
 
     
-@gin.configurable(module="disentangled.metric", blacklist=['dataset'])
+@gin.configurable(module="disentangled.metric", denylist=['dataset'])
 def fixed_factor_dataset(dataset, batch_size, num_values_per_factor, prefetch_batches, num_parallel_calls=tf.data.experimental.AUTOTUNE):
     n_factors = dataset.element_spec['label'].shape[0]
     factor_set = tf.data.Dataset.range(n_factors).shuffle(n_factors).repeat()
