@@ -13,11 +13,11 @@ _MODELS = ["/".join(i) for i in itertools.product(_METHODS, _DATASETS)]
 
 def gin_options(func):
     @functools.wraps(func)
-    @click.option("--config", "-c", multiple=True, callback=add_gin)
+    @click.option("--config", "-c", multiple=True, callback=add_gin, help='Add gin-configuration.')
     @click.option(
-        "--gin-param", "--gin-parameter", "-p", multiple=True, callback=add_gin
+        "--gin-param", "--gin-parameter", "-p", multiple=True, callback=add_gin, help='Add gin-config parameter.'
     )
-    @click.option("--gin-file", "-f", multiple=True, callback=add_gin)
+    @click.option("--gin-file", "-f", multiple=True, callback=add_gin, help='Specify gin-config file.' )
     def _(*args, **kwargs):
         return func(*args, **kwargs)
 

@@ -14,8 +14,8 @@ from disentangled.cli.training import train
 @gin_options
 @click.pass_context
 def cli(ctx, **kwargs):
+    """Train and evaluate disentangled representation learning models."""
     add_gin(ctx, "config", ["config.gin"])
-
 
 cli.add_command(evaluate)
 cli.add_command(train)

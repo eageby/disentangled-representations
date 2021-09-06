@@ -14,6 +14,7 @@ from disentangled.cli.utils import parse, gin_options, visual_options, add_gin, 
 @click.argument('dataset', type=click.Choice(_DATASETS.copy()))
 @click.pass_context
 def dataset(ctx, dataset, **kwargs):
+    """Interface for viewing and preparing datasets."""
     ctx.ensure_object(dict)
     ctx.obj['dataset'] = dataset
     gin.bind_parameter('%HP_SWEEP_VALUES', None)
@@ -21,6 +22,7 @@ def dataset(ctx, dataset, **kwargs):
 @dataset.command()
 @click.pass_context
 def prepare(ctx):
+    """Download datasets."""
     if ctx.obj['dataset'] == 'all':
         prepare_datasets = _DATASETS
     else:
@@ -35,6 +37,7 @@ def prepare(ctx):
 @visual_options
 @click.pass_context
 def examples(ctx, filename, rows, cols, plot, **kwargs):
+    """View or save example images of dataset."""
     dataset = ctx.obj['dataset']
 
     add_gin(ctx, 'config', ['evaluate/dataset/{}.gin'.format(dataset)])
@@ -59,6 +62,7 @@ def examples(ctx, filename, rows, cols, plot, **kwargs):
 @visual_options
 @click.pass_context
 def fixed(ctx, batch_size, filename, rows, cols, plot, verbose, **kwargs):
+    """View/save images of dataset given a fixed latent factor."""
     dataset = ctx.obj['dataset']
     add_gin(ctx, 'config', ['evaluate/dataset/{}.gin'.format(dataset)])
     parse(ctx)
@@ -77,7 +81,3 @@ def fixed(ctx, batch_size, filename, rows, cols, plot, verbose, **kwargs):
     fixed, _ = disentangled.metric.utils.fixed_factor_dataset(dataset, batch_size, num_values_per_factor)
 
     disentangled.visualize.fixed_factor_data(fixed, rows=gin.REQUIRED, cols=gin.REQUIRED, verbose=verbose)
-
-@dataset.command()
-def labels():
-    disentangled.dataset.CelebA.attribute_distribution()

@@ -56,6 +56,9 @@ def random_seed_sweep(func, *args, hp_index, random_seed_list=None, random_seed_
 @hyperparameter_sweep
 @random_seed_sweep
 def experiment(ctx, model, *args, dry_run, **kwargs):
+    """Interface for running full scale experiment.
+    The experiment is run with random seed and hyperparameter sweeps.
+    """
     dataset = model.split('/')[1]
     
     calling_args = ['disentangled', 'train', model]
