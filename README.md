@@ -25,12 +25,12 @@ The benchmarking of models includes a comparison of the quantitative metrics:
 
 ## Qualitative Evaluation
 ### Web-demo
+[Web demo preview.](docs/assets/img/DemoPreview.jpg)
 %% <p align="center">
 	%% <a href="https://eageby.github.io/disentangled-representations/#demo">
-		[Web demo preview.](docs/assets/img/DemoPreview.jpg)
 		%% <img width=50% src="docs/assets/img/DemoPreview.jpg" alt="Web demo."> 
 	%% </a>
-</p>
+%% </p>
 
 ### Graphical User Interface (GUI)
 <p align="center">
