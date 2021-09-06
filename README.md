@@ -1,5 +1,5 @@
 # Disentangled Representations 
-[Full](Full) code for implementations and evaluations described in my thesis [Introducing Sparsity into the Current Landscape of Disentangled Representation Learning](http://urn.kb.se/resolve?urn=urn:nbn:se:kth:diva-292929).
+Full code for implementations and evaluations described in my thesis [Introducing Sparsity into the Current Landscape of Disentangled Representation Learning](http://urn.kb.se/resolve?urn=urn:nbn:se:kth:diva-292929).
 
 Web demo and summary can be accessed [here](https://eageby.github.io/disentangled-representations/).
 ## Thesis
@@ -27,7 +27,8 @@ The benchmarking of models includes a comparison of the quantitative metrics:
 ### Web-demo
 <p align="center">
 	<a href="https://eageby.github.io/disentangled-representations/#demo">
-		<img width=50% src="docs/assets/img/DemoPreview.jpg" alt="Web demo."> 
+		[Web demo preview.](docs/assets/img/DemoPreview.jpg)
+		%% <img width=50% src="docs/assets/img/DemoPreview.jpg" alt="Web demo."> 
 	</a>
 </p>
 
