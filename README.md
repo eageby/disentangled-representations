@@ -1,5 +1,6 @@
-# disentanglement
+# Disentangled Representations 
 Full code for implementations and testing described in the thesis [Introducing Sparsity into the Current Landscape of Disentangled Representation Learning](http://urn.kb.se/resolve?urn=urn:nbn:se:kth:diva-292929).
+
 Web-enabled demo and summary can be accessed [here.](https://eageby.github.io/disentangled-representations/).
 
 # Command Line Interface (CLI)
