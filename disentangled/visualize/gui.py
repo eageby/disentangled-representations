@@ -378,7 +378,7 @@ class Visualize(QtWidgets.QWidget):
             format_ = QtGui.QImage.Format_Grayscale8
 
         qimage = QtGui.QImage(
-            image, image.shape[0], image.shape[1], format_)
+            image, image.shape[1], image.shape[0], int(image.nbytes / image.shape[0]), format_)
         return QtGui.QPixmap(qimage)
 
     def set_input(self, input_):

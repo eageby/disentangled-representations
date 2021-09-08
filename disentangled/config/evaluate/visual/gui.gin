@@ -1,2 +1,2 @@
-disentangled.visualize.gui.Options.batch_size = 64
+disentangled.visualize.gui.Options.batch_size = 32
 disentangled.visualize.gui.Options.latents = 10
