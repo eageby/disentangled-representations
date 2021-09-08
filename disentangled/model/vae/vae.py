@@ -115,7 +115,7 @@ class VAE(tf.keras.Model):
         for batch in progress:
             [cb.on_train_batch_begin(progress.n) for cb in callbacks]
             logs = step(batch)
-            [cb.on_train_batch_end(progress.n, logs) for cb in callbacks]
-            progress.update(logs, interval=1)
+            [cb.on_train_batch_end(progress.n) for cb in callbacks]
+            progress.update_post(logs, interval=1)
 
         [cb.on_train_end(progress.n) for cb in callbacks]
